@@ -3,3 +3,9 @@ tmp/*
 
 ## Ignore all node_modules directories
 node_modules/
+
+## Ignore all the output directories
+output/
+
+## For any directory under output that should not be ignored, add a ! before the directory name
+# !output/some-directory/
