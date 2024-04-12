@@ -1,0 +1,51 @@
+chrome:
+  chromeExecutablePath: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
+  chromeFlags: [
+    "--enable-blink-features=RecordDOMClobberingSitesAny,RecordDOMAccessAPIAny",
+    "-js-flags=--trace-document-lookup",
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  headless: false
+
+collector:
+  # Collectors configuration
+  COLLECT_AND_CREATE_PAGE: true
+  COLLECT_CONSOLE_LOGS: true
+  COLLECT_REQUESTS: true
+  COLLECT_WEB_STORAGE: false
+  COLLECT_COOKIES: false
+  COLLECT_HTML: true
+  COLLECT_CSS: true
+  COLLECT_SCRIPTS: true
+  COLLECT_BROWSER_STDERR: true
+  COLLECT_BROWSER_STDOUT: true
+  COLLECT_XHR_REQUESTS: true
+  COLLECT_FETCH_REQUESTS: true
+  EXTRACT_DOM_LOOKUPS: true
+
+
+navigator:
+  AIT_BEFORE_NEXT_URL: 1000
+
+
+callbacks:
+  before_load_cbs: []
+    # - file: "./callbacks/forbid-url-loading-callbacks.js"
+    #   function_name: "forbidURLNavigationCb"
+  
+  page_actions_cbs: 
+    - file: "./callbacks/manually-actions-callbacks.js"
+      function_name: "manuallyInteractCb"
+
+  after_load_cbs:
+    - file: "./callbacks/extract-clobberable-callbacks.js"
+      function_name: "extractDOMCLookupsCb"
+
+  post_visit_cbs: 
+    - file: "./callbacks/compile-ql-query-callbacks.js"
+      function_name: "compileQLQueryCb"
+    
+    - file: "./callbacks/create-ql-db-callbacks.js"
+      function_name: "createCodeQLDatabaseCb"

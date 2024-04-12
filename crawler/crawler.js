@@ -1,0 +1,141 @@
+/**
+ * 
+ * Our crawler is partially based on the following code:JAW/crawler/crawler.js
+ * 
+ * We use puppeteer + chromeDev protocol (CDP) + customed chrome (V8) to crawl the webpages.
+ * 
+ * This file is modified to add the following features:
+ * 
+ * 1/ Use the puppeteer + chromeDev protocol (CDP) to driven the chrome browser to visit/interact with the webpages.
+ * 2/ Use the customed chrome (V8) to log the DOMC function calls (window.x, document.x, etc.)
+ * 3/ Process the raw output and save the results to the log file.
+ * 
+ *
+ * Limitation:
+ * 1/ cannot dynamically trigger the events and expend the code coverage
+ * 
+ * Usage:
+ * 
+ * node crawler-domc-func.js --seedurl=facebook.com --maxurls=100 --browser=chrome --basedir=/home/jackfromeast/Desktop/SafeLookup/dataset/client-domc --chromeExecutablePath=/home/jackfromeast/Desktop/SafeLookup/tools/Chrome/src/out/Default/chrome
+ */
+
+/**
+ * Third-party libraries
+ */
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const pathModule = require('path');
+const crypto = require('crypto');
+const { program } = require('commander');
+const js_beautify = require('js-beautify').js;
+const elapsed = require("elapsed-time-logger");
+const { URL } = require('url');
+const utils = require('./utils.js');
+const config = require('./config');
+const { get } = require('http');
+const yaml = require('js-yaml');
+const Visitor = require('./visitor.js');
+
+const log4js = require('log4js');
+log4js.configure({
+	appenders: { out: { type: "stdout" } },
+	categories: { default: { appenders: ["out"], level: "debug" } },
+  });
+const logger = log4js.getLogger('Crawler');
+logger.level = 'debug';
+
+
+/**
+ * Command line arguments
+ */
+program
+  .requiredOption('--seedurl <url>', 'The starting URL for the crawler')
+  .requiredOption('--basedir <path>', 'Base directory for data storage')
+  .option('--configFile <path>', 'Path to the yaml config file', '')
+  .option('--maxurls <number>', 'Maximum number of URLs per website', 1)
+  .option('--browser <name>', 'Browser to use', 'chrome')
+
+program.parse(process.argv);
+const options = program.opts();
+
+// directory where the data of the crawling will be saved
+const url = options.seedurl;
+const dataStorageDirectory = options.basedir || pathModule.resolve(__dirname, '..');
+const maxVisitedUrls = options.maxurls; // maximum number of URLs per website by default
+
+function getConfigs() {
+  if (!options.configFile) {
+    throw new Error('No config file provided');
+  }
+
+  const configs_raw = fs.readFileSync(options.configFile, 'utf8');
+  return yaml.load(configs_raw);
+}
+
+function parseUserCallbacks(configs) {
+  var userCallbacks = {};
+
+  try {
+    if (configs.callbacks.before_load_cbs) {
+      userCallbacks.before = [];
+      for (let cb of configs.callbacks.before_load_cbs) {
+          userCallbacks.before.push(require(cb.file)[cb.function_name]);
+      }
+    }
+
+    if (configs.callbacks.page_actions_cbs) {
+      userCallbacks.action = [];
+      for (let cb of configs.callbacks.page_actions_cbs) {
+          userCallbacks.action.push(require(cb.file)[cb.function_name]);
+      }
+    }
+
+    if (configs.callbacks.after_load_cbs) {
+        userCallbacks.after = [];
+        for (let cb of configs.callbacks.after_load_cbs) {
+            userCallbacks.after.push(require(cb.file)[cb.function_name]);
+        }
+    }
+
+    if (configs.callbacks.post_visit_cbs) {
+      userCallbacks.post = [];
+      for (let cb of configs.callbacks.post_visit_cbs) {
+          userCallbacks.post.push(require(cb.file)[cb.function_name]);
+      }
+    }
+  } catch (error) {
+      console.error('Failed to load user callbacks:', error);
+  }
+
+  return userCallbacks;
+}
+
+
+if(utils.directoryExists(url, dataStorageDirectory)){
+  logger.warn(`[+] ${url} is already crawled`);
+}
+
+/**
+ * Crawler class
+ * 
+ * A wrapper class for the Visitor class to make it spawnable 
+ */
+
+(async function Crawler() {
+    let configs = getConfigs();
+    let userCallbacks = parseUserCallbacks(configs);
+
+    let domain = new URL(url).hostname;
+
+    let basedir = `${dataStorageDirectory}/${domain}`;
+    if (!fs.existsSync(basedir)) {
+        fs.mkdirSync(basedir, { recursive: true });
+    }
+
+    let visitor = await new Visitor(configs, url, domain, basedir, maxVisitedUrls, userCallbacks.before, userCallbacks.action, userCallbacks.after, userCallbacks.post);
+
+    await visitor.visit();
+})();
+
+
+

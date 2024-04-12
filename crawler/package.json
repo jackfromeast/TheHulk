@@ -1,0 +1,28 @@
+{
+  "name": "crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "crawler.js",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "crypto": "^1.0.1",
+    "elapsed-time-logger": "^1.1.7",
+    "fast-csv": "^4.3.6",
+    "fs": "0.0.1-security",
+    "js-beautify": "^1.14.0",
+    "js-yaml": "^4.1.0",
+    "log4js": "^6.9.1",
+    "path": "^0.12.7",
+    "process": "^0.11.10",
+    "process.argv": "^0.6.0",
+    "psl": "^1.9.0",
+    "puppeteer": "^10.2.0",
+    "puppeteer-devtools": "^3.2.0",
+    "url": "^0.11.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Soheil Khodayari",
+  "license": "AGPL3"
+}
