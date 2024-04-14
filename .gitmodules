@@ -2,3 +2,6 @@
 	path = jaw-v2-thething
 	url = https://github.com/SoheilKhodayari/JAW.git
 	branch = JAW-v2
+[submodule "doc"]
+	path = doc
+	url = https://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@github.com/jackfromeast/TheHulk.wiki.git
