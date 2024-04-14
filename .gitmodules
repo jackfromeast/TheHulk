@@ -1,3 +1,4 @@
 [submodule "jaw-v2-thething"]
 	path = jaw-v2-thething
 	url = https://github.com/SoheilKhodayari/JAW.git
+	branch = JAW-v2
