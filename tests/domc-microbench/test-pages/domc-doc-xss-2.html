@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>DOM Clobbering Websites - Micro Benchmarks - 2</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+        Explore how DOM properties can be manipulated for benchmark testing in browser environments.
+    </p>
+</section>
+
+<section class="section">
+    <div class="column_double">
+        <p><span class="label">Source:</span><br><br>
+            <span class="indent">Type: DOC-TYPE-1</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">document.clobber_prop;</pre>
+        </p>
+    </div>
+    <div class="column_double">
+        <p><span class="label">Sink:</span><br><br>
+            <span class="indent">Type: XSS</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">document.createElement('script').src</pre>
+        </p>
+    </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+let script = document.createElement('script');
+let clob = document.scripts;
+script.src = clob.getAttribute('value');
+document.body.appendChild(script);
+</pre>
+</div>
+</section>
+
+<section class="section">
+    <div class="column">
+    <p><span class="label">Payload:</span><br><br>
+    <pre>
+<form name="scripts" value="clobbered_payload"></form>
+    </pre>
+    </div>
+</section>
+
+<!-- <script>
+    let script1 = document.createElement('script');
+    // let clob = document.scripts;
+    script1.src = document.scripts;
+    document.body.appendChild(script1);
+</script>
+
+<script>
+    let script2 = document.createElement('script');
+    // let clob = document.scripts;
+    script2.src = document.scripts.getAttribute('value');
+    document.body.appendChild(script2);
+</script> -->
+
+<script>
+    let script = document.createElement('script');
+    let clob = document.scripts;
+    script.src = clob;
+    document.body.appendChild(script);
+</script>
+
+</body>
+</html>

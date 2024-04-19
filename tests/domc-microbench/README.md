@@ -5,3 +5,8 @@ The folder contains a list of test pages that consist of different clobberable s
 The server can be setup by running: `./setup.sh`.
 
 The setuped server should be able to visited at `http://127.0.0.1:8000/domc-win-xss-1.html`. Ideally, there are urls that help link different pages one by one. Therefore, we just to let the crawler/analyzer starts at the first page.
+
+
+TODO::
+
+I am considering can we use one file for holding all the test scripts and let it generate the html test pages?
