@@ -18,6 +18,8 @@ import DataFlow::PathGraph
 import semmle.javascript.security.dataflow.XssThroughDomCustomizations::XssThroughDom
 import semmle.javascript.security.dataflow.DomBasedXssCustomizations
 
+import Sinks.TheHulkSink
+
 //  import semmle.javascript.security.dataflow.XssThroughDomCustomizations::XssThroughDom
 //  import semmle.javascript.security.dataflow.DomBasedXssCustomizations
 //  import semmle.javascript.security.dataflow.UnsafeJQueryPluginCustomizations::UnsafeJQueryPlugin as UnsafeJQuery
@@ -72,30 +74,12 @@ class DebuggingConfig extends TaintTracking::Configuration {
       override predicate isSource(DataFlow::Node source) { 
         source instanceof WindowPropLookupAsSource or
         source instanceof DocumentPropLookupAsSource 
-        // exists (DataFlow::PropRead propRead |
-        //   propRead.getPropertyName() = "scripts" and 
-        //   propRead = source
-        // )
       }
   
       // Extended here to include the SocketWriteSink
       override predicate isSink(DataFlow::Node sink) { 
-        sink instanceof DomBasedXss::Sink
+        sink instanceof ClientSideSinks
       }
-  
-    //   override predicate isSanitizerGuard(TaintTracking::SanitizerGuardNode guard) {
-        
-    //   }
-  
-     //  override predicate isSanitizer(DataFlow::Node node) {
-     //    super.isSanitizer(node) or
-     //    node instanceof DomBasedXss::Sanitizer or
-     //    DomBasedXss::isOptionallySanitizedNode(node)
-     //  }
-  
-    //   override predicate hasFlowPath(DataFlow::SourcePathNode source, DataFlow::SinkPathNode sink) {
-    //     baseConfig.hasFlowPath(source, sink)
-    //   }
   
       override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
         DataFlow::localFieldStep(pred, succ) or
