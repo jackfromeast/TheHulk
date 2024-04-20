@@ -1,5 +1,5 @@
-[submodule "doc"]
-	path = doc
+[submodule "docs"]
+	path = docs
 	url = https://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@github.com/jackfromeast/TheHulk.wiki.git
 [submodule "jaw-v3-thething"]
 	path = jaw-v3-thething
