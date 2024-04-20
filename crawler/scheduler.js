@@ -44,7 +44,7 @@ let completeURL = 0;
 let totalURL = 0;
 let queue = [];
 
-let dirName = `${config.scheduler.WORKSPACE}-${getTimeStamp()}`;
+let dirName = `${getTimeStamp()}`;
   
 // Function to spawn a new crawler process
 function spawnCrawler(url) {
