@@ -13,8 +13,6 @@ const elapsed = require("elapsed-time-logger");
 var psl = require('psl');
 const { URL } = require('url');
 
-// Import the constants from config.js
-const config = require('./config');
 
 /**
  * @function extractDOMCLookups
@@ -193,55 +191,6 @@ function directoryExists(url, dataStorageDirectory){
 	}
 
 }
-
-/** 
- * @function savePageData 
- * @param url: string
- * @param html: string
- * @param scripts: list
- * @param dataDirectory: string of the base directory to store the data for the current website.
- * @return stores the input webpage data and returns the absolute folder name where the data is saved.
-**/
-function savePageData(url, html, scripts, cookies, webStorageData, httpRequests, dataDirectory, DOMCLookups){
-
-	const webpageFolderName = hashURL(url);
-	const webpageFolder = pathModule.join(dataDirectory, webpageFolderName);
-
-	// append url in urls.out in the website-specific directory
-	fs.appendFileSync(pathModule.join(dataDirectory, "urls.out"), url + '\n');
-
-	// collect the webpage data
-	if(config.COLLECT_AND_CREATE_PAGE){
-
-		if(!fs.existsSync(webpageFolder)){
-			fs.mkdirSync(webpageFolder);
-		}
-
-		// store url in url.out in the webpage-specific directory
-		fs.writeFileSync(pathModule.join(webpageFolder, "url.out"), url);
-
-
-		config.COLLECT_DOM_SNAPSHOT && fs.writeFileSync(pathModule.join(webpageFolder, "index.html"), '' + html);
-
-		if(config.COLLECT_SCRIPTS){
-			scripts.forEach((s, i)=> {
-				fs.writeFileSync(pathModule.join(webpageFolder, `${i}.js`), '' + s.source);
-			});
-		}
-
-		config.COLLECT_COOKIES     && fs.writeFileSync(pathModule.join(webpageFolder, "cookies.json"), JSON.stringify(cookies, null, 4));
-		config.COLLECT_WEB_STORAGE && fs.writeFileSync(pathModule.join(webpageFolder, "webstorage.json"), JSON.stringify(webStorageData, null, 4));
-		config.COLLECT_REQUESTS && fs.writeFileSync(pathModule.join(webpageFolder, "requests.json"), JSON.stringify(httpRequests, null, 4));
-
-    if (config.EXTRACT_DOM_LOOKUPS && DOMCLookups) {
-      fs.writeFileSync(pathModule.join(webpageFolder, "domc-lookups.json"), JSON.stringify(DOMCLookups, null, 4));
-    }
-	}
-
-
-	return webpageFolder;
-}
-
 
 function logError(error, dataDirectory){
     fs.writeFileSync(pathModule.join(dataDirectory, "error.out"), error.toString())
@@ -436,6 +385,33 @@ function resolveURLToPath(cUrl, cType, cContent) {
     return true;
 }
 
+function getTimeStamp() {
+    const now = new Date();
+
+    // Extract year, month, day, hour, and minute
+    const month = now.getMonth() + 1; // Note: Months are 0-indexed, so +1 to get the correct month
+    const day = now.getDate();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    // Format the date and time string
+    return `${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}-${hour.toString().padStart(2, '0')}-${minute.toString().padStart(2, '0')}`;
+}
+
+// Function to read CSV file and return a promise that resolves to an array of URLs
+function readCSVFile(filePath) {
+    const urls = [];
+    return new Promise((resolve, reject) => {
+      fs.createReadStream(path.resolve(filePath))
+        .pipe(fastcsv.parse({ headers: false }))
+        .on('error', error => reject(error))
+        .on('data', row => urls.push(row[1])) // Assuming the URL is in the second column
+        .on('end', rowCount => resolve(urls));
+    });
+  }
+
+  
+
 module.exports = {
     extractDOMCLookups,
     readFile,
@@ -443,7 +419,7 @@ module.exports = {
     getNameFromURL,
     hashURL,
     getOrCreateDataDirectoryForWebsite,
-    savePageData,
+    // savePageData,
     saveBrowserStdout,
     saveDOMCLookups,
     getSourceFromScriptId,
@@ -451,5 +427,7 @@ module.exports = {
     checkIfEmailInString,
     logError,
     resolveURLToPath,
-	validFilePath
+	validFilePath,
+	getTimeStamp,
+	readCSVFile
 }

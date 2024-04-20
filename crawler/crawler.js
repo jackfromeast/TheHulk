@@ -16,23 +16,18 @@
  * 
  * Usage:
  * 
- * node crawler-domc-func.js --seedurl=facebook.com --maxurls=100 --browser=chrome --basedir=/home/jackfromeast/Desktop/SafeLookup/dataset/client-domc --chromeExecutablePath=/home/jackfromeast/Desktop/SafeLookup/tools/Chrome/src/out/Default/chrome
+ * node crawler.js --seedurl https://hackmd.io/ --configFile /home/jackfromeast/Desktop/TheHulk/crawler/config.yaml --maxurls 1 --browser chrome --basedir /home/jackfromeast/Desktop/TheHulk/tmp/test-webpage
+ *
  */
 
 /**
  * Third-party libraries
  */
-const puppeteer = require('puppeteer');
 const fs = require('fs');
 const pathModule = require('path');
-const crypto = require('crypto');
 const { program } = require('commander');
-const js_beautify = require('js-beautify').js;
-const elapsed = require("elapsed-time-logger");
 const { URL } = require('url');
 const utils = require('./utils.js');
-const config = require('./config');
-const { get } = require('http');
 const yaml = require('js-yaml');
 const Visitor = require('./visitor.js');
 

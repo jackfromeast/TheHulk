@@ -4,10 +4,8 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const pathModule = require('path');
-const beautify = require('js-beautify').js;
 const elapsed = require("elapsed-time-logger");
 const utils = require('./utils.js');
-const config = require('./config');
 const Logger = require('./logger');
 const path = require('path');
 
@@ -481,7 +479,7 @@ Visitor.prototype.saveWebPageData = async function(){
 			let savePath = pathModule.join(this.webpageSourceFolder, utils.resolveURLToPath(html.url, 'html', html.source).path);
 			
 			if (!utils.validFilePath(savePath)){
-				this.logger.error('File name too long: ' + savePath);
+				this.logger.warn('File name too long: ' + savePath);
 				savePath = pathModule.join(this.webpageSourceFolder, utils.hashURL(utils.resolveURLToPath(html.url, 'html', html.source).path)+'.html');
 			}
 

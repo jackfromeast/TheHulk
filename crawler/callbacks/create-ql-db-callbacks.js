@@ -11,7 +11,7 @@ const path = require('path');
  */
 async function createCodeQLDatabaseCb(visitor, _){
     const repoPath = visitor.webpageFolder + '/source'; // Adjust according to actual structure.
-    const dbPath = visitor.webpageFolder + `/${path.basename(visitor.webpageFolder)}-codeql-db-2`; // Customize the DB path as needed.
+    const dbPath = visitor.webpageFolder + `/${path.basename(visitor.webpageFolder)}-codeql-db`; // Customize the DB path as needed.
 
     const language = 'javascript'; // Set the programming language as per your needs.
 
@@ -26,7 +26,7 @@ async function createCodeQLDatabaseCb(visitor, _){
             return;
         }
         if (stderr) {
-            visitor.logger.error(`Stderr: ${stderr}`);
+            visitor.logger.warn(`Warn: ${stderr}`);
             return;
         }
         visitor.logger.debug(`Stdout: ${stdout}`);

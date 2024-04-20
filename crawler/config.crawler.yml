@@ -49,3 +49,6 @@ callbacks:
     
     - file: "./callbacks/create-ql-db-callbacks.js"
       function_name: "createCodeQLDatabaseCb"
+
+others:
+  codeql_query_save_path: "/home/jackfromeast/Desktop/TheHulk/codeql-query/website-specific"
