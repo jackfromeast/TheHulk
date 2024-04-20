@@ -9,3 +9,6 @@ output/
 
 ## For any directory under output that should not be ignored, add a ! before the directory name
 # !output/some-directory/
+
+codeql-query/website-specific
+!codeql-query/website-specific/.gitkeep
