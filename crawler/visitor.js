@@ -29,9 +29,9 @@ function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActio
 	this.config = config;
 
 	if (config.chrome){
-		this.chromeExecutablePath = config.chrome.chromeExecutablePath;
-		this.chromeFlags = config.chrome.chromeFlags;
-		this.headless = config.chrome.headless
+		this.chromeExecutablePath = config.chrome.CHROME_EXECUTABLE_PATH;
+		this.chromeFlags = config.chrome.CHROME_FLAGS;
+		this.headless = config.chrome.HEADLESS
 	}
 
 	this.logger = undefined;
@@ -498,7 +498,7 @@ Visitor.prototype.saveWebPageData = async function(){
 			let savePath = pathModule.join(this.webpageSourceFolder, utils.resolveURLToPath(css.url, 'css', css.source).path);
 			
 			if (!utils.validFilePath(savePath)){
-				this.logger.error('File name too long: ' + savePath);
+				this.logger.warn('File name too long: ' + savePath);
 				savePath = pathModule.join(this.webpageSourceFolder, utils.hashURL(utils.resolveURLToPath(css.url, 'css', css.source).path)+'.css');
 			}
 
@@ -517,7 +517,7 @@ Visitor.prototype.saveWebPageData = async function(){
 			let savePath = pathModule.join(this.webpageSourceFolder, utils.resolveURLToPath(script.url, 'js', script.source).path);
 			
 			if (!utils.validFilePath(savePath)){
-				this.logger.error('File name too long: ' + savePath);
+				this.logger.warn('File name too long: ' + savePath);
 				savePath = pathModule.join(this.webpageSourceFolder, utils.hashURL(utils.resolveURLToPath(script.url, 'js', script.source).path)+'.js');
 			}
 			

@@ -11,7 +11,7 @@ module.exports = {
  * @param {*} page 
  */
 async function compileQLQueryCb(visitor, _){
-    let qlBasePath = visitor.config.others.codeql_query_save_path;
+    let qlBasePath = visitor.config.others.CODEQL_QUERY_SAVE_PATH;
     let qlCompiler = new QLQueryCompiler(visitor, qlBasePath + `/${visitor.domain}-${visitor.curURLHash}.ql`);
     qlCompiler.compile();
     qlCompiler.save();

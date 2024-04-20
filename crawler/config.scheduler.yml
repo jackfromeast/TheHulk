@@ -1,11 +1,13 @@
 scheduler:
-  workspace: "/home/jackfromeast/Desktop/TheHulk/tmp/test-webpage"               # Path to workspace (base directory for storing results)
+  # Path to workspace (base directory for storing results)
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/tmp/test-webpage"
 
-  crawlerMode: "seed"                        # Option: "seed" or "list"
-  seedURL: "https://www.google.com"          # Seed URL
-  urlList: "path/to/urls.csv"                # Path to URL list
+  # Option: "seed" or "list"
+  MODE: "list"
+  SEED_URL: "https://www.google.com"
+  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/tmp/urls.csv"
 
-  # urllist.csv format:
+  # Format of the urls.csv file:
   #   1,google.com
   #   2,facebook.com
   #   3,amazonaws.com
@@ -17,8 +19,11 @@ scheduler:
   #   9,a-msedge.net
   #   10,twitter.com  
 
-  maxWorkers: 1
-  maxUrl: 1
-  timeOutPerUrl: 1800000
+  # Maximum number of workers to run in parallel
+  MAX_WORKER: 1
+  # Maximum number of urls to visit
+  MAX_URL: 1
+  # Time budget for each worker to visit a single url
+  TIMEOUT_PER_URL: 1800000
 
 

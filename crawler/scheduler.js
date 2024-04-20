@@ -44,21 +44,21 @@ let completeURL = 0;
 let totalURL = 0;
 let queue = [];
 
-let dirName = `${config.scheduler.workspace}-${getTimeStamp()}`;
+let dirName = `${config.scheduler.WORKSPACE}-${getTimeStamp()}`;
   
 // Function to spawn a new crawler process
 function spawnCrawler(url) {
     const crawlerArgs = [
     `--seedurl=${url}`,
-    `--maxurls=${config.scheduler.maxUrl}`,
-    `--basedir=${config.scheduler.workspace}/${dirName}`,
+    `--maxurls=${config.scheduler.MAX_URL}`,
+    `--basedir=${config.scheduler.WORKSPACE}/${dirName}`,
     `--configFile=${crawlerConfigFilePath}`
     ];
     
     const timeoutId = setTimeout(() => {
         logger.error(`Crawler process for ${url} timed out`);
         crawlerProcess.kill();
-    }, config.scheduler.timeOutPerUrl);
+    }, config.scheduler.TIMEOUT_PER_URL);
 
     // const crawlerProcess = spawn('node', ['--inspect-brk=9229', 'crawler.js', ...crawlerArgs]);
     const crawlerProcess = spawn('node', ['crawler.js', ...crawlerArgs]);
@@ -88,8 +88,8 @@ function spawnCrawler(url) {
 (async function main() {
 
     let urls = [];
-    if (config.scheduler.crawlerMode !== 'seed'){
-        const domains = await readCSVFile(config.scheduler.url_list);
+    if (config.scheduler.MODE !== 'seed'){
+        const domains = await readCSVFile(config.scheduler.URL_LIST);
         for (let i = 0; i < domains.length; i++) {
             if (domains[i].startsWith('http://')||domains[i].startsWith('https://')) {
                 urls.push(domains[i]);
@@ -98,7 +98,7 @@ function spawnCrawler(url) {
             }
         }
     } else {
-        urls = [config.scheduler.seedURL];
+        urls = [config.scheduler.SEED_URL];
     }
 
     completeURL = 0;
@@ -106,13 +106,13 @@ function spawnCrawler(url) {
     queue = [...urls];
 
     // make sure the output directory exists
-    if (!fs.existsSync(`${config.scheduler.workspace}/${dirName}`)) {
-        fs.mkdirSync(`${config.scheduler.workspace}/${dirName}`, { recursive: true });
+    if (!fs.existsSync(`${config.scheduler.WORKSPACE}/${dirName}`)) {
+        fs.mkdirSync(`${config.scheduler.WORKSPACE}/${dirName}`, { recursive: true });
     }
 
 
     // Start the initial batch of crawlers
-    for (let i = 0; i < Math.min(config.scheduler.maxWorkers, queue.length); i++) {
+    for (let i = 0; i < Math.min(config.scheduler.MAX_WORKER, queue.length); i++) {
         spawnCrawler(queue.shift());
         logger.info(`Current progress: ${completeURL}/${totalURL}`);
         completeURL++;

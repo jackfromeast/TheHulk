@@ -71,30 +71,30 @@ function parseUserCallbacks(configs) {
   var userCallbacks = {};
 
   try {
-    if (configs.callbacks.before_load_cbs) {
+    if (configs.callbacks.BEFORE_LOAD_CBS) {
       userCallbacks.before = [];
-      for (let cb of configs.callbacks.before_load_cbs) {
+      for (let cb of configs.callbacks.BEFORE_LOAD_CBS) {
           userCallbacks.before.push(require(cb.file)[cb.function_name]);
       }
     }
 
-    if (configs.callbacks.page_actions_cbs) {
+    if (configs.callbacks.PAGE_ACTIONS_CBS) {
       userCallbacks.action = [];
-      for (let cb of configs.callbacks.page_actions_cbs) {
+      for (let cb of configs.callbacks.PAGE_ACTIONS_CBS) {
           userCallbacks.action.push(require(cb.file)[cb.function_name]);
       }
     }
 
-    if (configs.callbacks.after_load_cbs) {
+    if (configs.callbacks.AFTER_LOAD_CBS) {
         userCallbacks.after = [];
-        for (let cb of configs.callbacks.after_load_cbs) {
+        for (let cb of configs.callbacks.AFTER_LOAD_CBS) {
             userCallbacks.after.push(require(cb.file)[cb.function_name]);
         }
     }
 
-    if (configs.callbacks.post_visit_cbs) {
+    if (configs.callbacks.POST_VISIT_CBS) {
       userCallbacks.post = [];
-      for (let cb of configs.callbacks.post_visit_cbs) {
+      for (let cb of configs.callbacks.POST_VISIT_CBS) {
           userCallbacks.post.push(require(cb.file)[cb.function_name]);
       }
     }

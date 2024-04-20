@@ -1,13 +1,13 @@
 chrome:
-  chromeExecutablePath: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
-  chromeFlags: [
+  CHROME_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
+  CHROME_FLAGS: [
     "--enable-blink-features=RecordDOMClobberingSitesAny,RecordDOMAccessAPIAny",
     "-js-flags=--trace-document-lookup",
     "--no-sandbox",
     '--disable-setuid-sandbox',
     '--disable-gpu'
   ]
-  headless: false
+  HEADLESS: false
 
 collector:
   # Collectors configuration
@@ -27,23 +27,23 @@ collector:
 
 
 navigator:
-  AIT_BEFORE_NEXT_URL: 1000
+  WAIT_BEFORE_NEXT_URL: 1000
 
 
 callbacks:
-  before_load_cbs: []
+  BEFORE_LOAD_CBS: []
     # - file: "./callbacks/forbid-url-loading-callbacks.js"
     #   function_name: "forbidURLNavigationCb"
   
-  page_actions_cbs: 
+  PAGE_ACTIONS_CBS:
     - file: "./callbacks/manually-actions-callbacks.js"
       function_name: "manuallyInteractCb"
 
-  after_load_cbs:
+  AFTER_LOAD_CBS:
     - file: "./callbacks/extract-clobberable-callbacks.js"
       function_name: "extractDOMCLookupsCb"
 
-  post_visit_cbs: 
+  POST_VISIT_CBS:
     - file: "./callbacks/compile-ql-query-callbacks.js"
       function_name: "compileQLQueryCb"
     
@@ -51,4 +51,4 @@ callbacks:
       function_name: "createCodeQLDatabaseCb"
 
 others:
-  codeql_query_save_path: "/home/jackfromeast/Desktop/TheHulk/codeql-query/website-specific"
+  CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/website-specific"

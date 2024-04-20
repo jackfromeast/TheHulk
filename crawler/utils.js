@@ -6,7 +6,8 @@ const fs = require('fs');
 const pathModule = require('path');
 const crypto = require('crypto')
 const argv = require("process.argv");
-
+const path = require('path');
+const fastcsv = require('fast-csv');
 // https://github.com/beautify-web/js-beautify
 const js_beautify = require('js-beautify').js;
 const elapsed = require("elapsed-time-logger");
