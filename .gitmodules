@@ -1,6 +1,9 @@
 [submodule "docs"]
 	path = docs
-	url = https://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@github.com/jackfromeast/TheHulk.wiki.git
+	url = https://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@github.com/jackfromeast/TheHulk.wiki.git
 [submodule "jaw-v3-thething"]
 	path = jaw-v3-thething
 	url = https://github.com/jackfromeast/jaw-v3-thething.git
+[submodule "jalangi2"]
+	path = jalangi2
+	url = https://github.com/Samsung/jalangi2.git
