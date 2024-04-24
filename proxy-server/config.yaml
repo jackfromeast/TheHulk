@@ -11,5 +11,6 @@ cache:
   CACHE_ENABLE: true
   CACHE_PATH: "/home/jackfromeast/Desktop/TheHulk/proxy-server/cache"
 
+# To change the port of the server, modify the code at setup.sh
 # server:
 #   PORT: 3000

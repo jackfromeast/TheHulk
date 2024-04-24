@@ -15,14 +15,10 @@ class Cache:
   directory and loading the cache file.
 
   Each URL resource will be saved in the cache directory based on the URL
-  However, sometimes the parts of the URL are too long, so we need to hash it
-  
+
   E.g. 
   https://example.com/1234567890/index.js will be saved as:
-  cache/example.com/1234567890/index.js
-
-  E.g. https://example.com/AAAA**1000**BBBB/index.js will be saved as:
-  cache/example.com/long_name_resources/$HASH.js
+  cache/example.com/$HASH.js
 
   To keep track of the URL, save_path, and the content hash, we need to
   maintain the cache_map and cache_long_filename_map. In the cache_map,
@@ -73,7 +69,7 @@ class Cache:
       }
 
     # self.save_cache_map()
-    logging.info(f"Cache map updated: {self.cache_map[domain]}") 
+    # logging.info(f"Cache map updated: {self.cache_map[domain]}") 
     self.save_per_site_cache_map(domain, self.cache_map[domain])
 
   """
