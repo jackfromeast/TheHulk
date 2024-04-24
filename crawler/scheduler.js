@@ -10,10 +10,10 @@
  * 
  */
 const yaml = require('js-yaml');
-const { spawn } = require('child_process');
 const fs = require('fs');
-const { program } = require('commander');
 const elapsed = require("elapsed-time-logger");
+const { spawn } = require('child_process');
+const { program } = require('commander');
 const { getTimeStamp, readCSVFile } = require('./utils');
 
 const log4js = require('log4js');
@@ -44,7 +44,7 @@ let completeURL = 0;
 let totalURL = 0;
 let queue = [];
 
-let dirName = `${getTimeStamp()}`;
+let dirName = `${config.scheduler.TEST_NAME}-${getTimeStamp()}`;
   
 // Function to spawn a new crawler process
 function spawnCrawler(url) {

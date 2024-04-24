@@ -1,9 +1,8 @@
 /**
- * 
- * Our crawler is partially based on the following code:JAW/crawler/crawler.js
- * 
- * We use puppeteer + chromeDev protocol (CDP) + customed chrome (V8) to crawl the webpages.
- * 
+ * Description:
+ * --------------------------------
+ * Our crawler is partially based on the following code: JAW/crawler/crawler.js. 
+ * We use puppeteer + chromeDev protocol (CDP) + customed chrome (V8) to crawl the webpages. 
  * This file is modified to add the following features:
  * 
  * 1/ Use the puppeteer + chromeDev protocol (CDP) to driven the chrome browser to visit/interact with the webpages.
@@ -12,10 +11,11 @@
  * 
  *
  * Limitation:
+ * --------------------------------
  * 1/ cannot dynamically trigger the events and expend the code coverage
  * 
  * Usage:
- * 
+ * --------------------------------
  * node crawler.js --seedurl https://hackmd.io/ --configFile /home/jackfromeast/Desktop/TheHulk/crawler/config.yaml --maxurls 1 --browser chrome --basedir /home/jackfromeast/Desktop/TheHulk/tmp/test-webpage
  *
  */
@@ -25,11 +25,11 @@
  */
 const fs = require('fs');
 const pathModule = require('path');
-const { program } = require('commander');
-const { URL } = require('url');
 const utils = require('./utils.js');
 const yaml = require('js-yaml');
 const Visitor = require('./visitor.js');
+const { program } = require('commander');
+const { URL } = require('url');
 
 const log4js = require('log4js');
 log4js.configure({

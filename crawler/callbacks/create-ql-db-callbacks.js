@@ -36,7 +36,7 @@ async function createCodeQLDatabaseCb(visitor, _){
 
 // let visitor = {};
 // visitor.logger = console;
-// visitor.webpageFolder = '/home/jackfromeast/Desktop/SafeLookup/output/html-injection/stackedit.io';
+// visitor.webpageFolder = '/home/jackfromeast/Desktop/TheHulk/tmp/test.sink';
 // createCodeQLDatabaseCb(visitor, null);
 
 

@@ -31,9 +31,9 @@ navigator:
 
 
 callbacks:
-  BEFORE_LOAD_CBS: []
-    # - file: "./callbacks/forbid-url-loading-callbacks.js"
-    #   function_name: "forbidURLNavigationCb"
+  BEFORE_LOAD_CBS:
+    - file: "./callbacks/forbid-url-loading-callbacks.js"
+      function_name: "forbidURLNavigationCb"
   
   PAGE_ACTIONS_CBS:
     - file: "./callbacks/manually-actions-callbacks.js"
@@ -51,4 +51,4 @@ callbacks:
       function_name: "createCodeQLDatabaseCb"
 
 others:
-  CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/website-specific"
+  CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"

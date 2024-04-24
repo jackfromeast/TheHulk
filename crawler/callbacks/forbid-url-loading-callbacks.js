@@ -10,6 +10,7 @@ module.exports = {
  * @param {*} page 
  */
 async function forbidURLNavigationCb(visitor, page){
+    // TODO:
     // Enable the Page domain events
     // await visitor.curCDPsession.send('Page.enable');
 
@@ -19,20 +20,13 @@ async function forbidURLNavigationCb(visitor, page){
             
     //     }
     // });
-    await page.setRequestInterception(true);
-    page.on('request', interceptedRequest => {
-        if (interceptedRequest.isNavigationRequest() && interceptedRequest.url() !== visitor.curURL) {
-            // Block any navigation requests that are not to visitor.curURL
-            // interceptedRequest.abort('aborted');
-            this.logger.debug(`Aborted: ${interceptedRequest.url()}`);
-            // Instead of aborting, redirect back to the allowed URL
-            page.goto(visitor.curURL).catch(error => {
-                this.logger.error(`[!] Failed to redirect back to ${visitor.curURL}: ${error}`);
-            });
-            interceptedRequest.abort('failed');
-        } else {
-            // Allow all other requests to continue
-            interceptedRequest.continue();
-        }
-    });
+	page.evaluate(() => {
+		window.addEventListener('beforeunload', (event) => {
+			// cancel the event as stated by the standard.
+			event.preventDefault();
+			// chrome requires returnValue to be set.
+			event.returnValue = 'Locking auto-page refresh for DOMC testing.';
+			return "";
+		});
+	});
 }
