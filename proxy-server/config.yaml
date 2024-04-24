@@ -1,0 +1,15 @@
+instrumentation:
+  INST_SCRIPT: "/home/jackfromeast/Desktop/TheHulk/jalangi2/src/js/commands/esnstrument_cli.js"
+
+  # Options: "all", "true", "false"
+  IGNORE_ENABLE: false
+  IGNORE_URLS: []
+
+  JALANGI_ARGS: []
+
+cache: 
+  CACHE_ENABLE: true
+  CACHE_PATH: "/home/jackfromeast/Desktop/TheHulk/proxy-server/cache"
+
+# server:
+#   PORT: 3000
