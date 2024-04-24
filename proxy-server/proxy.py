@@ -18,7 +18,7 @@ import time
 import json
 import shutil
 import hashlib
-import logging
+from logger import get_logger
 from cache import Cache
 from instrumentor import Instrumentor
 from utils import load_config, resolve_url_to_path
@@ -26,8 +26,7 @@ from mitmproxy import http, ctx
 from mitmproxy.script import concurrent
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger('Proxy')
+logger = get_logger('Proxy')
 
 
 class JalangiResponseHandler:
@@ -69,32 +68,39 @@ class JalangiResponseHandler:
         return
 
     try:
-      flow.response.decode()
+      try:
+        flow.response.decode()
+      except Exception as e:
+        logger.warning("Failed to decode response: %s", flow.request.url)
+        return
 
       content_type = self.get_header_field(flow.response.headers, "content-type")
-      csp_key = self.get_header_field(flow.response.headers, "content-security-policy")
+      # csp_key = self.get_header_field(flow.response.headers, "content-security-policy")
+      
+      short_url = len(flow.request.url) > 128 and flow.request.url[:128] + '...' or flow.request.url
       
       if content_type:
         if content_type.find('javascript') >= 0:
-          logger.info("Response intercepted: %s", flow.request.url)
+          logger.info("Response intercepted: %s", short_url)
           if self.cache_config['CACHE_ENABLE']:
             self.cache.save_cache_file(flow.request.url, flow.response.text, 'js', 'raw')
           flow.response.text = self.instrumentor.instrument(flow.request.url, flow.response.text, 'js')
 
         if content_type.find('html') >= 0:
-          logger.info("Response intercepted: %s", flow.request.url)
+          logger.info("Response intercepted: %s", short_url)
           if self.cache_config['CACHE_ENABLE']:
             self.cache.save_cache_file(flow.request.url, flow.response.text, 'html', 'raw')
           flow.response.text = self.instrumentor.instrument(flow.request.url, flow.response.text, 'html')
       
+      # Moved this part to the browser by setting CSP bypass
       # Disable the content security policy since it may prevent jalangi from executing
-      if csp_key:
-        flow.response.headers.pop(csp_key, None)
+      # if csp_key:
+      #   flow.response.headers.pop(csp_key, None)
 
     except Exception as e:
-      logger.error("Exception raised when handling %s: %s", flow.request.url, str(e))
+      logger.error("Exception raised when handling %s", short_url)
       return
-
+      # raise e
 
 
 addons = [

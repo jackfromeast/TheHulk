@@ -2,10 +2,11 @@ import os
 import json
 import shutil
 import hashlib
-import logging
+from logger import get_logger
 import subprocess
 from utils import load_config, resolve_url_to_path, hash_path, valid_file_path
 
+logger = get_logger('Instrumentor')
 
 class Instrumentor:
   """
@@ -19,8 +20,34 @@ class Instrumentor:
 
     self.cache = cache
   
-  def run_instrument_command(self):
-    pass
+  def run_instrument_command(self, url, original_file_output_path, instrumented_file_output_path):
+    sub_env = { 'JALANGI_URL': url }
+    jalangi_args = ' '.join(self.jalangi_args)
+    command = f"node {self.instrument_script_path} {jalangi_args} {original_file_output_path} --out {instrumented_file_output_path} --outDir {os.path.dirname(instrumented_file_output_path)}"
+
+    try:
+      # Emit the instrumentation process synchronously
+      result = subprocess.run(command, shell=True, env=sub_env, check=True, timeout=20,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+      
+      if result.returncode == 0:
+        return True
+      else:
+        logger.error("Instrumentation failed: %s", str(url))
+        return False
+
+    except subprocess.TimeoutExpired:
+      logger.error("Instrumentation timeout: %s", str(url))
+      return False
+    
+    except subprocess.CalledProcessError as e:
+      logger.error("Instrumentation failed: %s", str(url))
+      return False
+
+    except Exception as e:
+      logger.error("Instrumentation failed: %s", str(url))
+      return False
+    
 
   def instrument(self, url, content, file_type):
     ## TODO: Get the following information from the cache
@@ -43,22 +70,14 @@ class Instrumentor:
     self.cache.update_cache_map(domain, weak_url_hash, url, 'instrumented', instrumented_file_output_path, None)
     
     ## Execute the instrument script
-    sub_env = { 'JALANGI_URL': url }
-    jalangi_args = ' '.join(self.jalangi_args)
-    command = f"node {self.instrument_script_path} {jalangi_args} {original_file_output_path} --out {instrumented_file_output_path} --outDir {os.path.dirname(instrumented_file_output_path)}"
+    ret = self.run_instrument_command(url, original_file_output_path, instrumented_file_output_path)
 
-    try:
-      subprocess.run(command, shell=True, env=sub_env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-      
-      ## TODO: Neet to make sure the file has been instrumented
-      # Assuming the command above does not raise an exception, we read the instrumented file
+    if ret:
       with open(instrumented_file_output_path, 'r') as file:
-          data = file.read()
-      return data
-    
-    except subprocess.CalledProcessError as e:
-      logger.error("Instrumentation failed: %s", str(e))
-    
+        instrumented_content = file.read()
+      
+      return instrumented_content
+    else:
       return content
 
     

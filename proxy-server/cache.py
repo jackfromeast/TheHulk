@@ -2,9 +2,10 @@ import os
 import json
 import shutil
 import hashlib
-import logging
 from utils import load_config, resolve_url_to_path, hash_path, valid_file_path
+from logger import get_logger
 
+logger = get_logger('Cache')
 
 class Cache:
   """
