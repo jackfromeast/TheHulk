@@ -20,25 +20,16 @@
  *
  */
 
-/**
- * Third-party libraries
- */
 const fs = require('fs');
 const pathModule = require('path');
 const utils = require('./utils.js');
 const yaml = require('js-yaml');
 const Visitor = require('./visitor.js');
+const Logger = require('./logger.js');
 const { program } = require('commander');
 const { URL } = require('url');
 
-const log4js = require('log4js');
-log4js.configure({
-	appenders: { out: { type: "stdout" } },
-	categories: { default: { appenders: ["out"], level: "debug" } },
-  });
-const logger = log4js.getLogger('Crawler');
-logger.level = 'debug';
-
+const logger = new Logger('debug', 'Crawler');
 
 /**
  * Command line arguments
@@ -55,7 +46,7 @@ const options = program.opts();
 
 // directory where the data of the crawling will be saved
 const url = options.seedurl;
-const dataStorageDirectory = options.basedir || pathModule.resolve(__dirname, '..');
+const dataStorageDirectory = options.basedir || pathModule.resolve(__dirname, '../tmp');
 const maxVisitedUrls = options.maxurls; // maximum number of URLs per website by default
 
 function getConfigs() {

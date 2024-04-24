@@ -11,7 +11,9 @@ const fastcsv = require('fast-csv');
 const js_beautify = require('js-beautify').js;
 const elapsed = require("elapsed-time-logger");
 var psl = require('psl');
+const yaml = require('js-yaml');
 const { URL } = require('url');
+
 
 
 /**
@@ -410,6 +412,53 @@ function readCSVFile(filePath) {
     });
   }
 
+
+function getConfigs(configFile) {
+	if (!configFile) {
+		throw new Error('No config file provided');
+	}
+
+	const configs_raw = fs.readFileSync(configFile, 'utf8');
+	return yaml.load(configs_raw);
+}
+
+function parseUserCallbacks(configs) {
+	var userCallbacks = {};
+
+	try {
+		if (configs.callbacks.BEFORE_LOAD_CBS) {
+			userCallbacks.before = [];
+			for (let cb of configs.callbacks.BEFORE_LOAD_CBS) {
+					userCallbacks.before.push(require(cb.file)[cb.function_name]);
+			}
+		}
+
+		if (configs.callbacks.PAGE_ACTIONS_CBS) {
+			userCallbacks.action = [];
+			for (let cb of configs.callbacks.PAGE_ACTIONS_CBS) {
+					userCallbacks.action.push(require(cb.file)[cb.function_name]);
+			}
+		}
+
+		if (configs.callbacks.AFTER_LOAD_CBS) {
+				userCallbacks.after = [];
+				for (let cb of configs.callbacks.AFTER_LOAD_CBS) {
+						userCallbacks.after.push(require(cb.file)[cb.function_name]);
+				}
+		}
+
+		if (configs.callbacks.POST_VISIT_CBS) {
+			userCallbacks.post = [];
+			for (let cb of configs.callbacks.POST_VISIT_CBS) {
+					userCallbacks.post.push(require(cb.file)[cb.function_name]);
+			}
+		}
+	} catch (error) {
+			console.error('Failed to load user callbacks:', error);
+	}
+
+	return userCallbacks;
+}
   
 
 module.exports = {
@@ -427,7 +476,9 @@ module.exports = {
     checkIfEmailInString,
     logError,
     resolveURLToPath,
-	validFilePath,
-	getTimeStamp,
-	readCSVFile
+		validFilePath,
+		getTimeStamp,
+		readCSVFile,
+		getConfigs,
+		parseUserCallbacks
 }

@@ -10,14 +10,20 @@ const Logger = require('./logger');
 const path = require('path');
 
 /**
- * Visitor class
  * 
+ * Description:
+ * --------------------------------
+ * Visitor class
  * handles the visiting of a given domain within a tab
  * it may visit multiple pages within the domain
  * it collects the webpage data based on the configuration and installed callbacks
  * 
+ * Limitations:
+ * --------------------------------
  * TODO: the visitor will contains the webpage states if needed
  * 
+ * Parameters:
+ * --------------------------------
  * @param {*} config: the configuareation of the crawler
  * @param {*} url
  * @param {*} domain
@@ -133,7 +139,7 @@ Visitor.prototype.visit = async function(){
 Visitor.prototype.visitPage = async function(){
 	let page = await this.browser.newPage();
 
-	this.disableCSP(page);
+	// this.disableCSP(page);
 	await page.setViewport({ width: 1366, height: 768});
 
 	try{
@@ -289,9 +295,9 @@ Visitor.prototype.refreshCollectData = function() {
 	this.collected.curURLHash = this.emptyCollectData();
 }
 
-Visitor.prototype.disableCSP = async function(page){
-	await page.setBypassCSP(true);
-}
+// Visitor.prototype.disableCSP = async function(page){
+// 	await page.setBypassCSP(true);
+// }
 
 Visitor.prototype.setupCDP = async function(page){
 	
@@ -616,8 +622,6 @@ Visitor.prototype.launch_puppeteer = async function(){
 		headless: false,
 		devtools: true,
 		args: this.chromeFlags,
-		// args: [...this.chromeFlags, 
-		// 	"--load-extension=/home/jackfromeast/Desktop/SafeLookup/crawler/extensions/save_all_resource/2.0.6_0", "--disable-extensions-except=/home/jackfromeast/Desktop/SafeLookup/crawler/extensions/save_all_resource/2.0.6_0"],
 		'ignoreHTTPSErrors': true,
 	});
 

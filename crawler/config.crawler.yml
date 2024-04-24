@@ -32,6 +32,9 @@ navigator:
 
 callbacks:
   BEFORE_LOAD_CBS:
+    - file: "./callbacks/disable-csp-callbacks.js"
+      function_name: "disableCSPCb"
+      
     - file: "./callbacks/forbid-url-loading-callbacks.js"
       function_name: "forbidURLNavigationCb"
   

@@ -10,5 +10,5 @@ module.exports = {
  * @param {*} page 
  */
 async function manuallyInteractCb(visitor, page){
-    await page.waitForTimeout(60000); // mauall wait for 2 minutes
+    await page.waitForTimeout(900000); // mauall wait for 30 minutes
 }
