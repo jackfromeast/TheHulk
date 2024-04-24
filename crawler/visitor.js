@@ -140,7 +140,7 @@ Visitor.prototype.visitPage = async function(){
 	let page = await this.browser.newPage();
 
 	// this.disableCSP(page);
-	await page.setViewport({ width: 1366, height: 768});
+	await page.setViewport({ width: 2048, height: 1024});
 
 	try{
 		/*

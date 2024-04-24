@@ -101,11 +101,6 @@ if(utils.directoryExists(url, dataStorageDirectory)){
   logger.warn(`[+] ${url} is already crawled`);
 }
 
-/**
- * Crawler class
- * 
- * A wrapper class for the Visitor class to make it spawnable 
- */
 
 (async function Crawler() {
     let configs = getConfigs();
@@ -118,7 +113,8 @@ if(utils.directoryExists(url, dataStorageDirectory)){
         fs.mkdirSync(basedir, { recursive: true });
     }
 
-    let visitor = await new Visitor(configs, url, domain, basedir, maxVisitedUrls, userCallbacks.before, userCallbacks.action, userCallbacks.after, userCallbacks.post);
+    let visitor = await new Visitor(configs, url, domain, basedir, maxVisitedUrls, userCallbacks.before,
+                                    userCallbacks.action, userCallbacks.after, userCallbacks.post);
 
     await visitor.visit();
 })();

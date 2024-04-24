@@ -9,5 +9,8 @@ module.exports = {
  * @param {*} page 
  */
 async function disableDiskCacheCb(visitor, page){
-    await page.setCacheEnabled(false);
+  await visitor.curCDPsession.send('Network.setCacheDisabled', {
+    cacheDisabled: true,
+  });
+  await page.setCacheEnabled(false);
 }
