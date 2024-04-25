@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "html injection",
+  "version": "1.0",
+  "action": {
+    "default_popup": "textbox.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "content_scripts": [{
+      "matches": ["<all_urls>"],
+      "js": ["inject.js"],
+      "run_at": "document_start"
+  }]
+}
