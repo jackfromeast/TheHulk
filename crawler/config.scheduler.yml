@@ -1,11 +1,11 @@
 scheduler:
-  TEST_NAME: "random"
+  TEST_NAME: "jupyter"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/websites/"
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/jupyter/"
 
   # Option: "seed" or "list"
   MODE: "seed"
-  SEED_URL: "https://jupyter.org/try-jupyter/lab/"
+  SEED_URL: "https://jupyterlite.github.io/demo/lab/index.html"
   URL_LIST: "/home/jackfromeast/Desktop/TheHulk/tmp/urls.csv"
 
   # Format of the urls.csv file:

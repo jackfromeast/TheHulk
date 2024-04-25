@@ -357,6 +357,7 @@ import javascript
 import DataFlow::PathGraph
 import semmle.javascript.security.dataflow.XssThroughDomCustomizations::XssThroughDom
 import semmle.javascript.security.dataflow.DomBasedXssCustomizations
+import Sinks.TheHulkSink
         `
     }
 
@@ -380,7 +381,7 @@ DebuggingConfig() { this = "DOM-Clobbering-${this.domain}-${this.curURLHash}" }
 
     // Extended here to include the SocketWriteSink
     override predicate isSink(DataFlow::Node sink) { 
-    sink instanceof DomBasedXss::Sink
+        sink instanceof ClientSideSinks
     }
 
     override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {

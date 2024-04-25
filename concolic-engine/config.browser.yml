@@ -35,7 +35,7 @@ collector:
 
 navigator:
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "about:blank"
+  INITIAL_URL: "https://google.com"
 
 proxy:
   PROXY_SERVER: "localhost"
