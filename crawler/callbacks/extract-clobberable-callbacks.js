@@ -1,8 +1,10 @@
+const { fstat } = require("fs");
 const { listeners } = require("process");
 
 // This file is an example of a user-defined callback module.
 module.exports = {
-    extractDOMCLookupsCb
+    extractDOMCLookupsCb,
+    extractDOMCLookups
 };
 
 /**
@@ -12,7 +14,8 @@ module.exports = {
  * @param {*} page 
  */
 async function extractDOMCLookupsCb(visitor, page){
-    let lookups = await extractDOMCLookups(visitor.collected.curURLHash.consoleLogs);
+    let startLine = visitor.config.others.COLLECT_DOM_LOOKUP_HINTS
+    let lookups = await extractDOMCLookups(visitor.collected.curURLHash.consoleLogs, startLine);
     visitor.collected.curURLHash.DOMCLookups = lookups;
 }
 
@@ -50,26 +53,29 @@ async function extractDOMCLookupsCb(visitor, page){
  * }
 */
 
-async function extractDOMCLookups(logs) {
-  if (logs instanceof String) {
+async function extractDOMCLookups(logs, startLine='') {
+  if (logs instanceof String || typeof logs === 'string') {
       logs = logs.split("\n");
   }
 
   const lookups = [];
   let idCounter = 1; // Initialize ID counter
 
-  // Fiter out the logs until the line: [CRAWLER] Page loaded successfully!
-  let processLogs = true; // For debugging 
+  // Fiter out the logs until the line from COLLECT_DOM_LOOKUP_HINTS
+  let startProcessLogs = startLine == '' ? true : false;
+
   // General regex to match the log entry format
   const regex = /\[.*?\] SafeLookup: (<(WIN|API|DOC)-TYPE-\d+>)(?: <(.*?)>)? Catched.*?: (.*?), (?:Location:)?\s?(.*?):(\d+):(\d+)/;
   const regex_api_type_3 = /\[.*?\] SafeLookup: (<(WIN|API|DOC)-TYPE-\d+>)(?: <(.*?)>)? Catched (.*?), (?:Location:)?\s?(.*?):(\d+):(\d+)/;
 
   logs.forEach(line => {
-      // if (line.includes("[CRAWLER] Page loaded successfully!")) {
-      //   // console.log("Processed [CRAWLER] Page loaded successfully!");
-      //   processLogs = true;
-      // }
-      if (processLogs){
+      
+    if (!startProcessLogs && line.includes(startLine)) {
+      // console.log("Processed [CRAWLER] Page loaded successfully!");
+      startProcessLogs = true;
+    }
+
+    if (startProcessLogs){
         let match = line.match(regex);
 
         if (!match){
@@ -116,3 +122,4 @@ async function extractDOMCLookups(logs) {
 
 // let lookups = extractDOMCLookups(raw_stdout);
 // console.log(lookups);
+
