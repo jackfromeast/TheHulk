@@ -29,8 +29,6 @@ const Logger = require('./logger.js');
 const { program } = require('commander');
 const { URL } = require('url');
 
-const logger = new Logger('debug', 'Crawler');
-
 /**
  * Command line arguments
  */
@@ -97,12 +95,8 @@ function parseUserCallbacks(configs) {
 }
 
 
-if(utils.directoryExists(url, dataStorageDirectory)){
-  logger.warn(`[+] ${url} is already crawled`);
-}
-
-
 (async function Crawler() {
+    const logger = await new Logger('debug', 'Crawler');
     let configs = getConfigs();
     let userCallbacks = parseUserCallbacks(configs);
 
@@ -111,6 +105,10 @@ if(utils.directoryExists(url, dataStorageDirectory)){
     let basedir = `${dataStorageDirectory}/${domain}`;
     if (!fs.existsSync(basedir)) {
         fs.mkdirSync(basedir, { recursive: true });
+    }
+
+    if(utils.directoryExists(url, dataStorageDirectory)){
+      logger.warn(`[+] ${url} is already crawled`);
     }
 
     let visitor = await new Visitor(configs, url, domain, basedir, maxVisitedUrls, userCallbacks.before,

@@ -6,29 +6,29 @@
  * Usage:
  * --------------------------------
  * 
- * node scheduler.js --sheduler-config ./config.scheduler.yml --crawler-config ./config.crawler.yml
+ * node scheduler.js --scheduler-config ./config.scheduler.yml --crawler-config ./config.crawler.yml
  * 
  */
 const yaml = require('js-yaml');
 const fs = require('fs');
-const elapsed = require("elapsed-time-logger");
 const Logger = require('./logger');
-const path = require('path');
+const pathModule = require('path');
 const { spawn } = require('child_process');
 const { program } = require('commander');
 const { getTimeStamp, readCSVFile } = require('./utils');
 
 program
-    .requiredOption('--sheduler-config <path>', 'Configuration file for the scheduler')
+    .requiredOption('--scheduler-config <path>', 'Configuration file for the scheduler')
     .requiredOption('--crawler-config <path>', 'Configuration file for the crawler');
 
 program.parse(process.argv);
-const shedulerConfigFilePath = program.opts().shedulerConfig;
+const schedulerConfigFilePath = program.opts().schedulerConfig;
 const crawlerConfigFilePath = program.opts().crawlerConfig;
 
 var config = {};
+var logger = undefined;
 try {
-    const configFile = fs.readFileSync(shedulerConfigFilePath, 'utf8');
+    const configFile = fs.readFileSync(schedulerConfigFilePath, 'utf8');
     config = yaml.load(configFile);  
 } catch (error) {
     console.log('Error reading or parsing config file:', error.message);
@@ -84,7 +84,11 @@ function spawnCrawler(url) {
     let urls = [];
     if (config.scheduler.MODE !== 'seed'){
         const domains = await readCSVFile(config.scheduler.URL_LIST);
-        for (let i = 0; i < domains.length; i++) {
+        
+        let urlStartPos = config.scheduler.URL_LIST_FROM != 0 ? config.scheduler.URL_LIST_FROM : 0;
+        let urlEndPos = config.scheduler.URL_LIST_TO != -1 ? config.scheduler.URL_LIST_TO : domains.length;
+
+        for (let i = urlStartPos; i < urlEndPos; i++) {
             if (domains[i].startsWith('http://')||domains[i].startsWith('https://')) {
                 urls.push(domains[i]);
             }else{
@@ -104,7 +108,9 @@ function spawnCrawler(url) {
         fs.mkdirSync(`${config.scheduler.WORKSPACE}/${dirName}`, { recursive: true });
     }
 
-    const logger = new Logger('debug', 'Scheduler', `${config.scheduler.WORKSPACE}/${dirName}/scheduler.log`);
+
+    logger = await new Logger('debug', 'Scheduler', pathModule.join(
+                        `${config.scheduler.WORKSPACE}/${dirName}`, 'scheduler.log'));
 
     // Start the initial batch of crawlers
     for (let i = 0; i < Math.min(config.scheduler.MAX_WORKER, queue.length); i++) {
