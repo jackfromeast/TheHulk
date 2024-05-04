@@ -1,11 +1,11 @@
 scheduler:
-  TEST_NAME: "jupyter"
+  TEST_NAME: "canvas"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/jupyter/"
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/canvas-jhu/"
 
   # Option: "seed" or "list"
   MODE: "seed"
-  SEED_URL: "https://jupyterlite.github.io/demo/lab/index.html"
+  SEED_URL: "https://jhu.instructure.com/courses/49399/announcements"
   URL_LIST: "/home/jackfromeast/Desktop/TheHulk/tmp/urls.csv"
 
   # Format of the urls.csv file:
@@ -24,7 +24,7 @@ scheduler:
   MAX_WORKER: 1
   # Maximum number of urls to visit
   MAX_URL: 1
-  # Time budget for each worker to visit a single url
-  TIMEOUT_PER_URL: 1800000
+  # Time budget for each worker to visit a single domain
+  TIMEOUT_PER_DOMAIN: 1800000
 
 

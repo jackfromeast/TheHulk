@@ -58,7 +58,7 @@ function spawnCrawler(url) {
     const timeoutId = setTimeout(() => {
         logger.error(`Crawler process for ${url} timed out`);
         crawlerProcess.kill();
-    }, config.scheduler.TIMEOUT_PER_URL);
+    }, config.scheduler.TIMEOUT_PER_DOMAIN);
 
     // const crawlerProcess = spawn('node', ['--inspect-brk=9229', 'crawler.js', ...crawlerArgs]);
     const crawlerProcess = spawn('node', ['crawler.js', ...crawlerArgs]);

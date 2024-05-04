@@ -204,7 +204,7 @@ Visitor.prototype.visitPage = async function(){
 		*  [Next] Collect the Alternative URLs
 		*  ----------------------------------------------
 		*/
-		if  (this.config.collector.COLLECT_ALT_URLS){ this.collectAltURLs(page); }
+		if  (this.config.collector.COLLECT_ALT_URLS){ await this.collectAltURLs(page); }
 		
 		page.waitForTimeout(this.config.collector.WAIT_BEFORE_NEXT_URL); // wait for 3 seconds before closing the page
 		await page.close();
@@ -466,16 +466,15 @@ Visitor.prototype.collectCookie = async function(page){
 
 Visitor.prototype.collectAltURLs = async function(page){
 	let hrefs = await page.$$eval('a', as => as.map(a => a.href));
-		for(let href of hrefs){
-			// check if href belong to the same eTLD+1 / domain
-			// see: https://www.npmjs.com/package/psl
-			if(href.includes(domain) && utils.isValid(href)){
-				if(this.unvisited.indexOf(href) === -1){
-					this.unvisited.push(href);
-				}
-
+	for(let href of hrefs){
+		// check if href belong to the same eTLD+1 / domain
+		// see: https://www.npmjs.com/package/psl
+		if(href.includes(this.domain) && utils.isValid(href)){
+			if(this.unvisited.indexOf(href) === -1){
+				this.unvisited.push(href);
 			}
 		}
+	}
 }
 
 Visitor.prototype.saveWebPageData = async function(){

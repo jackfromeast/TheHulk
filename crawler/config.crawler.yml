@@ -24,6 +24,7 @@ collector:
   COLLECT_XHR_REQUESTS: true
   COLLECT_FETCH_REQUESTS: true
   EXTRACT_DOM_LOOKUPS: true
+  COLLECT_ALT_URLS: true
 
 
 navigator:
@@ -55,3 +56,4 @@ callbacks:
 
 others:
   CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"
+  COLLECT_DOM_LOOKUP_HINTS: "[extractDOMCLookupsCb] Start." # or ''
