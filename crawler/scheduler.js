@@ -12,17 +12,11 @@
 const yaml = require('js-yaml');
 const fs = require('fs');
 const elapsed = require("elapsed-time-logger");
+const Logger = require('./logger');
+const path = require('path');
 const { spawn } = require('child_process');
 const { program } = require('commander');
 const { getTimeStamp, readCSVFile } = require('./utils');
-
-const log4js = require('log4js');
-log4js.configure({
-	appenders: { out: { type: "stdout" } },
-	categories: { default: { appenders: ["out"], level: "debug" } },
-  });
-const logger = log4js.getLogger('Scheduler');
-logger.level = 'debug';
 
 program
     .requiredOption('--sheduler-config <path>', 'Configuration file for the scheduler')
@@ -37,7 +31,7 @@ try {
     const configFile = fs.readFileSync(shedulerConfigFilePath, 'utf8');
     config = yaml.load(configFile);  
 } catch (error) {
-    logger.error('Error reading or parsing config file:', error.message);
+    console.log('Error reading or parsing config file:', error.message);
 }
 
 let completeURL = 0;
@@ -45,7 +39,7 @@ let totalURL = 0;
 let queue = [];
 
 let dirName = `${config.scheduler.TEST_NAME}-${getTimeStamp()}`;
-  
+
 // Function to spawn a new crawler process
 function spawnCrawler(url) {
     const crawlerArgs = [
@@ -110,6 +104,7 @@ function spawnCrawler(url) {
         fs.mkdirSync(`${config.scheduler.WORKSPACE}/${dirName}`, { recursive: true });
     }
 
+    const logger = new Logger('debug', 'Scheduler', `${config.scheduler.WORKSPACE}/${dirName}/scheduler.log`);
 
     // Start the initial batch of crawlers
     for (let i = 0; i < Math.min(config.scheduler.MAX_WORKER, queue.length); i++) {
