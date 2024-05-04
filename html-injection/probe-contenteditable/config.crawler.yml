@@ -1,0 +1,46 @@
+chrome:
+  CHROME_EXECUTABLE_PATH: "google-chrome"
+  CHROME_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  HEADLESS: true
+
+collector:
+  # Collectors configuration
+  COLLECT_ALT_URLS: true
+  COLLECT_AND_CREATE_PAGE: true
+  COLLECT_CONSOLE_LOGS: false
+  COLLECT_REQUESTS: false
+  COLLECT_WEB_STORAGE: false
+  COLLECT_COOKIES: false
+  COLLECT_HTML: false
+  COLLECT_CSS: false
+  COLLECT_SCRIPTS: false
+  COLLECT_BROWSER_STDERR: false
+  COLLECT_BROWSER_STDOUT: false
+  COLLECT_XHR_REQUESTS: false
+  COLLECT_FETCH_REQUESTS: false
+  EXTRACT_DOM_LOOKUPS: false
+
+
+navigator:
+  WAIT_BEFORE_NEXT_URL: 1000
+
+
+callbacks:
+  BEFORE_LOAD_CBS: []
+  
+  PAGE_ACTIONS_CBS:
+    - file: "/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/probe-contenteditable-callbacks.js"
+      function_name: "probeContentEditableCb"
+
+  AFTER_LOAD_CBS: []
+
+  POST_VISIT_CBS: []
+
+others:
+  CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"
+  COLLECT_DOM_LOOKUP_HINTS: "[extractDOMCLookupsCb] Start." # or ''
+  EDITABLE_SITEMAP_SAVE_PATH: 
