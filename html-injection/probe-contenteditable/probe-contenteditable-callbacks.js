@@ -28,9 +28,12 @@ async function probeContentEditableCb(visitor, page){
   
   // Filter out the contenteditable attributes that are not "true"
   contentEditablesAll = contentEditablesAll.filter(
-      (el) => el.attributes.contenteditable !== "false");
+      (el) => el.attributes.contenteditable !== "false" &&
+              el.attributes.contenteditable !== "plaintext-only");
   
   // TODO: Also filter out the elements whose tagName is input or textarea
+  contentEditablesAll = contentEditablesAll.filter(
+      (el) => el.tag !== "INPUT" && el.tag !== "TEXTAREA");
 
   // If there are contenteditable elements
   if (contentEditablesAll.length > 0) {
