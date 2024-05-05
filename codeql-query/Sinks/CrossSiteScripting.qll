@@ -30,6 +30,10 @@ class CrossSiteScriptingSink extends DataFlow::Node {
     }
 }
 
+
+// TODO: Check & Add the following pattern to the XSS sink
+// $('<div>').append('TAINT');
+
 /**
  * Description:
  * 

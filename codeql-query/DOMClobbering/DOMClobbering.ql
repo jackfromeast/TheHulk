@@ -1,5 +1,5 @@
 /**
- * @name DOM-Clobbering-G-1
+ * @name DOM-Clobbering
  * @description Finding potential DOM clobbering vulnerabilities with the following pattern:
  *              var s= document.createElement(‘script’);
                 s.src = window.BOOMR.url || DEFAULT_BOOMR_SRC;
@@ -78,7 +78,8 @@ class DebuggingConfig extends TaintTracking::Configuration {
   
       // Extended here to include the SocketWriteSink
       override predicate isSink(DataFlow::Node sink) { 
-        sink instanceof ClientSideSinks
+        // sink instanceof ClientSideSinks
+        sink instanceof CrossSiteScriptingSink
       }
   
       override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
