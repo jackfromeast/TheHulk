@@ -1,6 +1,8 @@
 tmp/*
 !tmp/.gitkeep
 
+__pycache__/
+
 ## Ignore all node_modules directories
 node_modules/
 
@@ -11,4 +13,17 @@ output/
 # !output/some-directory/
 
 codeql-query/website-specific
-!codeql-query/website-specific/.gitkeep
+!codeql-query/WebsiteSpecific/.gitkeep
+
+
+# Ignore all the .DS_Store files
+.DS_Store
+
+# Ignore all the .vscode files
+.vscode/
+
+# Ignore all the .idea files
+.idea/
+
+proxy-server/cache/
+!proxy-server/cache/.gitkeep
