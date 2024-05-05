@@ -8,6 +8,7 @@ chrome:
     '--disable-gpu'
   ]
   HEADLESS: false
+  DEVTOOLS: true
 
 collector:
   # Collectors configuration

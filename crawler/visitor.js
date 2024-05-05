@@ -618,8 +618,8 @@ Visitor.prototype.updateLogger = function(){
 Visitor.prototype.launch_puppeteer = async function(){
 	var browser = await puppeteer.launch({
 		executablePath: this.chromeExecutablePath,
-		headless: false,
-		devtools: true,
+		headless: this.config.chrome.HEADLESS,
+		devtools: this.config.chrome.DEVTOOLS,
 		args: this.chromeFlags,
 		'ignoreHTTPSErrors': true,
 	});
