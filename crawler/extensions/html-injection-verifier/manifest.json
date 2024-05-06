@@ -1,16 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "html injection",
+  "name": "THEHULK - HTML Injection",
   "version": "1.0",
   "action": {
-    "default_popup": "textbox.html"
+    "default_popup": "textbox.html",
+    "default_icon": "assets/hulk-logo-32.png"
   },
   "background": {
     "service_worker": "service-worker.js"
   },
   "content_scripts": [{
       "matches": ["<all_urls>"],
-      "js": ["inject.js"],
+      "js": ["inject.js", "count-contenteditable.js"],
       "run_at": "document_start"
   }]
 }
