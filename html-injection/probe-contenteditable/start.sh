@@ -1,0 +1,1 @@
+cd /home/jackfromeast/Desktop/TheHulk/crawler && node scheduler.js --scheduler-config /home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/config.scheduler.yml --crawler-config /home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/config.crawler.yml
