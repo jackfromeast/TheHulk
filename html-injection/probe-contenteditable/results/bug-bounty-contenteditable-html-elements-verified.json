@@ -1,0 +1,541 @@
+[
+    {
+        "id": 1,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/@thepurpshop/live",
+        "hash": "cd063314c1",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 2,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/@mryangaming/live",
+        "hash": "f3bd8a01d3",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 3,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/@kimberlystylist/live",
+        "hash": "b61cd1d596",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 4,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/@wjq6baodanqifei/live",
+        "hash": "98f6248dec",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 5,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/@imsundry/live",
+        "hash": "0704d60bc1",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 6,
+        "domain": "help.coinhako.com",
+        "url": "https://help.coinhako.com/portal/en/newticket?departmentId=668860000000006907&layoutId=668860000000074011#layoutContainer",
+        "hash": "0d4cb309f9",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 7,
+        "domain": "help.coinhako.com",
+        "url": "https://help.coinhako.com/portal/en/newticket?departmentId=668860000000006907&layoutId=668860000000074011#headerContainer",
+        "hash": "bd2425f237",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 8,
+        "domain": "help.coinhako.com",
+        "url": "https://help.coinhako.com",
+        "hash": "81b00cf8ec",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 9,
+        "domain": "help.coinhako.com",
+        "url": "https://help.coinhako.com/portal/en/newticket?departmentId=668860000000006907&layoutId=668860000000074011#footer",
+        "hash": "2c9b0275fd",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 10,
+        "domain": "help.coinhako.com",
+        "url": "https://help.coinhako.com/portal/en/newticket?departmentId=668860000000006907",
+        "hash": "f76e651103",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 11,
+        "domain": "help.coinhako.com",
+        "url": "https://help.coinhako.com/portal/en/newticket",
+        "hash": "bcf2680ce5",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 12,
+        "domain": "community.etsy.com",
+        "url": "https://community.etsy.com/t5/forums/postpage/category-id/forums/choose-node/true",
+        "hash": "741311d934",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 13,
+        "domain": "community.etsy.com",
+        "url": "https://community.etsy.com/t5/forums/postpage/choose-node/true",
+        "hash": "a48e64f007",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 14,
+        "domain": "community.etsy.com",
+        "url": "https://community.etsy.com/t5/forums/postpage/board-id/bugs",
+        "hash": "39706c83e2",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 15,
+        "domain": "www.myconnect.com.au",
+        "url": "https://www.myconnect.com.au/post/moving-house-guide",
+        "hash": "255756c8b6",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 16,
+        "domain": "community.databricks.com",
+        "url": "https://community.databricks.com/t5/forums/postpage/choose-node/true/interaction-style/forum/override-styles/true",
+        "hash": "f52a3c796c",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 17,
+        "domain": "community.databricks.com",
+        "url": "https://community.databricks.com/t5/forums/postpage/category-id/databricks-learning-discussion/choose-node/true",
+        "hash": "40f8f51aa2",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 18,
+        "domain": "community.databricks.com",
+        "url": "https://community.databricks.com/t5/forums/postpage/board-id/databricks-certification-discussion",
+        "hash": "9a61978e95",
+        "contentEditableVerifiedNum": 1,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": false
+        }
+    },
+    {
+        "id": 19,
+        "domain": "soporte.nvio.mx",
+        "url": "https://soporte.nvio.mx/support/tickets/new#",
+        "hash": "ba8af06b06",
+        "contentEditableVerifiedNum": 5,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 20,
+        "domain": "soporte.nvio.mx",
+        "url": "https://soporte.nvio.mx/support/tickets/new",
+        "hash": "83b74ba01c",
+        "contentEditableVerifiedNum": 5,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 21,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/",
+        "hash": "6030122f74",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 22,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs",
+        "hash": "ac4e7defb1",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 23,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/departments",
+        "hash": "76eb4483de",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 24,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/cookie-policy",
+        "hash": "70f4c18dcd",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 25,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/posts",
+        "hash": "c1cf454571",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 26,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/pages/our-values",
+        "hash": "168a0faaa2",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 27,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/pages/our-leadership-principles",
+        "hash": "cb4f1f36c4",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 28,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/people",
+        "hash": "772a66c306",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 29,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations",
+        "hash": "9827c2e3e6",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 30,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/#jobs",
+        "hash": "f57c8b661c",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 31,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/departments/research-development",
+        "hash": "9acc463e6f",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 32,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/departments/business-operations",
+        "hash": "b7bea97190",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 33,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4458057-driver-with-mechanical-experience",
+        "hash": "50b72f7e93",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 34,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/en-GB/pages/our-values",
+        "hash": "543fd95797",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 35,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4457895-mechanicker-mechanic-m-f-d",
+        "hash": "0e8cfc9918",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 36,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4457890-senior-operations-manager",
+        "hash": "2903f21f7e",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 37,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4456951-fahrer-driver-m-f-d",
+        "hash": "2308fe2b48",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 38,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4443521-working-student-werkstudent-warehouse-operative-m-f-d-uefa-bochum",
+        "hash": "3c8b479aa8",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 39,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4437901-fahrer-driver-quereinsteiger-m-w-d",
+        "hash": "57bed9f4a0",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 40,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4437732-mechaniker-mechanic-m-f-d",
+        "hash": "4593badd9f",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 41,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4437720-werkstudent-warehouse-operative-m-f-d-uefa-stuttgart",
+        "hash": "a8e05366e9",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 42,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/jobs/4437312-werkstudent-warehouse-operative-m-f-d-uefa-monheim",
+        "hash": "9c873c683b",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 43,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/data-privacy",
+        "hash": "7282902fc2",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 44,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations/munich",
+        "hash": "418a77eaa9",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 45,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations/frankfurt",
+        "hash": "a217474953",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 46,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations/london-warehouse",
+        "hash": "626e4fe7e5",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 47,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations/brussels",
+        "hash": "67edf9fc6f",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 48,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations/seville",
+        "hash": "5f86e0ad2b",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    },
+    {
+        "id": 49,
+        "domain": "careers.voi.com",
+        "url": "https://careers.voi.com/locations/malaga",
+        "hash": "e0f3cb7c9b",
+        "contentEditableVerifiedNum": 2,
+        "clobberable": {
+            "topWindow": false,
+            "topDocument": true
+        }
+    }
+]
