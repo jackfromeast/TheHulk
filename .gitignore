@@ -12,7 +12,7 @@ output/
 ## For any directory under output that should not be ignored, add a ! before the directory name
 # !output/some-directory/
 
-codeql-query/website-specific
+codeql-query/websiteSpecific
 codeql-query/WebsiteSpecific-Undef
 !codeql-query/WebsiteSpecific/.gitkeep
 !codeql-query/WebsiteSpecific-Undef/.gitkeep
