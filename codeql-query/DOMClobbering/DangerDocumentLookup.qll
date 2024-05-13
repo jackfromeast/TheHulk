@@ -79,7 +79,8 @@ predicate isDangerousDOMBuiltinProperty(string propNames) {
     "scripts",
     "currentScript",
     "open",
-    "queryCommandValue"
+    "queryCommandValue",
+    "defaultView"
   ]
 }
 

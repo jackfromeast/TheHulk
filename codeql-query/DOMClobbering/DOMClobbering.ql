@@ -78,8 +78,8 @@ class DebuggingConfig extends TaintTracking::Configuration {
   
       // Extended here to include the SocketWriteSink
       override predicate isSink(DataFlow::Node sink) { 
-        // sink instanceof ClientSideSinks
-        sink instanceof CrossSiteScriptingSink
+        sink instanceof ClientSideSinks
+        // sink instanceof CrossSiteScriptingSink
       }
   
       override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
