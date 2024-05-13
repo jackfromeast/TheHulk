@@ -1,5 +1,4 @@
-const { fstat } = require("fs");
-const { listeners } = require("process");
+const fs = require("fs");
 
 // This file is an example of a user-defined callback module.
 module.exports = {
@@ -13,7 +12,7 @@ module.exports = {
  * @param {*} visitor 
  * @param {*} page 
  */
-async function extractDOMCLookupsCb(visitor, page){
+async function extractDOMCLookupsCb(visitor){
     let startLine = visitor.config.others.COLLECT_DOM_LOOKUP_HINTS
     let lookups = await extractDOMCLookups(visitor.collected.curURLHash.consoleLogs, startLine);
     visitor.collected.curURLHash.DOMCLookups = lookups;
@@ -69,9 +68,8 @@ async function extractDOMCLookups(logs, startLine='') {
   const regex_api_type_3 = /\[.*?\] SafeLookup: (<(WIN|API|DOC)-TYPE-\d+>)(?: <(.*?)>)? Catched (.*?), (?:Location:)?\s?(.*?):(\d+):(\d+)/;
 
   logs.forEach(line => {
-      
+    
     if (!startProcessLogs && line.includes(startLine)) {
-      // console.log("Processed [CRAWLER] Page loaded successfully!");
       startProcessLogs = true;
     }
 
@@ -123,3 +121,11 @@ async function extractDOMCLookups(logs, startLine='') {
 // let lookups = extractDOMCLookups(raw_stdout);
 // console.log(lookups);
 
+
+
+// let rawLog = JSON.parse(fs.readFileSync("/home/jackfromeast/Desktop/TheHulk/output/jupyter-widgets-05-05-22-25/ipywidgets.readthedocs.io/db1b70993e/crawler/console-logs.json", { encoding: 'utf8', flag: 'r' }));
+// let startLine = "[extractDOMCLookupsCb] Start.";
+
+// extractDOMCLookups(rawLog, startLine).then((lookups) => {
+//     console.log(lookups);
+// });

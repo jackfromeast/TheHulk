@@ -8,6 +8,7 @@ const elapsed = require("elapsed-time-logger");
 const utils = require('./utils.js');
 const Logger = require('./logger');
 const path = require('path');
+const { warn } = require('console');
 
 /**
  * 
@@ -195,8 +196,9 @@ Visitor.prototype.visitPage = async function(){
 		if (this.config.collector.COLLECT_COOKIES){ this.collectCookie(page);}
 
 		// Run the after callbacks to collect more data
+		// E.g. collect the domc lookups
 		for (let cb of this.afterLoadCbs){
-			await cb(this, page);
+			await cb(this);
 		}
 
 		/*
@@ -219,7 +221,10 @@ Visitor.prototype.visitPage = async function(){
 			this.logger.error('DomainNameError: ERR_NAME_NOT_RESOLVED for URL: ' + this.curURL);
 		}else if (e.message.includes('ERR_HTTP2_PROTOCOL_ERROR')){
 			this.logger.error('HTTP2ProtocolError: ERR_HTTP2_PROTOCOL_ERROR for URL: ' + this.curURL);
-		}else{
+		}else if (e.message.includes('ERR_CONNECTION_CLOSED')){
+			// PASS
+		}
+		else{
 			this.logger.error(e);
 		}
 		// utils.logError(e, this.basedir);
@@ -588,6 +593,10 @@ Visitor.prototype.saveCrawlerData = async function(){
 			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "domc-lookups.json"), JSON.stringify(this.collected.curURLHash.DOMCLookups, null, 4));
 		}
 
+		if (this.config.collector.EXTRACT_UNDEF_LOOKUPS && this.collected.curURLHash.undefinedLookups){
+			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "undefined-lookups.json"), JSON.stringify(this.collected.curURLHash.undefinedLookups, null, 4));
+		}
+
 		if (this.config.collector.COLLECT_ERRORS){
 			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "crawler-errors.json"), JSON.stringify(this.collected.curURLHash.crawlerErrors, null, 4));
 		}
@@ -623,6 +632,11 @@ Visitor.prototype.launch_puppeteer = async function(){
 		args: this.chromeFlags,
 		'ignoreHTTPSErrors': true,
 	});
+
+
+	browser.on('disconnected', async () => {
+		this.logger.warn('Browser disconnected.');
+	})
 
 	// var browser = await puppeteer.launch({
 	// 	executablePath: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.blocker/chrome",
