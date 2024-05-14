@@ -1,6 +1,6 @@
 # LLM-Crawler
 
-This folder contains the crawler that automated by AI (LLM and CV). That said, the crawling workflow (e.g. which and how to elements to interact) is determined by AI models at runtime using the underlying wrapped browser driver interfaces, by given overall task goal. 
+This folder contains the crawler that automated by AI (LLM and CV). That said, the crawling workflow (e.g. which and how to interact with elements) is determined by AI models at runtime using the underlying wrapped browser driver interfaces, by given the overall task goal. 
 
 The LLM-Crawler aims to address challenges that are difficult for traditional crawlers, including:
 
