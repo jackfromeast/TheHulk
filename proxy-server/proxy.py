@@ -57,9 +57,30 @@ class JalangiResponseHandler:
         return headers[key].lower()
     return None
 
+  def safe_get_response_text(self, flow):
+    """
+    Description:
+    --------------------------------
+    This function is used to get the text from the response. If the response is binary, it will return None.
+    
+    Sometimes the content has text/html type but actually is binary,
+    And when trying to get the text from the response, it will raise an exception for mitmproxy.
+    E.g. https://optimizationguide-pa.googleapis.com/downloads?name=1714403013&target=OPTIMIZATION_TARGET_NOTIFICATION_PERMISSION_PREDICTIONS
+    """
+    try:
+      return flow.response.text
+    except Exception as e:
+      logger.warning("Failed to get text from the response (might be binary): %s", flow.request.url)
+      return None
+
   @concurrent
   async def response(self, flow: http.HTTPFlow) -> None:
+    """
+    Description:
+    --------------------------------
+    This function is used to intercept the response from the server and instrument the javascript code using jalangi2.
 
+    """
     if self.instrument_config['IGNORE_ENABLE'] == 'all':
       return
     elif self.instrument_config['IGNORE_ENABLE'] == 'true':
@@ -75,32 +96,38 @@ class JalangiResponseHandler:
         return
 
       content_type = self.get_header_field(flow.response.headers, "content-type")
-      # csp_key = self.get_header_field(flow.response.headers, "content-security-policy")
-      
       short_url = len(flow.request.url) > 128 and flow.request.url[:128] + '...' or flow.request.url
       
       if content_type:
         if content_type.find('javascript') >= 0:
-          logger.info("Response intercepted: %s", short_url)
+          logger.info("Response intercepted {JS}: %s", short_url)
+          
+          response_text = self.safe_get_response_text(flow)
+          if response_text is None:
+            return
+
           if self.cache_config['CACHE_ENABLE']:
-            self.cache.save_cache_file(flow.request.url, flow.response.text, 'js', 'raw')
-          flow.response.text = self.instrumentor.instrument(flow.request.url, flow.response.text, 'js')
+            self.cache.save_cache_file(flow.request.url, response_text, 'js', 'raw')
+          flow.response.text = self.instrumentor.instrument(flow.request.url, response_text, 'js')
 
         if content_type.find('html') >= 0:
-          logger.info("Response intercepted: %s", short_url)
+          logger.info("Response intercepted {HTML}: %s", short_url)
+          
+          response_text = self.safe_get_response_text(flow)
+          if response_text is None:
+            return
+
           if self.cache_config['CACHE_ENABLE']:
-            self.cache.save_cache_file(flow.request.url, flow.response.text, 'html', 'raw')
-          flow.response.text = self.instrumentor.instrument(flow.request.url, flow.response.text, 'html')
-      
-      # Moved this part to the browser by setting CSP bypass
-      # Disable the content security policy since it may prevent jalangi from executing
-      # if csp_key:
-      #   flow.response.headers.pop(csp_key, None)
+            self.cache.save_cache_file(flow.request.url, response_text, 'html', 'raw')
+          flow.response.text = self.instrumentor.instrument(flow.request.url, response_text, 'html')
 
     except Exception as e:
-      logger.error("Exception raised when handling %s", short_url)
-      return
-      # raise e
+      logger.error("Exception raised when handling %s", flow.request.url)
+      
+      # return
+      raise e
+
+      
 
 
 addons = [

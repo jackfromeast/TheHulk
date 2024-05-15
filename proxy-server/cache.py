@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 import shutil
 import hashlib
 from utils import load_config, resolve_url_to_path, hash_path, valid_file_path
@@ -53,8 +54,13 @@ class Cache:
 
   def save_per_site_cache_map(self, domain, data):
     save_path = os.path.join(self.cache_dir, domain, 'site_cache_map.json')
+    
+    ## json.dump is not thread safe
+    ## self.cache_map[domain] may be updated by other threads during json.dump
+    ## so we need to make a deep copy of the data
+    data_copy = copy.deepcopy(data)
     with open(save_path, 'w') as file:
-      json.dump(data, file, indent=4)
+      json.dump(data_copy, file, indent=4)
   
   def update_cache_map(self, domain, weak_url_hash, url, status, save_path, content_hash):
     if domain not in self.cache_map:
@@ -73,19 +79,19 @@ class Cache:
     # logging.info(f"Cache map updated: {self.cache_map[domain]}") 
     self.save_per_site_cache_map(domain, self.cache_map[domain])
 
-  """
-  Description:
-  --------------------------------
-  This function is used to save the cache file in the cache directory.
-
-  Parameters:
-  --------------------------------
-  @url: The URL of the resource
-  @content: The content of the resource
-  @filetype: The type of the resource (e.g. js, css, html)
-  @status: The status of the resource (e.g. raw, instrumented)
-  """
   def save_cache_file(self, url, content, filetype, status):
+    """
+    Description:
+    --------------------------------
+    This function is used to save the cache file in the cache directory.
+
+    Parameters:
+    --------------------------------
+    @url: The URL of the resource
+    @content: The content of the resource
+    @filetype: The type of the resource (e.g. js, css, html)
+    @status: The status of the resource (e.g. raw, instrumented)
+    """
     relative_path = resolve_url_to_path(url, filetype, content)['path']
     domain = relative_path.split('/')[0]
     weak_url_hash = hashlib.md5(relative_path.encode()).hexdigest()
