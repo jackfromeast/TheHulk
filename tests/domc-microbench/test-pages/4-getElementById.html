@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Clobbering Micro Benchmarks</title>
+  <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>DOM Clobbering Websites - Micro Benchmarks - 4</h1>
+
+<section>
+  <p>
+      <span class="label">Description:</span>
+      Explore how DOM properties can be manipulated for benchmark testing in browser environments.
+  </p>
+</section>
+
+<section class="section">
+  <div class="column_double">
+      <p><span class="label">Source:</span><br><br>
+          <span class="indent">Type: API-TYPE-1</span><br><br>
+          <span class="indent">Code:</span>
+          <pre class="indent">document.getElementById('source').src</pre>
+      </p>
+  </div>
+  <div class="column_double">
+      <p><span class="label">Sink:</span><br><br>
+          <span class="indent">Type: XSS</span><br><br>
+          <span class="indent">Code:</span>
+          <pre class="indent">document.createElement('script').src</pre>
+      </p>
+  </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+* @Name: getElementById.js
+ * @SourceType: API-TYPE-1
+ * @SourceCode: document.getElementById('source').src
+ * @SinkType: XSS
+ * @SinkCode: document.createElement('script').src
+ */
+
+
+// Create the necessary HTML element
+let imgSource = document.createElement('img');
+imgSource.id = 'source';
+imgSource.src = 'https://example.com/image.jpg';
+imgSource.style.display = 'none';
+document.body.appendChild(imgSource);
+
+// JavaScript to create and append the img element
+let scriptEle = document.createElement('script');
+let baseURL = document.getElementById('source').src;
+scriptEle.src = baseURL;
+document.body.appendChild(scriptEle);
+</pre>
+</div>
+</section>
+
+<section>
+  <h2>Other Tests</h2>
+  <ul>
+    <li><a href="1-currentScript.html">Test 1: currentScript.js</a></li>
+<li><a href="2-embeds.html">Test 2: embeds.js</a></li>
+<li><a href="3-forms.html">Test 3: forms.js</a></li>
+  </ul>
+</section>
+
+<script src="scripts/getElementById.js"></script>
+
+</body>
+</html>

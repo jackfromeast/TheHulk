@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Clobbering Micro Benchmarks</title>
+  <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>DOM Clobbering Websites - Micro Benchmarks - 10</h1>
+
+<section>
+  <p>
+      <span class="label">Description:</span>
+      Explore how DOM properties can be manipulated for benchmark testing in browser environments.
+  </p>
+</section>
+
+<section class="section">
+  <div class="column_double">
+      <p><span class="label">Source:</span><br><br>
+          <span class="indent">Type: DOC-TYPE-2</span><br><br>
+          <span class="indent">Code:</span>
+          <pre class="indent">document.scripts[0].src</pre>
+      </p>
+  </div>
+  <div class="column_double">
+      <p><span class="label">Sink:</span><br><br>
+          <span class="indent">Type: XSS</span><br><br>
+          <span class="indent">Code:</span>
+          <pre class="indent">document.createElement('script').src</pre>
+      </p>
+  </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+* @Name: scripts.js
+ * @SourceType: DOC-TYPE-2
+ * @SourceCode: document.scripts[0].src
+ * @SinkType: XSS
+ * @SinkCode: document.createElement('script').src
+ */
+
+// JavaScript to create and append the video element
+let scriptEle = document.createElement('script');
+let src = document.scripts[0].src;
+scriptEle.src = src;
+document.body.appendChild(scriptEle);
+</pre>
+</div>
+</section>
+
+<section>
+  <h2>Other Tests</h2>
+  <ul>
+    <li><a href="1-currentScript.html">Test 1: currentScript.js</a></li>
+<li><a href="2-embeds.html">Test 2: embeds.js</a></li>
+<li><a href="3-forms.html">Test 3: forms.js</a></li>
+<li><a href="4-getElementById.html">Test 4: getElementById.js</a></li>
+<li><a href="5-getElementByTagName-value.html">Test 5: getElementByTagName-value.js</a></li>
+<li><a href="6-getElementsByTagName-src.html">Test 6: getElementByTagName-src.js</a></li>
+<li><a href="7-images.html">Test 7: images.js</a></li>
+<li><a href="8-links.html">Test 8: links.js</a></li>
+<li><a href="9-querySelector.html">Test 9: querySelector.js</a></li>
+  </ul>
+</section>
+
+<script src="scripts/scripts.js"></script>
+
+</body>
+</html>

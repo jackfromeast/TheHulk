@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Clobbering Micro Benchmarks</title>
+  <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>DOM Clobbering Websites - Micro Benchmarks - 6</h1>
+
+<section>
+  <p>
+      <span class="label">Description:</span>
+      Explore how DOM properties can be manipulated for benchmark testing in browser environments.
+  </p>
+</section>
+
+<section class="section">
+  <div class="column_double">
+      <p><span class="label">Source:</span><br><br>
+          <span class="indent">Type: API-TYPE-1</span><br><br>
+          <span class="indent">Code:</span>
+          <pre class="indent">document.getElementsByTagName('iframe')[0].src</pre>
+      </p>
+  </div>
+  <div class="column_double">
+      <p><span class="label">Sink:</span><br><br>
+          <span class="indent">Type: XSS</span><br><br>
+          <span class="indent">Code:</span>
+          <pre class="indent">document.createElement('script').src</pre>
+      </p>
+  </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+* @Name: getElementByTagName-src.js
+ * @SourceType: API-TYPE-1
+ * @SourceCode: document.getElementsByTagName('iframe')[0].src
+ * @SinkType: XSS
+ * @SinkCode: document.createElement('script').src
+ */
+
+// Create the necessary HTML element
+let iframeSource = document.createElement('iframe');
+iframeSource.src = 'https://example.com';
+iframeSource.style.display = 'none';
+document.body.appendChild(iframeSource);
+
+// JavaScript to create and append the source element
+let source = document.createElement('source');
+let src = document.getElementsByTagName('iframe')[0].src;
+source.src = src;
+document.body.appendChild(source);
+</pre>
+</div>
+</section>
+
+<section>
+  <h2>Other Tests</h2>
+  <ul>
+    <li><a href="1-currentScript.html">Test 1: currentScript.js</a></li>
+<li><a href="2-embeds.html">Test 2: embeds.js</a></li>
+<li><a href="3-forms.html">Test 3: forms.js</a></li>
+<li><a href="4-getElementById.html">Test 4: getElementById.js</a></li>
+<li><a href="5-getElementByTagName-value.html">Test 5: getElementByTagName-value.js</a></li>
+  </ul>
+</section>
+
+<script src="scripts/getElementsByTagName-src.js"></script>
+
+</body>
+</html>
