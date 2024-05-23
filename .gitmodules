@@ -7,3 +7,6 @@
 [submodule "jalangi2"]
 	path = jalangi2
 	url = https://github.com/Samsung/jalangi2.git
+[submodule "skyvern"]
+	path = skyvern
+	url = git@github.com:ishmeals/skyvern.git
