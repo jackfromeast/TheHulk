@@ -8,5 +8,8 @@
 	path = jalangi2
 	url = https://github.com/Samsung/jalangi2.git
 [submodule "skyvern"]
-	path = skyvern
-	url = git@github.com:ishmeals/skyvern.git
+	path = crawler-llm/skyvern
+	url = https://github.com/ishmeals/skyvern.git
+[submodule "llm-crawler/skyvern"]
+	path = llm-crawler/skyvern
+	url = https://github.com/ishmeals/skyvern.git
