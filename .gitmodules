@@ -7,9 +7,6 @@
 [submodule "jalangi2"]
 	path = jalangi2
 	url = https://github.com/Samsung/jalangi2.git
-[submodule "skyvern"]
+[submodule "crawler-llm/skyvern"]
 	path = crawler-llm/skyvern
-	url = https://github.com/ishmeals/skyvern.git
-[submodule "llm-crawler/skyvern"]
-	path = llm-crawler/skyvern
 	url = https://github.com/ishmeals/skyvern.git
