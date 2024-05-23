@@ -6,7 +6,7 @@
 	url = https://github.com/jackfromeast/jaw-v3-thething.git
 [submodule "jalangi2"]
 	path = jalangi2
-	url = https://github.com/Samsung/jalangi2.git
+	url = https://github.com/jackfromeast/jalangi2.git
 [submodule "crawler-llm/skyvern"]
 	path = crawler-llm/skyvern
 	url = https://github.com/ishmeals/skyvern.git
