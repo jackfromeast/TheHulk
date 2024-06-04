@@ -26,7 +26,8 @@ class CrossSiteScriptingSink extends DataFlow::Node {
         // 10/ SinkFromModel
         this instanceof DomBasedXss::Sink or
         this instanceof SetScriptElemSink or
-        this instanceof DynamicFunctionConstructorSink 
+        this instanceof DynamicFunctionConstructorSink or
+        this instanceof InnerHTMLSink
     }
 }
 
@@ -73,6 +74,24 @@ class DynamicFunctionConstructorSink extends DataFlow::Node {
         )
     }
 }
+
+/**
+ * Description:
+ * 
+ * This class represents dataflow nodes that attempt to assign a value to the property `innerHTML`.
+ * 
+ * E.g.
+ * element.innerHTML = p;
+ */
+class InnerHTMLSink extends DataFlow::Node {
+    InnerHTMLSink() {
+        exists(DataFlow::PropWrite propertyWrite |
+            propertyWrite.getPropertyName() = "innerHTML" and
+            this = propertyWrite.getRhs()
+        )
+    }
+}
+
 
 /**
  * Description:

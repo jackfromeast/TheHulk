@@ -1,8 +1,8 @@
 /**
  * @name DOM-Clobbering
  * @description Finding potential DOM clobbering vulnerabilities with the following pattern:
- *              var s= document.createElement(‘script’);
-                s.src = window.BOOMR.url || DEFAULT_BOOMR_SRC;
+    var s= document.createElement(‘script’);
+    s.src = window.BOOMR.url || DEFAULT_BOOMR_SRC;
  * @kind path-problem
  * @problem.severity warning
  * @security-severity 6.1
@@ -69,7 +69,7 @@ predicate propReadAsTaintStep(DataFlow::Node pred, DataFlow::Node succ){
 class DebuggingConfig extends TaintTracking::Configuration {
     // Configuration baseConfig;
   
-    DebuggingConfig() { this = "DOMClobberingPatternG-1" }
+    DebuggingConfig() { this = "DOMClobberingDataflow" }
       
       override predicate isSource(DataFlow::Node source) { 
         source instanceof WindowPropLookupAsSource or
