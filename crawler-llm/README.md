@@ -12,7 +12,7 @@ Traditional crawlers struggle with logging into portals that protect critical as
 
 Identifying contenteditable HTML elements can be challenging when they are dynamically generated and require user interactions, such as those in chat boxes. The LLM-Crawler can interact with these elements in real time.
 
-3/ Find all the stored html injection
+3/ Locating all stored html injections
 
 The LLM-Crawler can navigate through websites to determine if HTML injections persist across pages, such as checking if injected HTML in emails remains visible in the 'sent' folder of an email client.
 
@@ -40,8 +40,19 @@ Gadgets finding requires comprehensive page interaction to trigger the javascrip
 + Step4. Perform submittion, render or navigation action to check whether the html injection can be stored.
 
 
-## TODO: Pipeline for finding html injection using llm-crawler 
-@Ishmeals
+## Pipeline for finding html injection using llm-crawler 
+
+1. Modular attack specification
+    - List of websites
+    - Description of vulnerable location
+    - Payload
+    - Payload success verification
+
+2. Skyvern (3 pass)
+    - Registers accounts on sites
+    - Finds vulnerable locations
+    - Tests vulnerable locations
+
 
 ## Limitaions
 
@@ -103,6 +114,9 @@ Too many interactable elements and exceed the maximum tokens, can we deploy any 
 
 We can start more docker to run it. This is fine as long as they can find the html injection vulnerability.
 
+### 5/ Captcha
+
+The crawler gets detected as a bot and is unable to solve Captchas.
 
 ## Improvements
 
