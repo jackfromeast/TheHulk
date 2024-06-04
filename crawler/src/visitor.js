@@ -1,7 +1,7 @@
 /**
  * Third-party libraries
  */
-const puppeteer = require('puppeteer');
+// const puppeteer = require('puppeteer');
 const fs = require('fs');
 const pathModule = require('path');
 const elapsed = require("elapsed-time-logger");
@@ -9,6 +9,10 @@ const utils = require('./utils.js');
 const Logger = require('./logger');
 const path = require('path');
 const { warn } = require('console');
+
+const puppeteer = require('puppeteer-extra')
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+puppeteer.use(StealthPlugin())
 
 /**
  * 
@@ -141,7 +145,7 @@ Visitor.prototype.visitPage = async function(){
 	let page = await this.browser.newPage();
 
 	// this.disableCSP(page);
-	await page.setViewport({ width: 2048, height: 1024});
+	await page.setViewport({ width: 4096, height: 2048});
 
 	try{
 		/*
@@ -214,7 +218,6 @@ Visitor.prototype.visitPage = async function(){
 	}catch(e){
 		if (e.message.includes('Navigation timeout of')){
 			this.logger.error('TimeoutError: Navigation timeout exceeded for URL: ' + this.curURL);
-			// this.collected.curURLHash.crawlerErrors.push({url: request.url, error: 'Navigation timeout exceeded.'});
 		}else if (e.message.includes('net::ERR_CONNECTION_REFUSED')){
 			this.logger.error('ConnectionRefusedError: ERR_CONNECTION_REFUSED for URL: ' + this.curURL);
 		}else if (e.message.includes('net::ERR_NAME_NOT_RESOLVED')){
@@ -222,7 +225,9 @@ Visitor.prototype.visitPage = async function(){
 		}else if (e.message.includes('ERR_HTTP2_PROTOCOL_ERROR')){
 			this.logger.error('HTTP2ProtocolError: ERR_HTTP2_PROTOCOL_ERROR for URL: ' + this.curURL);
 		}else if (e.message.includes('ERR_CONNECTION_CLOSED')){
-			// PASS
+			this.logger.warn('ERR_CONNECTION_CLOSED: for URL: ' + this.curURL);
+		}else if (e.message.includes('ERR_TUNNEL_CONNECTION_FAILED')){
+			this.logger.warn('TunnelConnectionError: ERR_TUNNEL_CONNECTION_FAILED for URL: ' + this.curURL);
 		}
 		else{
 			this.logger.error(e);
@@ -256,20 +261,16 @@ Visitor.prototype.visitPage = async function(){
  * 
  */
 Visitor.prototype.navigate = async function(page){
-	// try{
-	// 	await page.goto(this.curURL, {waitUntil: ['domcontentloaded'], timeout: 30000});
-	// }catch (e) {
-	// 	if (e.message.includes('Navigation timeout')){
-	// 		this.logger.error('TimeoutError: Navigation timeout exceeded for URL in the probe stage: ' + this.curURL);
-	// 	}
-	// 	throw e; // throw the error right away
-	// }
-
 	try {
 		// Waits till there are no more than 2 network connections for at least `500`* ms.
 		// We don't use 'networkidle0' because some pages never stop loading/interacting with the network
 		this.refreshCollectData();
-		await page.goto(this.curURL, {waitUntil: ['networkidle2'], timeout: 120000});
+		if (this.config.navigator["NAVIGATION_WAIT_UNTIL"]){
+			await page.goto(this.curURL, 
+				{waitUntil: this.config.navigator["NAVIGATION_WAIT_UNTIL"], timeout: this.config.navigator["NAVIGATION_TIMEOUT"]});
+		}else{
+			await page.goto(this.curURL, {waitUntil: ['networkidle2'], timeout: this.config.navigator["NAVIGATION_TIMEOUT"]});
+		}
 	} catch (e) {
 		if (e.message.includes('Navigation timeout')){
 			this.logger.error('Navigation timeout exceeded for URL (Not Fatal): ' + this.curURL);

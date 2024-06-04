@@ -129,6 +129,10 @@ class IdentifiedClobberableSourceWinTypeOne extends DataFlow::Node {
 
             if (i !== this.lookupsWinType1.length - 1){ outputFunction += or_operator;}
         }
+        // We should never have dangling or operator 
+        if (outputFunction.endsWith(or_operator)){
+            outputFunction = outputFunction.slice(0, -or_operator.length);
+        }
         outputFunction += suffix;
         return outputFunction;
     }
@@ -185,6 +189,10 @@ class IdentifiedClobberableSourceDocTypeOne extends DataFlow::Node {
                 this.lookupsDocType1[i].id
             );
             if (i !== this.lookupsDocType1.length - 1){ outputFunction += or_operator;}
+        }
+        // We should never have dangling or operator 
+        if (outputFunction.endsWith(or_operator)){
+            outputFunction = outputFunction.slice(0, -or_operator.length);
         }
         outputFunction += suffix;
         return outputFunction;
@@ -243,6 +251,10 @@ class IdentifiedClobberableSourceDocTypeTwo extends DataFlow::Node {
                 this.lookupsDocType2[i].id
             );
             if (i !== this.lookupsDocType2.length - 1) {outputFunction += or_operator;}
+        }
+        // We should never have dangling or operator 
+        if (outputFunction.endsWith(or_operator)){
+            outputFunction = outputFunction.slice(0, -or_operator.length);
         }
         outputFunction += suffix;
         return outputFunction;
@@ -303,6 +315,12 @@ class IdentifiedClobberableSourceDOMAPI extends DataFlow::Node {
             );
             if (i !== this.lookupsApiType.length - 1) {outputFunction += or_operator;}
         }
+
+        // We should never have dangling or operator 
+        if (outputFunction.endsWith(or_operator)){
+            outputFunction = outputFunction.slice(0, -or_operator.length);
+        }
+
         outputFunction += suffix;
         return outputFunction;    
     }

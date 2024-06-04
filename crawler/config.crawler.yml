@@ -3,18 +3,19 @@ chrome:
   CHROME_FLAGS: [
     "--enable-blink-features=RecordDOMClobberingSitesAny,RecordDOMAccessAPIAny",
     "-js-flags=--trace-document-lookup",
+    "--disable-blink-features=AutomationControlled",
     "--no-sandbox",
     '--disable-setuid-sandbox',
     '--disable-gpu'
   ]
   HEADLESS: false
-  DEVTOOLS: true
+  DEVTOOLS: false
 
 collector:
   # Collectors configuration
   COLLECT_AND_CREATE_PAGE: true
-  COLLECT_CONSOLE_LOGS: true
-  COLLECT_REQUESTS: true
+  COLLECT_CONSOLE_LOGS: false
+  COLLECT_REQUESTS: false
   COLLECT_WEB_STORAGE: false
   COLLECT_COOKIES: false
   COLLECT_HTML: true
@@ -25,36 +26,43 @@ collector:
   COLLECT_XHR_REQUESTS: true
   COLLECT_FETCH_REQUESTS: true
   EXTRACT_DOM_LOOKUPS: true
-  COLLECT_ALT_URLS: true
+  COLLECT_ALT_URLS: false
 
 
 navigator:
   WAIT_BEFORE_NEXT_URL: 1000
+  # Used during page.goto(url, {waitUnitl: NAVIGATION_WAIT_UNTIL})
+  # Options:
+  # ['load', 'domcontentloaded']
+  # ['networkidle0']
+  NAVIGATION_WAIT_UNTIL: ['networkidle2']
+  NAVIGATION_TIMEOUT: 0
 
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "./callbacks/disable-csp-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/disable-csp-callbacks.js"
       function_name: "disableCSPCb"
       
-    - file: "./callbacks/forbid-url-loading-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/forbid-url-loading-callbacks.js"
       function_name: "forbidURLNavigationCb"
   
   PAGE_ACTIONS_CBS:
-    - file: "./callbacks/manually-actions-callbacks.js"
-      function_name: "manuallyInteractCb"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/wait-forever-callbacks.js"
+      function_name: "manuallyInteractForeverCb"
 
-  AFTER_LOAD_CBS:
-    - file: "./callbacks/extract-clobberable-callbacks.js"
-      function_name: "extractDOMCLookupsCb"
+  AFTER_LOAD_CBS: []
 
   POST_VISIT_CBS:
-    - file: "./callbacks/compile-ql-query-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
+      function_name: "extractDOMCLookupsCb"
+      
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/compile-ql-query-callbacks.js"
       function_name: "compileQLQueryCb"
     
-    - file: "./callbacks/create-ql-db-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/create-ql-db-callbacks.js"
       function_name: "createCodeQLDatabaseCb"
 
 others:
   CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"
-  COLLECT_DOM_LOOKUP_HINTS: "[extractDOMCLookupsCb] Start." # or ''
+  COLLECT_DOM_LOOKUP_HINTS: "Collect Start." # or ''

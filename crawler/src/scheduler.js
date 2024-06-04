@@ -6,7 +6,7 @@
  * Usage:
  * --------------------------------
  * 
- * node scheduler.js --scheduler-config ./config.scheduler.yml --crawler-config ./config.crawler.yml
+ * node scheduler.js --scheduler-config ../config.scheduler.yml --crawler-config ../config.crawler.yml
  * 
  */
 const yaml = require('js-yaml');

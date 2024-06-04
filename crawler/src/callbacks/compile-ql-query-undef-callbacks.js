@@ -115,6 +115,12 @@ class IdentifiedClobberableSourceUndefTypeOne extends DataFlow::Node {
 
             if (i !== this.lookupsUndefType1.length - 1){ outputFunction += or_operator;}
         }
+        
+        // We should never have dangling or operator 
+        if (outputFunction.endsWith(or_operator)){
+            outputFunction = outputFunction.slice(0, -or_operator.length);
+        }
+
         outputFunction += suffix;
         return outputFunction;
     }

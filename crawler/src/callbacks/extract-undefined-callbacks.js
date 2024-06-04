@@ -73,13 +73,13 @@ async function extractUndefCLookups(logs, startLine = '') {
   return lookups;
 }
 
-let raw_stdout = `
-[+] SafeLookup: <Undef-TYPE-1> : pointerType, https://www.gstatic.com/og/_/js/k=og.asy.en_US.87eUZV1aBpo.2019.O/rt=j/m=_ac,_awd,ada,lldp/exm=/d=1/ed=1/rs=AA2YrTun3wmuSP_eW-729q5NbbI8Y5dI1w:48:187
-[+] SafeLookup: <Undef-TYPE-1> : pointerType, https://www.gstatic.com/og/_/js/k=og.asy.en_US.87eUZV1aBpo.2019.O/rt=j/m=_ac,_awd,ada,lldp/exm=/d=1/ed=1/rs=AA2YrTun3wmuSP_eW-729q5NbbI8Y5dI1w:48:187
-`
+// let raw_stdout = `
+// [+] SafeLookup: <Undef-TYPE-1> : pointerType, https://www.gstatic.com/og/_/js/k=og.asy.en_US.87eUZV1aBpo.2019.O/rt=j/m=_ac,_awd,ada,lldp/exm=/d=1/ed=1/rs=AA2YrTun3wmuSP_eW-729q5NbbI8Y5dI1w:48:187
+// [+] SafeLookup: <Undef-TYPE-1> : pointerType, https://www.gstatic.com/og/_/js/k=og.asy.en_US.87eUZV1aBpo.2019.O/rt=j/m=_ac,_awd,ada,lldp/exm=/d=1/ed=1/rs=AA2YrTun3wmuSP_eW-729q5NbbI8Y5dI1w:48:187
+// `
 
-let lookups = extractUndefCLookups(raw_stdout);
-console.log(lookups);
+// let lookups = extractUndefCLookups(raw_stdout);
+// console.log(lookups);
 
 
 

@@ -9,7 +9,6 @@
  * 2/ Use the customed chrome (V8) to log the DOMC function calls (window.x, document.x, etc.)
  * 3/ Process the raw output and save the results to the log file.
  * 
- *
  * Limitation:
  * --------------------------------
  * 1/ cannot dynamically trigger the events and expend the code coverage
