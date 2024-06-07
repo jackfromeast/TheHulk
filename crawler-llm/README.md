@@ -56,7 +56,9 @@ Gadgets finding requires comprehensive page interaction to trigger the javascrip
 
 ## Limitaions
 
-### 1/ Popups 
+### 1/ Limited view of interactable elements 
+
+The entire html file is not sent to the llm. Instead it sends snippets of interactable elements and also strips all attributes, only keeping the text within the element.
 
 Sometimes, it fails to reconginze the html elements as a close button for the popup, especially these elements like `<span>` which has been decorated with `onclick` event. In the current version, the skyvern will remove the `class` attributes of `<span>` element so the llm cannot tell the corrent element to interact with.
 
@@ -70,40 +72,6 @@ But, when it passed to the llm:
 
 ```
 <span id=237></span>
-```
-
-### 2/ New window tab
-
-It cannot handle the a link which shown on another window tab. This is usually because of the target=_blank  or the onclick event has been set to use window.open. We can write a script to modify all the link in the page first, for example,
-
-```
-const puppeteer = require('puppeteer');
-
-(async () => {
-    // Launch the browser
-    const browser = await puppeteer.launch({ headless: false });
-    const page = await browser.newPage();
-
-    // Navigate to the desired page
-    await page.goto('https://www.example.com');
-
-    // Modify the link's target attribute and click on it
-    await page.evaluate(() => {
-        // Find the link element (you can use a more specific selector if needed)
-        const link = document.querySelector('a[target="_blank"]');
-        if (link) {
-            // Change the target attribute to _self to stay on the same page
-            link.setAttribute('target', '_self');
-            // Click the link
-            link.click();
-        }
-    });
-
-    // Additional actions can be performed here
-
-    // Close the browser
-    // await browser.close();
-})();
 ```
 
 ### 3/ Too many interactable elements
