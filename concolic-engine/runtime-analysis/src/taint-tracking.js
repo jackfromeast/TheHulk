@@ -12,13 +12,23 @@
 import { Logger } from './utils/logger.js';
 import { Coverage }  from './coverage.js';
 import { TaintValue } from './values/wrapped-values.js';
-import { TaintRules } from './taint-rules/rules.js';
+// import { TaintRules } from './taint-propagation-rules/rules.js';
+import { TaintSourceRules } from './taint-sources.js';
+import { TaintSinkRules } from './taint-sinks.js';
+import { TaintPropOperation } from './values/taint-info.js';
 
 export class TaintTracking {
   constructor(sandbox) {
+    this.taintID = 0;
     this.sandbox = sandbox;
     this.coverage = new Coverage(sandbox);
     this.logger = new Logger('debug', 'TaintTracking');
+
+    // this.taintRules = new TaintRules();
+    this.taintSourceRules = new TaintSourceRules();
+    this.taintSinkRules = new TaintSinkRules();
+
+    this.dangerousFlows = [];
   }
 
   /**
@@ -41,7 +51,7 @@ export class TaintTracking {
    * and <tt>right</tt> are replaced with that from the returned object if an object is returned.
    */
   binaryPre (iid, op, left, right, isOpAssign, isSwitchCaseComparison, isComputed) {
-      return {op: op, left: left, right: right, skip: false};
+    return {op: op, left: left, right: right, skip: false};
   };
 
   /**
@@ -160,8 +170,15 @@ export class TaintTracking {
    * }
    * 
    * @steps
-   * 1/ Check whether a taint value is passed as an argument to the sink function
-   * 2/ Log the coverage information for the analysis.
+   * 1/ Check the taint value at the sink function call.
+   * 2/ If a taint value is passed, check whether the function is a built-in function
+   *    and has the taint propagation rules.
+   * 3/ If the function is a built-in function and has the taint propagation rules,
+   *    we update the taint information on the return value.
+   * 4/ If the function is a built-in function and has no taint propagation rules,
+   *    we concretize the taint value and apply the original function. Concretization
+   *    will be logged.
+   * 5/ Log the coverage information for the analysis.
    *
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {function} f - The function object that going to be invoked
@@ -181,6 +198,32 @@ export class TaintTracking {
    * an object is returned.
    */
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
+    let [reason, taintedArg] = this.taintSinkPolicy.checkTaintAtSinkInvokeFun(f, base, args);
+    if (reason) {
+      // TODO: move this to another function
+      console.log("[TheHulk] Found a dangerous flow from %s to %s",
+                 taintedArg.taintInfo.getTaintSourceReason(), reason);
+      this.dangerousFlows.push({
+        source: taintedArg.taintInfo.getTaintSourceReason(),
+        sourceLocation: taintedArg.taintInfo.getTaintSourceLocation(),
+        sink: reason,
+        sinkLocation: iid,
+        taintValue: taintedArg
+      });
+    }
+
+    // Check if any of the arguments are tainted
+    let taintedArgs = args.filter(arg => arg instanceof TaintValue);
+    // if (taintedArgs.length > 0) {
+      
+
+
+
+    // Check if the function is a built-in function
+    // TODO - move this to another function
+    
+
+
     return {f: f, base: base, args: args, skip: false};
   };
 
@@ -209,14 +252,8 @@ export class TaintTracking {
    * }
    * 
    * @steps
-   * 1/ If a taint value is passed, check whether the function is a built-in function
-   *    and has the taint propagation rules.
-   * 2/ If the function is a built-in function and has the taint propagation rules,
-   *    we update the taint information on the return value.
-   * 3/ If the function is a built-in function and has no taint propagation rules,
-   *    we concretize the taint value and apply the original function. Concretization
-   *    will be logged.
-   * 4/ Log the coverage information for the analysis.
+   * 1/ Taint the retrun value if the function api is a taint source.
+   * 2/ Log the coverage information for the analysis.
    * 
    *
    * @param {number} iid - Static unique instruction identifier of this callback
@@ -238,6 +275,11 @@ export class TaintTracking {
    *
    */
   invokeFun (iid, f, base, args, result, isConstructor, isMethod, functionIid, functionSid) {
+    let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
+    if (reason) {
+      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result]));
+      result = new TaintValue(result, taintInfo);
+    }
     return {result: result};
   };
 
@@ -333,7 +375,7 @@ export class TaintTracking {
    *
    */
   getFieldPre (iid, base, offset, isComputed, isOpAssign, isMethodCall) {
-      return {base: base, offset: offset, skip: false};
+    return {base: base, offset: offset, skip: false};
   };
 
 
@@ -341,7 +383,7 @@ export class TaintTracking {
    * This callback is called after a property of an object is accessed.
    * 
    * @steps
-   * 1/ Introduce the taint sources based on the base object and the accessed property.
+   * 1/ Taint sources based on the base object and the accessed property.
    * 2/ Log the coverage information for the analysis.
    *
    * @param {number} iid - Static unique instruction identifier of this callback
@@ -357,6 +399,12 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   getField (iid, base, offset, val, isComputed, isOpAssign, isMethodCall) {
+    let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
+    if (reason) {
+      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", [base, offset]));
+      val = new TaintValue(val, taintInfo);
+    }
+
     return {result: val};
   };
 
@@ -399,7 +447,22 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   putField (iid, base, offset, val, isComputed, isOpAssign) {
-      return {result: val};
+    let reason = this.taintSinkPolicy.checkTaintAtSinkPutField(base, offset, val);
+
+    if (reason) {
+      // TODO: move this to another function
+      console.log("[TheHulk] Found a dangerous flow from %s to %s",
+                  val.taintInfo.getTaintSourceReason(), reason);
+      this.dangerousFlows.push({
+        source: val.taintInfo.getTaintSourceReason(),
+        sourceLocation: val.taintInfo.getTaintSourceLocation(),
+        sink: reason,
+        sinkLocation: iid,
+        taintValue: val
+      });
+    }
+
+    return {result: val};
   };
 
 

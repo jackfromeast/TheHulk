@@ -1,0 +1,90 @@
+import {WrappedValue, _, TaintValue} from './values/wrapped-values.js'
+import {TaintInfo, TaintPropOperation} from './values/taint-info.js'
+
+/**
+ * @description
+ * --------------------------------
+ * This class defines the taint source policy
+ * The taint source listed below is *over-approximated*, 
+ * that we assume we can control the DOM elements (through DOM Clobbering & DOM APIs).
+ */
+export class TaintSourceRules {
+  /**
+   * @description
+   * --------------------------------
+   * This function will be invoked during the getField operation hook
+   * 
+   * SOURCE-TYPE-1: 
+   * - SOURCE-FROM-DOM-ELEMENT
+   * - Value flows from the DOM Elements as taint sources
+   * - E.g. image.src, script.src, iframe.src, etc.
+   * 
+   * SOURCE-TYPE-2: 
+   * - SOURCE-FROM-DOCUMENT
+   * - Value flows from the document object as taint sources
+   * - E.g. document.cookie, document.domain, document.doctype, and etc.
+   * 
+   * @param {*} base - The base object of the getField operation. (which not be a WrappedValue)
+   * @param {*} offset - The offset of the getField operation.
+   * @param {*} val - The value of the getField operation.
+   * @param {number} iid - The instruction id.
+   */
+  shouldTaintSourceAtGetField(base, offset, val, iid) {
+    // Check if the base is a DOM element
+    if (this.isDOMElement(base)) {
+      return "SOURCE-FROM-DOM-ELEMENT";
+    }
+
+    // Check if the base is the document object
+    if (this.isDocumentObject(base)) {
+      return "SOURCE-FROM-DOCUMENT";
+    }
+
+    return false;
+  }
+
+  isDOMElement(element) {
+    return element instanceof Element;
+  }
+
+  isDocumentObject(obj) {
+    return obj === document;
+  }
+
+  /**
+   * @description
+   * --------------------------------
+   * This function will be invoked during the invokeFun operation hook
+   * 
+   * SOURCE-TYPE-3:
+   * - SOURCE-FROM-BROWSER-API
+   * - Value flows from the browser APIs as taint sources
+   * - E.g. exampleAttr = div1.getAttribute("id");
+   * 
+   * @param {Function} f - The function being invoked.
+   * @param {*} base - The base object of the getField operation. (which should not be a WrappedValue)
+   * @param {Array} args - The arguments passed to the function.
+   * @param {*} result - The result of the getField operation.
+   * @param {number} iid - The instruction id.
+   */
+  shouldTaintSourceAtInvokeFun(f, base, args, result, iid) {
+    if (isBuiltInFunction(f) && 
+       (isDOMElement(base) || isDocumentObject(base))) {
+        return "SOURCE-FROM-BROWSER-API";
+    }
+
+    return false;
+  }
+
+  isDOMElement(element) {
+    return element instanceof Element;
+  }
+
+  isDocumentObject(obj) {
+    return obj === document;
+  }
+
+  isBuiltInFunction(f) {
+    return typeof f === 'function' && (f === Object.prototype.toString.call(f).indexOf('[native code]') !== -1);
+  }
+}

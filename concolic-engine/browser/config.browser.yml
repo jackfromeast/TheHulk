@@ -35,7 +35,7 @@ collector:
 
 navigator:
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "http://10.161.159.131:8000/1-currentScript.html"
+  INITIAL_URL: "http://10.161.159.131:8001/1-currentScript.html"
   NAVIGATION_TIMEOUT: 0
 
 
@@ -62,5 +62,5 @@ callbacks:
 others:
   ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
   ANALYSIS_NAME: "TaintTracking"
-  ANALYSIS_SCRIPT_PATH: "http://10.161.159.131:8999/thehulk-runtime-analysis.bundle.js"
+  ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
   JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/jalangi2-runtime.js"

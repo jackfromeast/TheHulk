@@ -90,11 +90,16 @@ ConcolicValue.setSymbolic = function(val, val_s) {
  * Ideally, all the JavaScript values can be wrapped with TaintValue
  * 
  */
-class TaintValue extends WrappedValue {   
-  constructor(concrete, taintInfo, arrayType = undefined) {
+class TaintValue extends WrappedValue {
+  /**
+   * TaintValue constructor
+   * 
+   * @param {*} concrete 
+   * @param {TaintInfo} taintInfo 
+   */
+  constructor(concrete, taintInfo) {
     super(concrete);
     this.__defineProperty('taintInfo', taintInfo);
-    this.__defineProperty('_arrayType', arrayType);
   }
 
   __defineProperty(name, value){
@@ -107,7 +112,7 @@ class TaintValue extends WrappedValue {
   }
 
   toString() {
-    return "TaintValue(" + this.concrete + ", " + this.symbolic + ")";
+    return "TaintValue(" + this.concrete + ", " + this.taintInfo + ")";
   }
 
   clone() {
@@ -118,16 +123,9 @@ class TaintValue extends WrappedValue {
     return this.concrete;
   }
 
-  getSymbolic() {
-    return this.symbolic;
+  getTaintInfo() {
+    return this.taintInfo;
   }
-
-  getArrayType() {
-    return this._arrayType;
-  }
-
 }
-
-
 
 export {WrappedValue, ConcolicValue, TaintValue};
