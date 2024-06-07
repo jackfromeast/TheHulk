@@ -74,15 +74,15 @@ But, when it passed to the llm:
 <span id=237></span>
 ```
 
-### 3/ Too many interactable elements
+### 2/ Too many interactable elements
 
 Too many interactable elements and exceed the maximum tokens, can we deploy any heuristic strategy to filter out some of them first?
 
-### 4/ Too slow.
+### 3/ Too slow.
 
 We can start more docker to run it. This is fine as long as they can find the html injection vulnerability.
 
-### 5/ Captcha
+### 4/ Captcha
 
 The crawler gets detected as a bot and is unable to solve Captchas.
 
