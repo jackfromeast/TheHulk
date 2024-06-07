@@ -12,7 +12,7 @@ Traditional crawlers struggle with logging into portals that protect critical as
 
 Identifying contenteditable HTML elements can be challenging when they are dynamically generated and require user interactions, such as those in chat boxes. The LLM-Crawler can interact with these elements in real time.
 
-3/ Find all the stored html injection
+3/ Locating all stored html injections
 
 The LLM-Crawler can navigate through websites to determine if HTML injections persist across pages, such as checking if injected HTML in emails remains visible in the 'sent' folder of an email client.
 
@@ -40,12 +40,25 @@ Gadgets finding requires comprehensive page interaction to trigger the javascrip
 + Step4. Perform submittion, render or navigation action to check whether the html injection can be stored.
 
 
-## TODO: Pipeline for finding html injection using llm-crawler 
-@Ishmeals
+## Pipeline for finding html injection using llm-crawler 
+
+1. Modular attack specification
+    - List of websites
+    - Description of vulnerable location
+    - Payload
+    - Payload success verification
+
+2. Skyvern (3 pass)
+    - Registers accounts on sites
+    - Finds vulnerable locations
+    - Tests vulnerable locations
+
 
 ## Limitaions
 
-### 1/ Popups 
+### 1/ Limited view of interactable elements 
+
+The entire html file is not sent to the llm. Instead it sends snippets of interactable elements and also strips all attributes, only keeping the text within the element.
 
 Sometimes, it fails to reconginze the html elements as a close button for the popup, especially these elements like `<span>` which has been decorated with `onclick` event. In the current version, the skyvern will remove the `class` attributes of `<span>` element so the llm cannot tell the corrent element to interact with.
 
@@ -61,48 +74,21 @@ But, when it passed to the llm:
 <span id=237></span>
 ```
 
-### 2/ New window tab
-
-It cannot handle the a link which shown on another window tab. This is usually because of the target=_blank  or the onclick event has been set to use window.open. We can write a script to modify all the link in the page first, for example,
-
-```
-const puppeteer = require('puppeteer');
-
-(async () => {
-    // Launch the browser
-    const browser = await puppeteer.launch({ headless: false });
-    const page = await browser.newPage();
-
-    // Navigate to the desired page
-    await page.goto('https://www.example.com');
-
-    // Modify the link's target attribute and click on it
-    await page.evaluate(() => {
-        // Find the link element (you can use a more specific selector if needed)
-        const link = document.querySelector('a[target="_blank"]');
-        if (link) {
-            // Change the target attribute to _self to stay on the same page
-            link.setAttribute('target', '_self');
-            // Click the link
-            link.click();
-        }
-    });
-
-    // Additional actions can be performed here
-
-    // Close the browser
-    // await browser.close();
-})();
-```
-
-### 3/ Too many interactable elements
+### 2/ Too many interactable elements
 
 Too many interactable elements and exceed the maximum tokens, can we deploy any heuristic strategy to filter out some of them first?
 
+<<<<<<< HEAD
 ### 4/ Too slow
+=======
+### 3/ Too slow.
+>>>>>>> 292d4341aa087c53f6bc9fba7b2f6519be044983
 
 We can start more docker to run it. This is fine as long as they can find the html injection vulnerability.
 
+### 4/ Captcha
+
+The crawler gets detected as a bot and is unable to solve Captchas.
 
 ## Improvements
 
