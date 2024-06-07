@@ -99,7 +99,7 @@ const puppeteer = require('puppeteer');
 
 Too many interactable elements and exceed the maximum tokens, can we deploy any heuristic strategy to filter out some of them first?
 
-### 4/ Too slow.
+### 4/ Too slow
 
 We can start more docker to run it. This is fine as long as they can find the html injection vulnerability.
 
