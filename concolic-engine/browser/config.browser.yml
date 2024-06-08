@@ -48,8 +48,13 @@ callbacks:
     - file: "./callbacks/disable-csp-callbacks.js"
       function_name: "disableCSPCb"
     
-    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-analysis-scripts-callbacks.js"
-      function_name: "installAnalysisScriptsCb"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks.js"
+      function_name: "installJalangi2AndAnalysisCb"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-scripts-callbacks.js"
+    #   function_name: "installJalangi2RuntimeScriptsCb"
+    
+    # - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-analysis-scripts-callbacks.js"
+    #   function_name: "installAnalysisScriptsCb"
   
   PAGE_ACTIONS_CBS:
     - file: "./callbacks/wait-forever-callbacks.js"
@@ -63,4 +68,4 @@ others:
   ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
   ANALYSIS_NAME: "TaintTracking"
   ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
-  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/jalangi2-runtime.js"
+  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
