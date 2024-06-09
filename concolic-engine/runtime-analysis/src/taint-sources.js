@@ -7,6 +7,7 @@ import {TaintInfo, TaintPropOperation} from './values/taint-info.js'
  * This class defines the taint source policy
  * The taint source listed below is *over-approximated*, 
  * that we assume we can control the DOM elements (through DOM Clobbering & DOM APIs).
+ * 
  */
 export class TaintSourceRules {
   /**
@@ -31,24 +32,18 @@ export class TaintSourceRules {
    */
   shouldTaintSourceAtGetField(base, offset, val, iid) {
     // Check if the base is a DOM element
-    if (this.isDOMElement(base)) {
+    if (this.isDOMElement(base) && 
+        !this.isFunction(val)) {
       return "SOURCE-FROM-DOM-ELEMENT";
     }
 
     // Check if the base is the document object
-    if (this.isDocumentObject(base)) {
+    if (this.isDocumentObject(base) &&
+        !this.isFunction(val)) {
       return "SOURCE-FROM-DOCUMENT";
     }
 
     return false;
-  }
-
-  isDOMElement(element) {
-    return element instanceof Element;
-  }
-
-  isDocumentObject(obj) {
-    return obj === document;
   }
 
   /**
@@ -68,8 +63,9 @@ export class TaintSourceRules {
    * @param {number} iid - The instruction id.
    */
   shouldTaintSourceAtInvokeFun(f, base, args, result, iid) {
-    if (isBuiltInFunction(f) && 
-       (isDOMElement(base) || isDocumentObject(base))) {
+    if (this.isBuiltInFunction(f) && 
+       (this.isDOMElement(base) || this.isDocumentObject(base)) &&
+       !this.isBuiltInFunction(result)) {
         return "SOURCE-FROM-BROWSER-API";
     }
 
@@ -86,5 +82,9 @@ export class TaintSourceRules {
 
   isBuiltInFunction(f) {
     return typeof f === 'function' && (f === Object.prototype.toString.call(f).indexOf('[native code]') !== -1);
+  }
+
+  isFunction(f) {
+    return typeof f === 'function';
   }
 }

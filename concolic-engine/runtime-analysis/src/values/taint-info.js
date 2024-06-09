@@ -46,7 +46,8 @@ export class TaintInfo {
       operation: operation
     }
 
-    this.taintPropOperations = [operation];
+    this.taintPropOperations = [];
+    if (operation) this.taintPropOperations = [operation];
   }
 
   getTaintID() {
@@ -91,8 +92,12 @@ export class TaintInfo {
 export class TaintPropOperation {
   /**
    * TaintPropOperation constructor
+   * 
+   * @TODO
+   * Concrete the arguments here, like toString, etc.
+   * 
    * @param {String} operation 
-   * @param {Array<String>} argument
+   * @param {Array<*>} argument
    * @param {Number} location
    */
   constructor(operation, argument, location) {

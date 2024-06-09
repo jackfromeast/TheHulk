@@ -5,14 +5,21 @@
  * This script holds the concolic execution behaviors which will be invoked by the jalangi2 runtime.
  * This script will load and execute in the browser environment.
  * 
+ * @notes
+ * --------------------------------
+ * Ideally, the analysis class should not directly manipulate TaintValues; this should be managed by
+ * sources, sinks, and taint propagation rules. 
+ * The analysis should simply apply the appropriate rules for each operation hook.
+ * 
  * @usage 
  * --------------------------------
  */
 
 import { Logger } from './utils/logger.js';
 import { Coverage }  from './coverage.js';
-import { TaintValue } from './values/wrapped-values.js';
-// import { TaintRules } from './taint-propagation-rules/rules.js';
+import { TaintValue, WrappedValue } from './values/wrapped-values.js';
+import { TaintInfo } from './values/taint-info.js';
+import { TaintPropRules } from './rules/rules.js';
 import { TaintSourceRules } from './taint-sources.js';
 import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
@@ -24,7 +31,7 @@ export class TaintTracking {
     this.coverage = new Coverage(sandbox);
     this.logger = new Logger('debug', 'TaintTracking');
 
-    // this.taintRules = new TaintRules();
+    this.taintPropRules = new TaintPropRules();
     this.taintSourceRules = new TaintSourceRules();
     this.taintSinkRules = new TaintSinkRules();
 
@@ -35,7 +42,10 @@ export class TaintTracking {
    * This callback is called before a binary operation. Binary operations include  +, -, *, /, %, &, |, ^,
    * <<, >>, >>>, <, >, <=, >=, ==, !=, ===, !==, instanceof, delete, in.  No callback for <code>delete x</code>
    * because this operation cannot be performed reflectively.
-   *
+   *  
+   * @notes
+   * We always skip the original binary operation and let binary handle the operation.
+   * 
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {string} op - Operation to be performed
    * @param {*} left - Left operand
@@ -51,7 +61,7 @@ export class TaintTracking {
    * and <tt>right</tt> are replaced with that from the returned object if an object is returned.
    */
   binaryPre (iid, op, left, right, isOpAssign, isSwitchCaseComparison, isComputed) {
-    return {op: op, left: left, right: right, skip: false};
+    return {op: op, left: left, right: right, skip: true};
   };
 
   /**
@@ -65,7 +75,7 @@ export class TaintTracking {
    * @param {string} op - Operation to be performed
    * @param {*} left - Left operand
    * @param {*} right - Right operand
-   * @param {*} result - The result of the binary operation
+   * @param {undefined} result - Always undefined, as we skip the original binary operation
    * @param {boolean} isOpAssign - True if the binary operation is part of an expression of the form
    * <code>x op= e</code>
    * @param {boolean} isSwitchCaseComparison - True if the binary operation is part of comparing the discriminant
@@ -76,12 +86,22 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   binary (iid, op, left, right, result, isOpAssign, isSwitchCaseComparison, isComputed) {
+    let rule = this.taintPropRules.binaryRules.getRule(op);
+    if (rule) {
+      result = rule(left, right, iid);
+    } else {
+      result = this.taintPropRules.binaryRules.BinaryJumpTable[op](left, right);
+    }
+
     return {result: result};
   };
 
   /**
    * This callback is called before a unary operation. Unary operations include  +, -, ~, !, typeof, void.
-   *
+   *  
+   * @notes
+   * We always skip the original unary operation and let unary handle the operation.
+   * 
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {string} op - Operation to be performed
    * @param {*} left - Left operand
@@ -90,7 +110,7 @@ export class TaintTracking {
    * are replaced with that from the returned object if an object is returned.
    */
   unaryPre (iid, op, left) {
-      return {op: op, left: left, skip: false};
+      return {op: op, left: left, skip: true};
   };
 
   /**
@@ -104,8 +124,15 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    *
    */
-  unary (iid, op, left, result) {
-      return {result: result};
+  unary (iid, op, left, result) {    
+    let rule = this.taintPropRules.unaryRules.getRule(op);
+    if (rule) {
+      result = rule(left, iid);
+    } else {
+      result = this.taintPropRules.unaryRules.UnaryJumpTable[op](left);
+    }
+
+    return {result: result};
   };
 
 
@@ -183,7 +210,7 @@ export class TaintTracking {
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {function} f - The function object that going to be invoked
    * @param {object} base - The receiver object for the function <tt>f</tt>
-   * @param {Array} args - The array of arguments passed to <tt>f</tt>
+   * @param {Arguments} args - The array of arguments passed to <tt>f</tt>
    * @param {boolean} isConstructor - True if <tt>f</tt> is invoked as a constructor
    * @param {boolean} isMethod - True if <tt>f</tt> is invoked as a method
    * @param {number} functionIid - The iid (i.e. the unique instruction identifier) where the function was created
@@ -198,7 +225,7 @@ export class TaintTracking {
    * an object is returned.
    */
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
-    let [reason, taintedArg] = this.taintSinkPolicy.checkTaintAtSinkInvokeFun(f, base, args);
+    let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
     if (reason) {
       // TODO: move this to another function
       console.log("[TheHulk] Found a dangerous flow from %s to %s",
@@ -213,16 +240,20 @@ export class TaintTracking {
     }
 
     // Check if any of the arguments are tainted
-    let taintedArgs = args.filter(arg => arg instanceof TaintValue);
+    // let taintedArgs = args.length && Array.from(args).filter(arg => arg instanceof TaintValue);
     // if (taintedArgs.length > 0) {
-      
+
+    
+    // this.taintRules
 
 
 
     // Check if the function is a built-in function
     // TODO - move this to another function
     
-
+    // Currently, we concretize the taint value and apply the original function
+    if (base instanceof TaintValue) { base = base.getConcrete(); };
+    args = Array.from(args).map(arg => arg instanceof TaintValue ? arg.getConcrete() : arg);
 
     return {f: f, base: base, args: args, skip: false};
   };
@@ -252,7 +283,7 @@ export class TaintTracking {
    * }
    * 
    * @steps
-   * 1/ Taint the retrun value if the function api is a taint source.
+   * 1/ Taint the return value if the function api is a taint source.
    * 2/ Log the coverage information for the analysis.
    * 
    *
@@ -277,6 +308,7 @@ export class TaintTracking {
   invokeFun (iid, f, base, args, result, isConstructor, isMethod, functionIid, functionSid) {
     let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
     if (reason) {
+      // TODO: We need to clone the variable or only save the taint information and not the value
       let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result]));
       result = new TaintValue(result, taintInfo);
     }
@@ -360,7 +392,10 @@ export class TaintTracking {
 
   /**
    * This callback is called before a property of an object is accessed.
-   *
+   * 
+   * @steps
+   * 1/ We always skip the original getField operation and let getField handle the operation.
+   * 
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {*} base - Base object
    * @param {string|*} offset - Property
@@ -375,7 +410,7 @@ export class TaintTracking {
    *
    */
   getFieldPre (iid, base, offset, isComputed, isOpAssign, isMethodCall) {
-    return {base: base, offset: offset, skip: false};
+    return {base: base, offset: offset, skip: true};
   };
 
 
@@ -383,8 +418,9 @@ export class TaintTracking {
    * This callback is called after a property of an object is accessed.
    * 
    * @steps
-   * 1/ Taint sources based on the base object and the accessed property.
-   * 2/ Log the coverage information for the analysis.
+   * 1/ Apply the taint propagation rules for the get field operation if the property should be tainted.
+   * 2/ Introduced a new taint value if the property is a taint source.
+   * 3/ Log the coverage information for the analysis.
    *
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {*} base - Base object
@@ -399,8 +435,15 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   getField (iid, base, offset, val, isComputed, isOpAssign, isMethodCall) {
+    
+    val = this.taintPropRules.getFieldRules.getRule(base, offset)(base, offset, iid)
+    
     let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
     if (reason) {
+      // The taint introduced from taintSourceRules has more priority
+      if (val instanceof WrappedValue) {
+        val = val.getConcrete();
+      }
       let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", [base, offset]));
       val = new TaintValue(val, taintInfo);
     }
@@ -447,10 +490,10 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   putField (iid, base, offset, val, isComputed, isOpAssign) {
-    let reason = this.taintSinkPolicy.checkTaintAtSinkPutField(base, offset, val);
+    let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
 
     if (reason) {
-      // TODO: move this to another function
+      // TODO: move this to taint helper?
       console.log("[TheHulk] Found a dangerous flow from %s to %s",
                   val.taintInfo.getTaintSourceReason(), reason);
       this.dangerousFlows.push({

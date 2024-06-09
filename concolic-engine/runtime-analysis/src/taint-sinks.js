@@ -21,6 +21,7 @@ export class TaintSinkRules {
   checkTaintAtSinkPutField(base, offset, val) {
 
     if (!this.isTainted(val)) { return false; }
+    if (base instanceof WrappedValue) { base = base.getConcrete(); }
 
     if (base instanceof Element) {
       if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'src') {
@@ -92,7 +93,7 @@ export class TaintSinkRules {
       }
     }
 
-    if (f.name === 'insertAdjacentHTML' && isDOMElement(base)) {
+    if (f.name === 'insertAdjacentHTML' && this.isDOMElement(base)) {
       if (args.length >= 2 && this.isTainted(args[1])) {
         return ["SINK-TO-INSERTADJACENTHTML", args[1]];
       }
@@ -116,7 +117,7 @@ export class TaintSinkRules {
       }
     }
 
-    if (isLocationObject(base) && (f.name === 'replace' || f.name === 'assign')) {
+    if (this.isLocationObject(base) && (f.name === 'replace' || f.name === 'assign')) {
       if (args.length && this.isTainted(args[0])) {
         return [`SINK-TO-LOCATION-${f.name.toUpperCase()}`, args[0]];
       }
