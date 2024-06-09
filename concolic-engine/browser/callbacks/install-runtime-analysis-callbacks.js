@@ -52,7 +52,7 @@ async function installJalangi2AndAnalysisCb(visitor, page) {
       source: getInjectScriptContent(),
       runImmediately: true
     });
-    visitor.logger.log('[installJalangi2AndAnalysis] Added script to evaluate on new document');
+    visitor.logger.info('[installJalangi2AndAnalysis] Added script to evaluate on new document');
   } catch (err) {
     visitor.logger.warn(`[installJalangi2AndAnalysis] Adding script to evaluate on new document failed: ${err}`);
   }
