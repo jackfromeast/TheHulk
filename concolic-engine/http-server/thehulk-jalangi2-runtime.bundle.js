@@ -1,32 +1,68 @@
-/*
- * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
- * This devtool is neither made for production nor for readable output files.
- * It uses "eval()" calls to create a separate source file in the browser devtools.
- * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
- * or disable the default devtool with "devtool: false".
- * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
- */
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
-
-/***/ "./src/astUtil.js":
-/*!************************!*\
-  !*** ./src/astUtil.js ***!
-  \************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-eval("__webpack_require__.r(__webpack_exports__);\nfunction _typeof(o) { \"@babel/helpers - typeof\"; return _typeof = \"function\" == typeof Symbol && \"symbol\" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && \"function\" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? \"symbol\" : typeof o; }, _typeof(o); }\n/*\n * Copyright 2013 Samsung Information Systems America, Inc.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *        http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n// Author: Koushik Sen\n// Author: Manu Sridharan\n\n/*jslint node: true */\n/*global window */\n\n// do not remove the following comment\n// JALANGI DO NOT INSTRUMENT\n\nif (typeof J$$ === 'undefined') {\n  J$$ = {};\n}\n(function (sandbox) {\n  var astUtil = sandbox.astUtil;\n  if (typeof astUtil !== 'undefined') {\n    return;\n  } else {\n    astUtil = sandbox.astUtil = {};\n  }\n  var Constants = sandbox.Constants;\n  var HOP = Constants.HOP;\n  var JALANGI_VAR = Constants.JALANGI_VAR;\n\n  /**\n   * information on surrounding AST context, to be used by visitors passed\n   * to transformAst()\n   */\n  var CONTEXT = {\n    // TODO what is this?\n    RHS: 1,\n    // TODO what is this?\n    IGNORE: 2,\n    // inside the properties of an ObjectExpression\n    OEXP: 3,\n    // inside the formal parameters of a FunctionDeclaration or FunctionExpression\n    PARAMS: 4,\n    // TODO what is this?\n    OEXP2: 5,\n    // inside a getter\n    GETTER: 6,\n    // inside a setter\n    SETTER: 7,\n    TYPEOF: 8\n  };\n\n  /**\n   * invoked by transformAst() to see if a sub-ast should be ignored.  For now,\n   * only ignoring calls to J$.I()\n   */\n  function ignoreSubAst(node) {\n    return node.type === 'CallExpression' && node.callee.type === 'MemberExpression' && node.callee.object.type === 'Identifier' && node.callee.object.name === JALANGI_VAR && node.callee.property.type === 'Identifier' && node.callee.property.name === 'I';\n  }\n\n  /**\n   * generic AST visitor that allows for AST transformation.\n   *\n   * @param object the root AST node to be visited\n   * @param visitorPost an object defining visitor methods to be executed after a node's children\n   * have been visited.  The properties of visitorPost should be named with AST node types, and the\n   * property values should be functions that take the node to be visited and a context value (see\n   * the CONTEXT object above).  E.g., a post-visitor could be:\n   * { 'AssignmentExpression': function (node, context) {\n   *      // node.type === 'AssignmentExpression'\n   *   }\n   * }\n   * The value returned by the visitorPost method for a node will replace the node in the AST.\n   * @param visitorPre an object defining visitor methods to be executed before a node's children\n   * have been visited.  Structure should be similar to visitorPost (see above).  The return value\n   * of visitorPre functions is ignored.\n   * @param context the context of the surrounding AST; see the CONTEXT object above\n   * @param {boolean?} noIgnore if true, no sub-ast will be ignored.  Otherwise, sub-ASTs will be ignored\n   * if ignoreAST() returns true.\n   */\n  function transformAst(object, visitorPost, visitorPre, context, noIgnore) {\n    var key, child, type, ret, newContext;\n    type = object.type;\n    if (visitorPre && HOP(visitorPre, type)) {\n      visitorPre[type](object, context);\n    }\n    for (key in object) {\n      //            if (object.hasOwnProperty(key)) {\n      child = object[key];\n      if (_typeof(child) === 'object' && child !== null && key !== \"scope\" && (noIgnore || !ignoreSubAst(object))) {\n        if (type === 'AssignmentExpression' && key === 'left' || type === 'UpdateExpression' && key === 'argument' || type === 'UnaryExpression' && key === 'argument' && object.operator === 'delete' || type === 'ForInStatement' && key === 'left' || (type === 'FunctionExpression' || type === 'FunctionDeclaration') && key === 'id' || type === 'LabeledStatement' && key === 'label' || type === 'BreakStatement' && key === 'label' || type === 'CatchClause' && key === 'param' || type === 'ContinueStatement' && key === 'label' || (type === 'CallExpression' || type === 'NewExpression') && key === 'callee' && (object.callee.type === 'MemberExpression' || object.callee.type === 'Identifier' && object.callee.name === 'eval') || type === 'VariableDeclarator' && key === 'id' || type === 'MemberExpression' && !object.computed && key === 'property') {\n          newContext = CONTEXT.IGNORE;\n        } else if (type === 'ObjectExpression' && key === 'properties') {\n          newContext = CONTEXT.OEXP;\n        } else if ((type === 'FunctionExpression' || type === 'FunctionDeclaration') && key === 'params') {\n          newContext = CONTEXT.PARAMS;\n        } else if (context === CONTEXT.OEXP) {\n          newContext = CONTEXT.OEXP2;\n        } else if (context === CONTEXT.OEXP2 && key === 'key') {\n          newContext = CONTEXT.IGNORE;\n        } else if (context === CONTEXT.PARAMS) {\n          newContext = CONTEXT.IGNORE;\n        } else if (object.key && key === 'value' && object.kind === 'get') {\n          newContext = CONTEXT.GETTER;\n        } else if (object.key && key === 'value' && object.kind === 'set') {\n          newContext = CONTEXT.SETTER;\n        } else if (type === 'CallExpression' && key === 'callee' && child.type === 'Identifier' && child.name === 'eval') {\n          newContext = CONTEXT.IGNORE;\n        } else if (type === 'UnaryExpression' && key === 'argument' && object.operator === 'typeof' && child.type === 'Identifier') {\n          newContext = CONTEXT.TYPEOF;\n        } else {\n          newContext = CONTEXT.RHS;\n        }\n        if (key !== 'bodyOrig') {\n          object[key] = transformAst(child, visitorPost, visitorPre, newContext, noIgnore);\n        }\n      }\n      //            }\n    }\n    if (visitorPost && HOP(visitorPost, type)) {\n      ret = visitorPost[type](object, context);\n    } else {\n      ret = object;\n    }\n    return ret;\n  }\n\n  /**\n   * computes a map from iids to the corresponding AST nodes for root.  The root AST is destructively updated to\n   * include SymbolicReference nodes that reference other nodes by iid, in order to save space in the map.\n   */\n  function serialize(root) {\n    // Stores a pointer to the most-recently encountered node representing a function or a\n    // top-level script.  We need this stored pointer since a function expression or declaration\n    // has no associated IID, but we'd like to have the ASTs as entries in the table.  Instead,\n    // we associate the AST with the IID for the corresponding function-enter or script-enter IID.\n    // We don't need a stack here since we only use this pointer at the next function-enter or script-enter,\n    // and there cannot be a nested function declaration in-between.\n    var parentFunOrScript = root;\n    var iidToAstTable = {};\n    function handleFun(node) {\n      parentFunOrScript = node;\n    }\n    var visitorPre = {\n      'Program': handleFun,\n      'FunctionDeclaration': handleFun,\n      'FunctionExpression': handleFun\n    };\n    function canMakeSymbolic(node) {\n      if (node.callee.object) {\n        var callee = node.callee;\n        // we can replace calls to J$$ functions with a SymbolicReference iff they have an IID as their first\n        // argument.  'instrumentCode', 'getConcrete', and 'I' do not take an IID.\n        // TODO are we missing other cases?\n        if (callee.object.name === 'J$$' && callee.property.name !== \"instrumentCode\" && callee.property.name !== \"getConcrete\" && callee.property.name !== \"I\" && node.arguments[0]) {\n          return true;\n        }\n      }\n      return false;\n    }\n    function setSerializedAST(iid, ast) {\n      var entry = iidToAstTable[iid];\n      if (!entry) {\n        entry = {};\n        iidToAstTable[iid] = entry;\n      }\n      entry.serializedAST = ast;\n    }\n    var visitorPost = {\n      'CallExpression': function CallExpression(node) {\n        try {\n          if (node.callee.object && node.callee.object.name === 'J$$' && (node.callee.property.name === 'Se' || node.callee.property.name === 'Fe')) {\n            // associate IID with the AST of the containing function / script\n            setSerializedAST(node.arguments[0].value, parentFunOrScript);\n            return node;\n          } else if (canMakeSymbolic(node)) {\n            setSerializedAST(node.arguments[0].value, node);\n            return {\n              type: \"SymbolicReference\",\n              value: node.arguments[0].value\n            };\n          }\n          return node;\n        } catch (e) {\n          console.log(JSON.stringify(node));\n          throw e;\n        }\n      }\n    };\n    transformAst(root, visitorPost, visitorPre);\n    return iidToAstTable;\n  }\n\n  /**\n   * given an iidToAstTable constructed by the serialize() function, destructively\n   * update the AST values to remove SymbolicReference nodes, replacing them with a\n   * pointer to the appropriate actual AST node.\n   */\n  function deserialize(iidToAstTable) {\n    Object.keys(iidToAstTable).forEach(function (iid) {\n      var curAst = iidToAstTable[iid].serializedAST;\n      if (curAst) {\n        var visitorPost = {\n          'SymbolicReference': function SymbolicReference(node) {\n            var targetAST = iidToAstTable[node.value].serializedAST;\n            if (!targetAST) {\n              throw \"bad symbolic reference\";\n            }\n            return targetAST;\n          }\n        };\n        transformAst(curAst, visitorPost);\n      }\n    });\n  }\n\n  /**\n   * given an instrumented AST, returns an array of IIDs corresponding to \"top-level expressions,\"\n   * i.e., expressions that are not nested within another\n   * @param ast\n   */\n  function computeTopLevelExpressions(ast) {\n    var exprDepth = 0;\n    var exprDepthStack = [];\n    var topLevelExprs = [];\n    var visitorIdentifyTopLevelExprPre = {\n      \"CallExpression\": function CallExpression(node) {\n        if (node.callee.type === 'MemberExpression' && node.callee.object.type === 'Identifier' && node.callee.object.name === JALANGI_VAR) {\n          var funName = node.callee.property.name;\n          if (exprDepth === 0 && (funName === 'A' || funName === 'P' || funName === 'G' || funName === 'R' || funName === 'W' || funName === 'H' || funName === 'T' || funName === 'Rt' || funName === 'B' || funName === 'U' || funName === 'C' || funName === 'C1' || funName === 'C2') || exprDepth === 1 && (funName === 'F' || funName === 'M')) {\n            topLevelExprs.push(node.arguments[0].value);\n          }\n          exprDepth++;\n        } else if (node.callee.type === 'CallExpression' && node.callee.callee.type === 'MemberExpression' && node.callee.callee.object.type === 'Identifier' && node.callee.callee.object.name === JALANGI_VAR && (node.callee.callee.property.name === 'F' || node.callee.callee.property.name === 'M')) {\n          exprDepth++;\n        }\n      },\n      \"FunctionExpression\": function FunctionExpression(node, context) {\n        exprDepthStack.push(exprDepth);\n        exprDepth = 0;\n      },\n      \"FunctionDeclaration\": function FunctionDeclaration(node) {\n        exprDepthStack.push(exprDepth);\n        exprDepth = 0;\n      }\n    };\n    var visitorIdentifyTopLevelExprPost = {\n      \"CallExpression\": function CallExpression(node) {\n        if (node.callee.type === 'MemberExpression' && node.callee.object.type === 'Identifier' && node.callee.object.name === JALANGI_VAR) {\n          exprDepth--;\n        } else if (node.callee.type === 'CallExpression' && node.callee.callee.type === 'MemberExpression' && node.callee.callee.object.type === 'Identifier' && node.callee.callee.object.name === JALANGI_VAR && (node.callee.callee.property.name === 'F' || node.callee.callee.property.name === 'M')) {\n          exprDepth--;\n        }\n        return node;\n      },\n      \"FunctionExpression\": function FunctionExpression(node, context) {\n        exprDepth = exprDepthStack.pop();\n        return node;\n      },\n      \"FunctionDeclaration\": function FunctionDeclaration(node) {\n        exprDepth = exprDepthStack.pop();\n        return node;\n      }\n    };\n    transformAst(ast, visitorIdentifyTopLevelExprPost, visitorIdentifyTopLevelExprPre, CONTEXT.RHS);\n    return topLevelExprs;\n  }\n  astUtil.serialize = serialize;\n  astUtil.deserialize = deserialize;\n  astUtil.JALANGI_VAR = JALANGI_VAR;\n  astUtil.CONTEXT = CONTEXT;\n  astUtil.transformAst = transformAst;\n  astUtil.computeTopLevelExpressions = computeTopLevelExpressions;\n})(J$$);\n\n// exports J$$.astUtil\n// depends on J$$.Constants\n\n//# sourceURL=webpack://runtime-jalangi2/./src/astUtil.js?");
-
-/***/ }),
 
 /***/ "./src/config.js":
 /*!***********************!*\
   !*** ./src/config.js ***!
   \***********************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ (() => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/*\n * Copyright (c) 2014 Samsung Electronics Co., Ltd.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *        http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n// do not remove the following comment\n// JALANGI DO NOT INSTRUMENT\nif (typeof J$$ === 'undefined') {\n  J$$ = {};\n}\n(function (sandbox) {\n  if (typeof sandbox.Config !== 'undefined') {\n    return;\n  }\n  var Config = sandbox.Config = {};\n  Config.DEBUG = false;\n  Config.WARN = false;\n  Config.SERIOUS_WARN = false;\n  // make MAX_BUF_SIZE slightly less than 2^16, to allow over low-level overheads\n  Config.MAX_BUF_SIZE = 64000;\n  Config.LOG_ALL_READS_AND_BRANCHES = false;\n\n  //**********************************************************\n  //  Functions for selective instrumentation of operations\n  //**********************************************************\n  // In the following functions\n  // return true in a function, if you want the ast node (passed as the second argument) to be instrumented\n  // ast node gets instrumented if you do not define the corresponding function\n  Config.ENABLE_SAMPLING = false;\n  //    Config.INSTR_INIT = function(name, ast) { return false; };\n  //    Config.INSTR_READ = function(name, ast) { return false; };\n  //    Config.INSTR_WRITE = function(name, ast) { return true; };\n  //    Config.INSTR_GETFIELD = function(offset, ast) { return true; }; // offset is null if the property is computed\n  //    Config.INSTR_PUTFIELD = function(offset, ast) { return true; }; // offset is null if the property is computed\n  //    Config.INSTR_BINARY = function(operator, ast) { return true; };\n  //    Config.INSTR_PROPERTY_BINARY_ASSIGNMENT = function(operator, offset, ast) { return true; }; // a.x += e or a[e1] += e2\n  //    Config.INSTR_UNARY = function(operator, ast) { return true; };\n  //    Config.INSTR_LITERAL = function(literal, ast) { return true;}; // literal gets some dummy value if the type is object, function, or array\n  //    Config.INSTR_CONDITIONAL = function(type, ast) { return true; }; // type could be \"&&\", \"||\", \"switch\", \"other\"\n  //    Config.INSTR_TRY_CATCH_ARGUMENTS = function(ast) {return false; }; // wrap function and script bodies with try catch block and use arguments in J$.Fe.  DO NOT USE THIS.\n  //    Config.INSTR_END_EXPRESSION = function(ast) {return true; }; // top-level expression marker\n})(J$$);\n\n//# sourceURL=webpack://runtime-jalangi2/./src/config.js?");
+/*
+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// do not remove the following comment
+// JALANGI DO NOT INSTRUMENT
+if (typeof J$$ === 'undefined') {
+    J$$ = {};
+}
+
+(function (sandbox) {
+    if (typeof sandbox.Config !== 'undefined') {
+        return;
+    }
+
+    var Config = sandbox.Config = {};
+
+    Config.DEBUG = false;
+    Config.WARN = false;
+    Config.SERIOUS_WARN = false;
+// make MAX_BUF_SIZE slightly less than 2^16, to allow over low-level overheads
+    Config.MAX_BUF_SIZE = 64000;
+    Config.LOG_ALL_READS_AND_BRANCHES = false;
+
+    //**********************************************************
+    //  Functions for selective instrumentation of operations
+    //**********************************************************
+    // In the following functions
+    // return true in a function, if you want the ast node (passed as the second argument) to be instrumented
+    // ast node gets instrumented if you do not define the corresponding function
+    Config.ENABLE_SAMPLING = false;
+//    Config.INSTR_INIT = function(name, ast) { return false; };
+//    Config.INSTR_READ = function(name, ast) { return false; };
+//    Config.INSTR_WRITE = function(name, ast) { return true; };
+//    Config.INSTR_GETFIELD = function(offset, ast) { return true; }; // offset is null if the property is computed
+//    Config.INSTR_PUTFIELD = function(offset, ast) { return true; }; // offset is null if the property is computed
+//    Config.INSTR_BINARY = function(operator, ast) { return true; };
+//    Config.INSTR_PROPERTY_BINARY_ASSIGNMENT = function(operator, offset, ast) { return true; }; // a.x += e or a[e1] += e2
+//    Config.INSTR_UNARY = function(operator, ast) { return true; };
+//    Config.INSTR_LITERAL = function(literal, ast) { return true;}; // literal gets some dummy value if the type is object, function, or array
+//    Config.INSTR_CONDITIONAL = function(type, ast) { return true; }; // type could be "&&", "||", "switch", "other"
+//    Config.INSTR_TRY_CATCH_ARGUMENTS = function(ast) {return false; }; // wrap function and script bodies with try catch block and use arguments in J$.Fe.  DO NOT USE THIS.
+//    Config.INSTR_END_EXPRESSION = function(ast) {return true; }; // top-level expression marker
+}(J$$));
+
 
 /***/ }),
 
@@ -34,29 +70,111 @@ eval("__webpack_require__.r(__webpack_exports__);\n/*\n * Copyright (c) 2014 Sam
 /*!**************************!*\
   !*** ./src/constants.js ***!
   \**************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack_module, exports) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\nfunction _typeof(o) { \"@babel/helpers - typeof\"; return _typeof = \"function\" == typeof Symbol && \"symbol\" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && \"function\" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? \"symbol\" : typeof o; }, _typeof(o); }\n/*\n * Copyright (c) 2014 Samsung Electronics Co., Ltd.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *        http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n// do not remove the following comment\n// JALANGI DO NOT INSTRUMENT\nif (typeof J$$ === 'undefined') {\n  J$$ = {};\n}\n(function (sandbox) {\n  if (typeof sandbox.Constants !== 'undefined') {\n    return;\n  }\n  var Constants = sandbox.Constants = {};\n  Constants.isBrowser = !(typeof exports !== 'undefined' && this.exports !== exports);\n  var APPLY = Constants.APPLY = Function.prototype.apply;\n  var CALL = Constants.CALL = Function.prototype.call;\n  APPLY.apply = APPLY;\n  APPLY.call = CALL;\n  CALL.apply = APPLY;\n  CALL.call = CALL;\n  var HAS_OWN_PROPERTY = Constants.HAS_OWN_PROPERTY = Object.prototype.hasOwnProperty;\n  Constants.HAS_OWN_PROPERTY_CALL = Object.prototype.hasOwnProperty.call;\n  var PREFIX1 = Constants.JALANGI_VAR = \"J$$\";\n  Constants.SPECIAL_PROP = \"*\" + PREFIX1 + \"*\";\n  Constants.SPECIAL_PROP2 = \"*\" + PREFIX1 + \"I*\";\n  Constants.SPECIAL_PROP3 = \"*\" + PREFIX1 + \"C*\";\n  Constants.SPECIAL_PROP4 = \"*\" + PREFIX1 + \"W*\";\n  Constants.SPECIAL_PROP_SID = \"*\" + PREFIX1 + \"SID*\";\n  Constants.SPECIAL_PROP_IID = \"*\" + PREFIX1 + \"IID*\";\n  Constants.UNKNOWN = -1;\n\n  //-------------------------------- End constants ---------------------------------\n\n  //-------------------------------------- Constant functions -----------------------------------------------------------\n\n  var HOP = Constants.HOP = function (obj, prop) {\n    return prop + \"\" === '__proto__' || CALL.call(HAS_OWN_PROPERTY, obj, prop); //Constants.HAS_OWN_PROPERTY_CALL.apply(Constants.HAS_OWN_PROPERTY, [obj, prop]);\n  };\n  Constants.hasGetterSetter = function (obj, prop, isGetter) {\n    if (typeof Object.getOwnPropertyDescriptor !== 'function') {\n      return true;\n    }\n    while (obj !== null) {\n      if (_typeof(obj) !== 'object' && typeof obj !== 'function') {\n        return false;\n      }\n      var desc = Object.getOwnPropertyDescriptor(obj, prop);\n      if (desc !== undefined) {\n        if (isGetter && typeof desc.get === 'function') {\n          return true;\n        }\n        if (!isGetter && typeof desc.set === 'function') {\n          return true;\n        }\n      } else if (HOP(obj, prop)) {\n        return false;\n      }\n      obj = obj.__proto__;\n    }\n    return false;\n  };\n  Constants.debugPrint = function (s) {\n    if (sandbox.Config.DEBUG) {\n      console.log(\"***\" + s);\n    }\n  };\n  Constants.warnPrint = function (iid, s) {\n    if (sandbox.Config.WARN && iid !== 0) {\n      console.log(\"        at \" + iid + \" \" + s);\n    }\n  };\n  Constants.seriousWarnPrint = function (iid, s) {\n    if (sandbox.Config.SERIOUS_WARN && iid !== 0) {\n      console.log(\"        at \" + iid + \" Serious \" + s);\n    }\n  };\n})(J$$);\n\n//# sourceURL=webpack://runtime-jalangi2/./src/constants.js?");
+/*
+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// do not remove the following comment
+// JALANGI DO NOT INSTRUMENT
+if (typeof J$$ === 'undefined') {
+    J$$ = {};
+}
 
-/***/ }),
+(function (sandbox) {
+    if (typeof sandbox.Constants !== 'undefined') {
+        return;
+    }
+    var Constants = sandbox.Constants = {};
 
-/***/ "./src/entry.js":
-/*!**********************!*\
-  !*** ./src/entry.js ***!
-  \**********************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+    Constants.isBrowser = !( true && this.exports !== exports);
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config.js */ \"./src/config.js\");\n/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./constants.js */ \"./src/constants.js\");\n/* harmony import */ var _astUtil_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./astUtil.js */ \"./src/astUtil.js\");\n/* harmony import */ var _runtime_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./runtime.js */ \"./src/runtime.js\");\n/* harmony import */ var _iidToLocation_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./iidToLocation.js */ \"./src/iidToLocation.js\");\n/* harmony import */ var _esnstrument_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./esnstrument.js */ \"./src/esnstrument.js\");\n\n\n\n\n\n\n\n//# sourceURL=webpack://runtime-jalangi2/./src/entry.js?");
+    var APPLY = Constants.APPLY = Function.prototype.apply;
+    var CALL = Constants.CALL = Function.prototype.call;
+    APPLY.apply = APPLY;
+    APPLY.call = CALL;
+    CALL.apply = APPLY;
+    CALL.call = CALL;
 
-/***/ }),
+    var HAS_OWN_PROPERTY = Constants.HAS_OWN_PROPERTY = Object.prototype.hasOwnProperty;
+    Constants.HAS_OWN_PROPERTY_CALL = Object.prototype.hasOwnProperty.call;
 
-/***/ "./src/esnstrument.js":
-/*!****************************!*\
-  !*** ./src/esnstrument.js ***!
-  \****************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\nfunction _typeof(o) { \"@babel/helpers - typeof\"; return _typeof = \"function\" == typeof Symbol && \"symbol\" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && \"function\" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? \"symbol\" : typeof o; }, _typeof(o); }\n/*\n * Copyright 2013 Samsung Information Systems America, Inc.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *        http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n// Author: Koushik Sen\n\n// do not remove the following comment\n// JALANGI DO NOT INSTRUMENT\n\n/*jslint node: true browser: true */\n/*global astUtil acorn esotope J$$ */\n\nif (typeof J$$ === 'undefined') {\n  J$$ = {};\n}\nvar acorn = require('acorn');\nvar esotope = require('esotope');\nvar babel = require('@babel/core');\n(function (sandbox) {\n  if (typeof sandbox.instrumentCode !== 'undefined') {\n    return;\n  }\n  function es6Transform(code) {\n    if (typeof babel !== 'undefined' && !process.env['NO_ES7']) {\n      var res = babel.transform(code, {\n        retainLines: true,\n        sourceType: 'script',\n        presets: ['../node_modules/@babel/preset-env']\n      }).code;\n      if (res && res.indexOf('use strict') != -1) {\n        res = res.replace(/.use strict.;\\n?/, '');\n      }\n      return res;\n    } else {\n      console.log('There is no babel loaded');\n      return code;\n    }\n  }\n  var global = this;\n  var JSON = {\n    parse: global.JSON.parse,\n    stringify: global.JSON.stringify\n  };\n  var astUtil = sandbox.astUtil;\n  var Config = sandbox.Config;\n  var Constants = sandbox.Constants;\n  var JALANGI_VAR = Constants.JALANGI_VAR;\n  var RP = JALANGI_VAR + \"_\";\n\n  //    var N_LOG_LOAD = 0,\n  //    var N_LOG_FUN_CALL = 1,\n  //    N_LOG_METHOD_CALL = 2,\n  var N_LOG_FUNCTION_ENTER = 4,\n    //    N_LOG_FUNCTION_RETURN = 5,\n    N_LOG_SCRIPT_ENTER = 6,\n    //    N_LOG_SCRIPT_EXIT = 7,\n    N_LOG_GETFIELD = 8,\n    //    N_LOG_GLOBAL = 9,\n    N_LOG_ARRAY_LIT = 10,\n    N_LOG_OBJECT_LIT = 11,\n    N_LOG_FUNCTION_LIT = 12,\n    N_LOG_RETURN = 13,\n    N_LOG_REGEXP_LIT = 14,\n    //    N_LOG_LOCAL = 15,\n    //    N_LOG_OBJECT_NEW = 16,\n    N_LOG_READ = 17,\n    //    N_LOG_FUNCTION_ENTER_NORMAL = 18,\n    N_LOG_HASH = 19,\n    N_LOG_SPECIAL = 20,\n    N_LOG_STRING_LIT = 21,\n    N_LOG_NUMBER_LIT = 22,\n    N_LOG_BOOLEAN_LIT = 23,\n    N_LOG_UNDEFINED_LIT = 24,\n    N_LOG_NULL_LIT = 25;\n  var logFunctionEnterFunName = JALANGI_VAR + \".Fe\";\n  var logFunctionReturnFunName = JALANGI_VAR + \".Fr\";\n  var logFunCallFunName = JALANGI_VAR + \".F\";\n  var logMethodCallFunName = JALANGI_VAR + \".M\";\n  var logAssignFunName = JALANGI_VAR + \".A\";\n  var logPutFieldFunName = JALANGI_VAR + \".P\";\n  var logGetFieldFunName = JALANGI_VAR + \".G\";\n  var logScriptEntryFunName = JALANGI_VAR + \".Se\";\n  var logScriptExitFunName = JALANGI_VAR + \".Sr\";\n  var logReadFunName = JALANGI_VAR + \".R\";\n  var logWriteFunName = JALANGI_VAR + \".W\";\n  var logIFunName = JALANGI_VAR + \".I\";\n  var logHashFunName = JALANGI_VAR + \".H\";\n  var logLitFunName = JALANGI_VAR + \".T\";\n  var logInitFunName = JALANGI_VAR + \".N\";\n  var logReturnFunName = JALANGI_VAR + \".Rt\";\n  var logThrowFunName = JALANGI_VAR + \".Th\";\n  var logReturnAggrFunName = JALANGI_VAR + \".Ra\";\n  var logUncaughtExceptionFunName = JALANGI_VAR + \".Ex\";\n  var logLastComputedFunName = JALANGI_VAR + \".L\";\n  var logTmpVarName = JALANGI_VAR + \"._tm_p\";\n  var logSampleFunName = JALANGI_VAR + \".S\";\n  var logWithFunName = JALANGI_VAR + \".Wi\";\n  var logBinaryOpFunName = JALANGI_VAR + \".B\";\n  var logUnaryOpFunName = JALANGI_VAR + \".U\";\n  var logConditionalFunName = JALANGI_VAR + \".C\";\n  var logSwitchLeftFunName = JALANGI_VAR + \".C1\";\n  var logSwitchRightFunName = JALANGI_VAR + \".C2\";\n  var logLastFunName = JALANGI_VAR + \"._\";\n  var logX1FunName = JALANGI_VAR + \".X1\";\n  var instrumentCodeFunName = JALANGI_VAR + \".instrumentEvalCode\";\n  var Syntax = {\n    AssignmentExpression: 'AssignmentExpression',\n    ArrayExpression: 'ArrayExpression',\n    BlockStatement: 'BlockStatement',\n    BinaryExpression: 'BinaryExpression',\n    BreakStatement: 'BreakStatement',\n    CallExpression: 'CallExpression',\n    CatchClause: 'CatchClause',\n    ConditionalExpression: 'ConditionalExpression',\n    ContinueStatement: 'ContinueStatement',\n    DoWhileStatement: 'DoWhileStatement',\n    DebuggerStatement: 'DebuggerStatement',\n    EmptyStatement: 'EmptyStatement',\n    ExpressionStatement: 'ExpressionStatement',\n    ForStatement: 'ForStatement',\n    ForInStatement: 'ForInStatement',\n    FunctionDeclaration: 'FunctionDeclaration',\n    FunctionExpression: 'FunctionExpression',\n    Identifier: 'Identifier',\n    IfStatement: 'IfStatement',\n    Literal: 'Literal',\n    LabeledStatement: 'LabeledStatement',\n    LogicalExpression: 'LogicalExpression',\n    MemberExpression: 'MemberExpression',\n    NewExpression: 'NewExpression',\n    ObjectExpression: 'ObjectExpression',\n    Program: 'Program',\n    Property: 'Property',\n    ReturnStatement: 'ReturnStatement',\n    SequenceExpression: 'SequenceExpression',\n    SwitchStatement: 'SwitchStatement',\n    SwitchCase: 'SwitchCase',\n    ThisExpression: 'ThisExpression',\n    ThrowStatement: 'ThrowStatement',\n    TryStatement: 'TryStatement',\n    UnaryExpression: 'UnaryExpression',\n    UpdateExpression: 'UpdateExpression',\n    VariableDeclaration: 'VariableDeclaration',\n    VariableDeclarator: 'VariableDeclarator',\n    WhileStatement: 'WhileStatement',\n    WithStatement: 'WithStatement'\n  };\n  function createBitPattern() {\n    var ret = 0;\n    var i;\n    for (i = 0; i < arguments.length; i++) {\n      ret = (ret << 1) + (arguments[i] ? 1 : 0);\n    }\n    return ret;\n  }\n  function HOP(obj, prop) {\n    return Object.prototype.hasOwnProperty.call(obj, prop);\n  }\n  function isArr(val) {\n    return Object.prototype.toString.call(val) === '[object Array]';\n  }\n  function MAP(arr, fun) {\n    var len = arr.length;\n    if (!isArr(arr)) {\n      throw new TypeError();\n    }\n    if (typeof fun !== \"function\") {\n      throw new TypeError();\n    }\n    var res = new Array(len);\n    for (var i = 0; i < len; i++) {\n      if (i in arr) {\n        res[i] = fun(arr[i]);\n      }\n    }\n    return res;\n  }\n  function regex_escape(text) {\n    return text.replace(/[-[\\]{}()*+?.,\\\\^$|#\\s]/g, \"\\\\$&\");\n  }\n\n  // name of the file containing the instrumented code\n\n  var IID_INC_STEP = 8;\n  // current static identifier for each conditional expression\n  var condIid;\n  var memIid;\n  var opIid;\n  var hasInitializedIIDs = false;\n  var origCodeFileName;\n  var instCodeFileName;\n  var iidSourceInfo;\n  function getIid() {\n    var tmpIid = memIid;\n    memIid = memIid + IID_INC_STEP;\n    return createLiteralAst(tmpIid);\n  }\n  function getPrevIidNoInc() {\n    return createLiteralAst(memIid - IID_INC_STEP);\n  }\n  function getCondIid() {\n    var tmpIid = condIid;\n    condIid = condIid + IID_INC_STEP;\n    return createLiteralAst(tmpIid);\n  }\n  function getOpIid() {\n    var tmpIid = opIid;\n    opIid = opIid + IID_INC_STEP;\n    return createLiteralAst(tmpIid);\n  }\n  function printLineInfoAux(i, ast) {\n    if (ast && ast.loc) {\n      iidSourceInfo[i] = [ast.loc.start.line, ast.loc.start.column + 1, ast.loc.end.line, ast.loc.end.column + 1];\n    }\n  }\n\n  // iid+2 is usually unallocated\n  // we are using iid+2 for the sub-getField operation of a method call\n  // see analysis.M\n  function printSpecialIidToLoc(ast0) {\n    printLineInfoAux(memIid + 2, ast0);\n  }\n  function printIidToLoc(ast0) {\n    printLineInfoAux(memIid, ast0);\n  }\n  function printModIidToLoc(ast0) {\n    printLineInfoAux(memIid, ast0);\n    printLineInfoAux(memIid + 2, ast0);\n  }\n  function printOpIidToLoc(ast0) {\n    printLineInfoAux(opIid, ast0);\n  }\n  function printCondIidToLoc(ast0) {\n    printLineInfoAux(condIid, ast0);\n  }\n\n  // J$_i in expression context will replace it by an AST\n  // {J$_i} will replace the body of the block statement with an array of statements passed as argument\n\n  function replaceInStatement(code) {\n    var asts = arguments;\n    var visitorReplaceInExpr = {\n      'Identifier': function Identifier(node) {\n        if (node.name.indexOf(RP) === 0) {\n          var i = parseInt(node.name.substring(RP.length));\n          return asts[i];\n        } else {\n          return node;\n        }\n      },\n      'BlockStatement': function BlockStatement(node) {\n        if (node.body[0].type === 'ExpressionStatement' && isArr(node.body[0].expression)) {\n          node.body = node.body[0].expression;\n        }\n        return node;\n      }\n    };\n    //        StatCollector.resumeTimer(\"internalParse\");\n    var ast = acorn.parse(code);\n    //        StatCollector.suspendTimer(\"internalParse\");\n    //        StatCollector.resumeTimer(\"replace\");\n    var newAst = astUtil.transformAst(ast, visitorReplaceInExpr, undefined, undefined, true);\n    //console.log(newAst);\n    //        StatCollector.suspendTimer(\"replace\");\n    return newAst.body;\n  }\n  function replaceInExpr(code) {\n    var ret = replaceInStatement.apply(this, arguments);\n    return ret[0].expression;\n  }\n  function createLiteralAst(name) {\n    return {\n      type: Syntax.Literal,\n      value: name\n    };\n  }\n  function createIdentifierAst(name) {\n    return {\n      type: Syntax.Identifier,\n      name: name\n    };\n  }\n  function transferLoc(toNode, fromNode) {\n    if (fromNode.loc) toNode.loc = fromNode.loc;\n    if (fromNode.raw) toNode.raw = fromNode.loc;\n  }\n  function idsOfGetterSetter(node) {\n    var ret = {},\n      isEmpty = true;\n    if (node.type === \"ObjectExpression\") {\n      var kind,\n        len = node.properties.length;\n      for (var i = 0; i < len; i++) {\n        if ((kind = node.properties[i].kind) === 'get' || kind === 'set') {\n          ret[kind + node.properties[i].key.name] = node.properties[i].value.funId;\n          isEmpty = false;\n        }\n      }\n    }\n    return isEmpty ? undefined : ret;\n  }\n  function checkAndGetIid(funId, sid, funName) {\n    var id = getIid();\n    if (!Config.requiresInstrumentation || Config.requiresInstrumentation(id, funId, sid, funName)) {\n      return id;\n    } else {\n      return undefined;\n    }\n  }\n  function modifyAst(ast, modifier, term) {\n    var ret;\n    var i = 3; // no. of formal parameters\n    while (term.indexOf('$$') >= 0) {\n      term = term.replace(/\\$\\$/, arguments[i]);\n      i++;\n    }\n    var args = [];\n    args.push(term);\n    for (; i < arguments.length; i++) {\n      args.push(arguments[i]);\n    }\n    printIidToLoc(ast);\n    ret = modifier.apply(this, args);\n    transferLoc(ret, ast);\n    return ret;\n  }\n  function wrapPutField(node, base, offset, rvalue, isComputed) {\n    if (!Config.INSTR_PUTFIELD || Config.INSTR_PUTFIELD(isComputed ? null : offset.value, node)) {\n      printIidToLoc(node);\n      var ret = replaceInExpr(logPutFieldFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3, \" + RP + \"4,\" + createBitPattern(isComputed, false) + \")\", getIid(), base, offset, rvalue);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapModAssign(node, base, offset, op, rvalue, isComputed) {\n    if (!Config.INSTR_PROPERTY_BINARY_ASSIGNMENT || Config.INSTR_PROPERTY_BINARY_ASSIGNMENT(op, node.computed ? null : offset.value, node)) {\n      printModIidToLoc(node);\n      var ret = replaceInExpr(logAssignFunName + \"(\" + RP + \"1,\" + RP + \"2,\" + RP + \"3,\" + RP + \"4,\" + createBitPattern(isComputed) + \")(\" + RP + \"5)\", getIid(), base, offset, createLiteralAst(op), rvalue);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapMethodCall(node, base, offset, isCtor, isComputed) {\n    printIidToLoc(node);\n    printSpecialIidToLoc(node.callee);\n    var ret = replaceInExpr(logMethodCallFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3, \" + createBitPattern(isCtor, isComputed) + \")\", getIid(), base, offset);\n    transferLoc(ret, node.callee);\n    return ret;\n  }\n  function wrapFunCall(node, ast, isCtor) {\n    printIidToLoc(node);\n    var ret = replaceInExpr(logFunCallFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + createBitPattern(isCtor) + \")\", getIid(), ast);\n    transferLoc(ret, node.callee);\n    return ret;\n  }\n  function wrapGetField(node, base, offset, isComputed) {\n    if (!Config.INSTR_GETFIELD || Config.INSTR_GETFIELD(node.computed ? null : offset.value, node)) {\n      printIidToLoc(node);\n      var ret = replaceInExpr(logGetFieldFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3,\" + createBitPattern(isComputed, false, false) + \")\", getIid(), base, offset);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapRead(node, name, val, isReUseIid, isGlobal, isScriptLocal) {\n    if (!Config.INSTR_READ || Config.INSTR_READ(name, node)) {\n      printIidToLoc(node);\n      var ret = replaceInExpr(logReadFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3,\" + createBitPattern(isGlobal, isScriptLocal) + \")\", isReUseIid ? getPrevIidNoInc() : getIid(), name, val);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return val;\n    }\n  }\n\n  //    function wrapReadWithUndefinedCheck(node, name) {\n  //        var ret = replaceInExpr(\n  //            \"(\"+logIFunName+\"(typeof (\"+name+\") === 'undefined'? \"+RP+\"2 : \"+RP+\"3))\",\n  //            createIdentifierAst(name),\n  //            wrapRead(node, createLiteralAst(name),createIdentifierAst(\"undefined\")),\n  //            wrapRead(node, createLiteralAst(name),createIdentifierAst(name), true)\n  //        );\n  //        transferLoc(ret, node);\n  //        return ret;\n  //    }\n\n  function wrapReadWithUndefinedCheck(node, name) {\n    var ret;\n\n    //if (name !== 'location') {\n    //    ret = replaceInExpr(\n    //        \"(\" + logIFunName + \"(typeof (\" + name + \") === 'undefined'? (\" + name + \"=\" + RP + \"2) : (\" + name + \"=\" + RP + \"3)))\",\n    //        createIdentifierAst(name),\n    //        wrapRead(node, createLiteralAst(name), createIdentifierAst(\"undefined\"), false, true, true),\n    //        wrapRead(node, createLiteralAst(name), createIdentifierAst(name), true, true, true)\n    //    );\n    //} else {\n    ret = replaceInExpr(\"(\" + logIFunName + \"(typeof (\" + name + \") === 'undefined'? (\" + RP + \"2) : (\" + RP + \"3)))\", createIdentifierAst(name), wrapRead(node, createLiteralAst(name), createIdentifierAst(\"undefined\"), false, true, false), wrapRead(node, createLiteralAst(name), createIdentifierAst(name), true, true, false));\n    //        }\n    transferLoc(ret, node);\n    return ret;\n  }\n  function wrapWrite(node, name, val, lhs, isGlobal, isScriptLocal, isDeclaration) {\n    if (!Config.INSTR_WRITE || Config.INSTR_WRITE(name, node)) {\n      printIidToLoc(node);\n      var ret = replaceInExpr(logWriteFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3, \" + RP + \"4,\" + createBitPattern(isGlobal, isScriptLocal, isDeclaration) + \")\", getIid(), name, val, lhs);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return val;\n    }\n  }\n  function wrapWriteWithUndefinedCheck(node, name, val, lhs) {\n    if (!Config.INSTR_WRITE || Config.INSTR_WRITE(name, node)) {\n      printIidToLoc(node);\n      //        var ret2 = replaceInExpr(\n      //            \"(\"+logIFunName+\"(typeof (\"+name+\") === 'undefined'? \"+RP+\"2 : \"+RP+\"3))\",\n      //            createIdentifierAst(name),\n      //            wrapRead(node, createLiteralAst(name),createIdentifierAst(\"undefined\")),\n      //            wrapRead(node, createLiteralAst(name),createIdentifierAst(name), true)\n      //        );\n      var ret = replaceInExpr(logWriteFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3, \" + logIFunName + \"(typeof(\" + lhs.name + \")==='undefined'?undefined:\" + lhs.name + \"),\" + createBitPattern(true, false, false) + \")\", getIid(), name, val);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return val;\n    }\n  }\n  function wrapRHSOfModStore(node, left, right, op) {\n    var ret = replaceInExpr(RP + \"1 \" + op + \" \" + RP + \"2\", left, right);\n    transferLoc(ret, node);\n    return ret;\n  }\n  function makeNumber(node, left) {\n    var ret = replaceInExpr(\" + \" + RP + \"1 \", left);\n    transferLoc(ret, node);\n    return ret;\n  }\n  function wrapLHSOfModStore(node, left, right) {\n    var ret = replaceInExpr(RP + \"1 = \" + RP + \"2\", left, right);\n    transferLoc(ret, node);\n    return ret;\n  }\n  function ifObjectExpressionHasGetterSetter(node) {\n    if (node.type === \"ObjectExpression\") {\n      var kind,\n        len = node.properties.length;\n      for (var i = 0; i < len; i++) {\n        if ((kind = node.properties[i].kind) === 'get' || kind === 'set') {\n          return true;\n        }\n      }\n    }\n    return false;\n  }\n  var dummyFun = function dummyFun() {};\n  var dummyObject = {};\n  var dummyArray = [];\n  function getLiteralValue(funId, node) {\n    if (node.name === \"undefined\") {\n      return undefined;\n    } else if (node.name === \"NaN\") {\n      return NaN;\n    } else if (node.name === \"Infinity\") {\n      return Infinity;\n    }\n    switch (funId) {\n      case N_LOG_NUMBER_LIT:\n      case N_LOG_STRING_LIT:\n      case N_LOG_NULL_LIT:\n      case N_LOG_REGEXP_LIT:\n      case N_LOG_BOOLEAN_LIT:\n        return node.value;\n      case N_LOG_ARRAY_LIT:\n        return dummyArray;\n      case N_LOG_FUNCTION_LIT:\n        return dummyFun;\n      case N_LOG_OBJECT_LIT:\n        return dummyObject;\n    }\n    throw new Error(funId + \" not known\");\n  }\n  function getFnIdFromAst(ast) {\n    var entryExpr = ast.body.body[0];\n    if (entryExpr.type != 'ExpressionStatement') {\n      console.log(JSON.stringify(entryExpr));\n      throw new Error(\"IllegalStateException\");\n    }\n    entryExpr = entryExpr.expression;\n    if (entryExpr.type != 'CallExpression') {\n      throw new Error(\"IllegalStateException\");\n    }\n    if (entryExpr.callee.type != 'MemberExpression') {\n      throw new Error(\"IllegalStateException\");\n    }\n    if (entryExpr.callee.object.name != JALANGI_VAR) {\n      throw new Error(\"IllegalStateException\");\n    }\n    if (entryExpr.callee.property.name != 'Fe') {\n      throw new Error(\"IllegalStateException\");\n    }\n    return entryExpr['arguments'][0].value;\n  }\n  function wrapLiteral(node, ast, funId) {\n    if (!Config.INSTR_LITERAL || Config.INSTR_LITERAL(getLiteralValue(funId, node), node)) {\n      printIidToLoc(node);\n      var hasGetterSetter = ifObjectExpressionHasGetterSetter(node);\n      var ret;\n      if (funId == N_LOG_FUNCTION_LIT) {\n        var internalFunId = null;\n        if (node.type == 'FunctionExpression') {\n          internalFunId = getFnIdFromAst(node);\n        } else {\n          if (node.type != 'Identifier') {\n            throw new Error(\"IllegalStateException\");\n          }\n          internalFunId = getFnIdFromAst(scope.funNodes[node.name]);\n        }\n        ret = replaceInExpr(logLitFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3,\" + hasGetterSetter + \", \" + internalFunId + \")\", getIid(), ast, createLiteralAst(funId), internalFunId);\n      } else {\n        ret = replaceInExpr(logLitFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3,\" + hasGetterSetter + \")\", getIid(), ast, createLiteralAst(funId));\n      }\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapReturn(node, expr) {\n    var lid = expr === null ? node : expr;\n    printIidToLoc(lid);\n    if (expr === null) {\n      expr = createIdentifierAst(\"undefined\");\n    }\n    var ret = replaceInExpr(logReturnFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getIid(), expr);\n    transferLoc(ret, lid);\n    return ret;\n  }\n  function wrapThrow(node, expr) {\n    printIidToLoc(expr);\n    var ret = replaceInExpr(logThrowFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getIid(), expr);\n    transferLoc(ret, expr);\n    return ret;\n  }\n  function wrapWithX1(node, ast) {\n    if (!Config.INSTR_END_EXPRESSION || Config.INSTR_END_EXPRESSION(node)) {\n      if (!ast || ast.type.indexOf(\"Expression\") <= 0) return ast;\n      printIidToLoc(node);\n      var ret = replaceInExpr(logX1FunName + \"(\" + RP + \"1,\" + RP + \"2)\", getIid(), ast);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return ast;\n    }\n  }\n  function wrapHash(node, ast) {\n    printIidToLoc(node);\n    var ret = replaceInExpr(logHashFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getIid(), ast);\n    transferLoc(ret, node);\n    return ret;\n  }\n  function wrapEvalArg(ast) {\n    printIidToLoc(ast);\n    var ret = replaceInExpr(instrumentCodeFunName + \"(\" + RP + \"1, \" + RP + \"2, true)\", ast, getIid());\n    transferLoc(ret, ast);\n    return ret;\n  }\n  function wrapUnaryOp(node, argument, operator) {\n    if (!Config.INSTR_UNARY || Config.INSTR_UNARY(operator, node)) {\n      printOpIidToLoc(node);\n      var ret = replaceInExpr(logUnaryOpFunName + \"(\" + RP + \"1,\" + RP + \"2,\" + RP + \"3)\", getOpIid(), createLiteralAst(operator), argument);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapBinaryOp(node, left, right, operator, isComputed) {\n    if (!Config.INSTR_BINARY || Config.INSTR_BINARY(operator, operator)) {\n      printOpIidToLoc(node);\n      var ret = replaceInExpr(logBinaryOpFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3, \" + RP + \"4,\" + createBitPattern(isComputed, false, false) + \")\", getOpIid(), createLiteralAst(operator), left, right);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapLogicalAnd(node, left, right) {\n    if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL(\"&&\", node)) {\n      printCondIidToLoc(node);\n      var ret = replaceInExpr(logConditionalFunName + \"(\" + RP + \"1, \" + RP + \"2)?\" + RP + \"3:\" + logLastFunName + \"()\", getCondIid(), left, right);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapLogicalOr(node, left, right) {\n    if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL(\"||\", node)) {\n      printCondIidToLoc(node);\n      var ret = replaceInExpr(logConditionalFunName + \"(\" + RP + \"1, \" + RP + \"2)?\" + logLastFunName + \"():\" + RP + \"3\", getCondIid(), left, right);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapSwitchDiscriminant(node, discriminant) {\n    if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL(\"switch\", node)) {\n      printCondIidToLoc(node);\n      var ret = replaceInExpr(logSwitchLeftFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getCondIid(), discriminant);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapSwitchTest(node, test) {\n    if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL(\"switch\", node)) {\n      printCondIidToLoc(node);\n      var ret = replaceInExpr(logSwitchRightFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getCondIid(), test);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapWith(node) {\n    if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL(\"with\", node)) {\n      printIidToLoc(node);\n      var ret = replaceInExpr(logWithFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getIid(), node);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n  function wrapConditional(node, test) {\n    if (node === null) {\n      return node;\n    } // to handle for(;;) ;\n\n    if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL(\"other\", node)) {\n      printCondIidToLoc(node);\n      var ret = replaceInExpr(logConditionalFunName + \"(\" + RP + \"1, \" + RP + \"2)\", getCondIid(), test);\n      transferLoc(ret, node);\n      return ret;\n    } else {\n      return node;\n    }\n  }\n\n  //    function createCallWriteAsStatement(node, name, val) {\n  //        printIidToLoc(node);\n  //        var ret = replaceInStatement(\n  //            logWriteFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3)\",\n  //            getIid(),\n  //            name,\n  //            val\n  //        );\n  //        transferLoc(ret[0].expression, node);\n  //        return ret;\n  //    }\n\n  function createExpressionStatement(lhs, node) {\n    var ret;\n    ret = replaceInStatement(RP + \"1 = \" + RP + \"2\", lhs, node);\n    transferLoc(ret[0].expression, node);\n    return ret;\n  }\n  function createCallInitAsStatement(node, name, val, isArgumentSync, lhs, isCatchParam, isAssign) {\n    printIidToLoc(node);\n    var ret;\n    if (isAssign) ret = replaceInStatement(RP + \"1 = \" + logInitFunName + \"(\" + RP + \"2, \" + RP + \"3, \" + RP + \"4, \" + createBitPattern(isArgumentSync, false, isCatchParam) + \")\", lhs, getIid(), name, val);else ret = replaceInStatement(logInitFunName + \"(\" + RP + \"1, \" + RP + \"2, \" + RP + \"3, \" + createBitPattern(isArgumentSync, false, isCatchParam) + \")\", getIid(), name, val);\n    transferLoc(ret[0].expression, node);\n    return ret;\n  }\n  function createCallAsFunEnterStatement(node) {\n    printIidToLoc(node);\n    var ret = replaceInStatement(logFunctionEnterFunName + \"(\" + RP + \"1,arguments.callee, this, arguments)\", getIid());\n    transferLoc(ret[0].expression, node);\n    return ret;\n  }\n  function createCallAsScriptEnterStatement(node) {\n    printIidToLoc(node);\n    var ret = replaceInStatement(logScriptEntryFunName + \"(\" + RP + \"1,\" + RP + \"2, \" + RP + \"3)\", getIid(), createLiteralAst(instCodeFileName), createLiteralAst(origCodeFileName));\n    transferLoc(ret[0].expression, node);\n    return ret;\n  }\n  var labelCounter = 0;\n  function wrapForIn(node, left, right, body) {\n    printIidToLoc(node);\n    var tmp,\n      extra,\n      isDeclaration = left.type === 'VariableDeclaration';\n    if (isDeclaration) {\n      var name = node.left.declarations[0].id.name;\n      tmp = replaceInExpr(name + \" = \" + logTmpVarName);\n    } else {\n      tmp = replaceInExpr(RP + \"1 = \" + logTmpVarName, left);\n    }\n    transferLoc(tmp, node);\n    extra = instrumentStore(tmp, isDeclaration);\n    var ret;\n    if (body.type === 'BlockExpression') {\n      body = body.body;\n    } else {\n      body = [body];\n    }\n    if (isDeclaration) {\n      ret = replaceInStatement(\"function n() {  for(\" + logTmpVarName + \" in \" + RP + \"1) {var \" + name + \" = \" + RP + \"2;\\n {\" + RP + \"3}}}\", right, wrapWithX1(node, extra.right), body);\n    } else {\n      ret = replaceInStatement(\"function n() {  for(\" + logTmpVarName + \" in \" + RP + \"1) {\" + RP + \"2;\\n {\" + RP + \"3}}}\", right, wrapWithX1(node, extra), body);\n    }\n    ret = ret[0].body.body[0];\n    transferLoc(ret, node);\n    return ret;\n  }\n  function wrapForInBody(node, body, name) {\n    printIidToLoc(node);\n    var ret = replaceInStatement(\"function n() { \" + logInitFunName + \"(\" + RP + \"1, '\" + name + \"',\" + name + \",\" + createBitPattern(false, true, false) + \");\\n {\" + RP + \"2}}\", getIid(), [body]);\n    ret = ret[0].body;\n    transferLoc(ret, node);\n    return ret;\n  }\n  function wrapCatchClause(node, body, name) {\n    var ret;\n    if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {\n      body.unshift(createCallInitAsStatement(node, createLiteralAst(name), createIdentifierAst(name), false, createIdentifierAst(name), true, true)[0]);\n    }\n  }\n  function wrapScriptBodyWithTryCatch(node, body) {\n    if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {\n      printIidToLoc(node);\n      var iid1 = getIid();\n      printIidToLoc(node);\n      var l = labelCounter++;\n      var ret = replaceInStatement(\"function n() { jalangiLabel\" + l + \": while(true) { try {\" + RP + \"1} catch(\" + JALANGI_VAR + \"e) { //console.log(\" + JALANGI_VAR + \"e); console.log(\" + JALANGI_VAR + \"e.stack);\\n  \" + logUncaughtExceptionFunName + \"(\" + RP + \"2,\" + JALANGI_VAR + \"e); } finally { if (\" + logScriptExitFunName + \"(\" + RP + \"3)) { \" + logLastComputedFunName + \"(); continue jalangiLabel\" + l + \";\\n } else {\\n  \" + logLastComputedFunName + \"(); break jalangiLabel\" + l + \";\\n }}\\n }}\", body, iid1, getIid());\n      //console.log(JSON.stringify(ret));\n\n      ret = ret[0].body.body;\n      transferLoc(ret[0], node);\n      return ret;\n    } else {\n      return body;\n    }\n  }\n  function wrapFunBodyWithTryCatch(node, body) {\n    if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {\n      printIidToLoc(node);\n      var iid1 = getIid();\n      printIidToLoc(node);\n      var l = labelCounter++;\n      var ret = replaceInStatement(\"function n() { jalangiLabel\" + l + \": while(true) { try {\" + RP + \"1} catch(\" + JALANGI_VAR + \"e) { //console.log(\" + JALANGI_VAR + \"e); console.log(\" + JALANGI_VAR + \"e.stack);\\n \" + logUncaughtExceptionFunName + \"(\" + RP + \"2,\" + JALANGI_VAR + \"e); } finally { if (\" + logFunctionReturnFunName + \"(\" + RP + \"3)) continue jalangiLabel\" + l + \";\\n else \\n  return \" + logReturnAggrFunName + \"();\\n }\\n }}\", body, iid1, getIid());\n      //console.log(JSON.stringify(ret));\n\n      ret = ret[0].body.body;\n      transferLoc(ret[0], node);\n      return ret;\n    } else {\n      return body;\n    }\n  }\n  function syncDefuns(node, scope, isScript) {\n    var ret = [],\n      ident;\n    if (!isScript) {\n      if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {\n        if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {\n          ident = createIdentifierAst(\"arguments\");\n          ret = ret.concat(createCallInitAsStatement(node, createLiteralAst(\"arguments\"), ident, true, ident, false, true));\n        }\n      }\n    }\n    if (scope) {\n      for (var name in scope.vars) {\n        if (HOP(scope.vars, name)) {\n          if (scope.vars[name] === \"defun\") {\n            if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {\n              ident = createIdentifierAst(name);\n              ident.loc = scope.funLocs[name];\n              ret = ret.concat(createCallInitAsStatement(node, createLiteralAst(name), wrapLiteral(ident, ident, N_LOG_FUNCTION_LIT), false, ident, false, true));\n            } else {\n              ident = createIdentifierAst(name);\n              ident.loc = scope.funLocs[name];\n              ret = ret.concat(createExpressionStatement(ident, wrapLiteral(ident, ident, N_LOG_FUNCTION_LIT)));\n            }\n          }\n          if (scope.vars[name] === \"lambda\") {\n            if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {\n              ident = createIdentifierAst(name);\n              ident.loc = scope.funLocs[name];\n              ret = ret.concat(createCallInitAsStatement(node, createLiteralAst(name), ident, false, ident, false, true));\n            }\n          }\n          if (scope.vars[name] === \"arg\") {\n            if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {\n              ident = createIdentifierAst(name);\n              ret = ret.concat(createCallInitAsStatement(node, createLiteralAst(name), ident, true, ident, false, true));\n            }\n          }\n          if (scope.vars[name] === \"var\") {\n            if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {\n              ret = ret.concat(createCallInitAsStatement(node, createLiteralAst(name), createIdentifierAst(name), false, undefined, false, false));\n            }\n          }\n        }\n      }\n    }\n    return ret;\n  }\n  var scope;\n  function instrumentFunctionEntryExit(node, ast) {\n    var body;\n    if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {\n      body = createCallAsFunEnterStatement(node);\n    } else {\n      body = [];\n    }\n    body = body.concat(syncDefuns(node, scope, false)).concat(ast);\n    return body;\n  }\n\n  //    function instrumentFunctionEntryExit(node, ast) {\n  //        return wrapFunBodyWithTryCatch(node, ast);\n  //    }\n\n  /**\n   * instruments entry of a script.  Adds the script entry (J$.Se) callback,\n   * and the J$.N init callbacks for locals.\n   *\n   */\n  function instrumentScriptEntryExit(node, body0) {\n    var body;\n    if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {\n      body = createCallAsScriptEnterStatement(node);\n    } else {\n      body = [];\n    }\n    body = body.concat(syncDefuns(node, scope, true)).concat(body0);\n    return body;\n  }\n  function getPropertyAsAst(ast) {\n    return ast.computed ? ast.property : createLiteralAst(ast.property.name);\n  }\n  function instrumentCall(callAst, isCtor) {\n    var ast = callAst.callee;\n    var ret;\n    if (ast.type === 'MemberExpression') {\n      ret = wrapMethodCall(callAst, ast.object, getPropertyAsAst(ast), isCtor, ast.computed);\n      return ret;\n    } else if (ast.type === 'Identifier' && ast.name === \"eval\") {\n      return ast;\n    } else {\n      ret = wrapFunCall(callAst, ast, isCtor);\n      return ret;\n    }\n  }\n  function instrumentStore(node, isDeclaration) {\n    var ret;\n    if (node.left.type === 'Identifier') {\n      if (scope.hasVar(node.left.name)) {\n        ret = wrapWrite(node.right, createLiteralAst(node.left.name), node.right, node.left, false, scope.isGlobal(node.left.name), isDeclaration);\n      } else {\n        ret = wrapWriteWithUndefinedCheck(node.right, createLiteralAst(node.left.name), node.right, node.left);\n      }\n      node.right = ret;\n      return node;\n    } else {\n      ret = wrapPutField(node, node.left.object, getPropertyAsAst(node.left), node.right, node.left.computed);\n      return ret;\n    }\n  }\n  function instrumentLoad(ast, isTypeof) {\n    var ret;\n    if (ast.type === 'Identifier') {\n      if (ast.name === \"undefined\") {\n        ret = wrapLiteral(ast, ast, N_LOG_UNDEFINED_LIT);\n        return ret;\n      } else if (ast.name === \"NaN\" || ast.name === \"Infinity\") {\n        ret = wrapLiteral(ast, ast, N_LOG_NUMBER_LIT);\n        return ret;\n      }\n      if (ast.name === JALANGI_VAR) {\n        return ast;\n      } else if (scope.hasVar(ast.name)) {\n        ret = wrapRead(ast, createLiteralAst(ast.name), ast, false, false, scope.isGlobal(ast.name));\n        return ret;\n      } else if (isTypeof) {\n        ret = wrapReadWithUndefinedCheck(ast, ast.name);\n        return ret;\n      } else {\n        ret = wrapRead(ast, createLiteralAst(ast.name), ast, false, true, false);\n        return ret;\n      }\n    } else if (ast.type === 'MemberExpression') {\n      return wrapGetField(ast, ast.object, getPropertyAsAst(ast), ast.computed);\n    } else {\n      return ast;\n    }\n  }\n  function instrumentLoadModStore(node, isNumber) {\n    if (node.left.type === 'Identifier') {\n      var tmp0 = instrumentLoad(node.left, false);\n      if (isNumber) {\n        tmp0 = makeNumber(node, instrumentLoad(tmp0, false));\n      }\n      var tmp1 = wrapRHSOfModStore(node.right, tmp0, node.right, node.operator.substring(0, node.operator.length - 1));\n      var tmp2;\n      if (scope.hasVar(node.left.name)) {\n        tmp2 = wrapWrite(node, createLiteralAst(node.left.name), tmp1, node.left, false, scope.isGlobal(node.left.name), false);\n      } else {\n        tmp2 = wrapWriteWithUndefinedCheck(node, createLiteralAst(node.left.name), tmp1, node.left);\n      }\n      tmp2 = wrapLHSOfModStore(node, node.left, tmp2);\n      return tmp2;\n    } else {\n      var ret = wrapModAssign(node, node.left.object, getPropertyAsAst(node.left), node.operator.substring(0, node.operator.length - 1), node.right, node.left.computed);\n      return ret;\n    }\n  }\n  function instrumentPreIncDec(node) {\n    var right = createLiteralAst(1);\n    right = wrapLiteral(right, right, N_LOG_NUMBER_LIT);\n    var ret = wrapRHSOfModStore(node, node.argument, right, node.operator.substring(0, 1) + \"=\");\n    return instrumentLoadModStore(ret, true);\n  }\n  function adjustIncDec(op, ast) {\n    if (op === '++') {\n      op = '-';\n    } else {\n      op = '+';\n    }\n    var right = createLiteralAst(1);\n    right = wrapLiteral(right, right, N_LOG_NUMBER_LIT);\n    var ret = wrapRHSOfModStore(ast, ast, right, op);\n    return ret;\n  }\n\n  // Should 'Program' nodes in the AST be wrapped with prefix code to load libraries,\n  // code to indicate script entry and exit, etc.?\n  // we need this flag since when we're instrumenting eval'd code, the code is parsed\n  // as a top-level 'Program', but the wrapping code may not be syntactically valid in\n  // the surrounding context, e.g.:\n  //    var y = eval(\"x + 1\");\n\n  function setScope(node) {\n    scope = node.scope;\n  }\n  function funCond0(node) {\n    node.test = wrapWithX1(node, node.test);\n    node.init = wrapWithX1(node, node.init);\n    node.update = wrapWithX1(node, node.update);\n    return node;\n  }\n  function mergeBodies(node) {\n    printIidToLoc(node);\n    var ret = replaceInStatement(\"function n() { if (!\" + logSampleFunName + \"(\" + RP + \"1, arguments.callee)){\" + RP + \"2} else {\" + RP + \"3}}\", getIid(), node.bodyOrig.body, node.body.body);\n    node.body.body = ret[0].body.body;\n    delete node.bodyOrig;\n    return node;\n  }\n  function regExpToJSON() {\n    var str = this.source;\n    var glb = this.global;\n    var ignoreCase = this.ignoreCase;\n    var multiline = this.multiline;\n    var obj = {\n      type: 'J$$.AST.REGEXP',\n      value: str,\n      glb: glb,\n      ignoreCase: ignoreCase,\n      multiline: multiline\n    };\n    return obj;\n  }\n  function JSONStringifyHandler(key, value) {\n    if (key === 'scope') {\n      return undefined;\n    }\n    if (value instanceof RegExp) {\n      return regExpToJSON.call(value);\n    } else {\n      return value;\n    }\n  }\n  function JSONParseHandler(key, value) {\n    var ret = value,\n      flags = '';\n    if (_typeof(value) === 'object' && value && value.type === 'J$$.AST.REGEXP') {\n      if (value.glb) flags += 'g';\n      if (value.ignoreCase) flags += 'i';\n      if (value.multiline) flags += 'm';\n      ret = RegExp(value.value, flags);\n    }\n    return ret;\n  }\n  function clone(src) {\n    var ret = JSON.parse(JSON.stringify(src, JSONStringifyHandler), JSONParseHandler);\n    return ret;\n  }\n\n  /*\n   function constructEmptyObject(o) {\n   function F() {}\n   F.prototype = o;\n   return new F();\n   }\n    function clone(src) { // from http://davidwalsh.name/javascript-clone\n   function mixin(dest, source, copyFunc) {\n   var name, s, i, empty = {};\n   for(name in source){\n   // the (!(name in empty) || empty[name] !== s) condition avoids copying properties in \"source\"\n   // inherited from Object.prototype.\t For example, if dest has a custom toString() method,\n   // don't overwrite it with the toString() method that source inherited from Object.prototype\n   s = source[name];\n   if(!(name in dest) || (dest[name] !== s && (!(name in empty) || empty[name] !== s))){\n   dest[name] = copyFunc ? copyFunc(s) : s;\n   }\n   }\n   return dest;\n   }\n    if(!src || typeof src != \"object\" || Object.prototype.toString.call(src) === \"[object Function]\"){\n   // null, undefined, any non-object, or function\n   return src;\t// anything\n   }\n   if(src.nodeType && \"cloneNode\" in src){\n   // DOM Node\n   return src.cloneNode(true); // Node\n   }\n   if(src instanceof Date){\n   // Date\n   return new Date(src.getTime());\t// Date\n   }\n   if(src instanceof RegExp){\n   // RegExp\n   return new RegExp(src);   // RegExp\n   }\n   var r, i, l;\n   if(src instanceof Array){\n   // array\n   r = [];\n   for(i = 0, l = src.length; i < l; ++i){\n   if(i in src){\n   r.push(clone(src[i]));\n   }\n   }\n   // we don't clone functions for performance reasons\n   //\t\t}else if(d.isFunction(src)){\n   //\t\t\t// function\n   //\t\t\tr = function(){ return src.apply(this, arguments); };\n   }else{\n   // generic objects\n   try {\n   r = constructEmptyObject(src);\n   //                r = src.constructor ? new src.constructor() : {};\n   } catch (e) {\n   console.log(src);\n   throw e;\n   }\n   }\n   return mixin(r, src, clone);\n    }\n   */\n  var visitorCloneBodyPre = {\n    \"FunctionExpression\": function FunctionExpression(node) {\n      node.bodyOrig = clone(node.body);\n      return node;\n    },\n    \"FunctionDeclaration\": function FunctionDeclaration(node) {\n      node.bodyOrig = clone(node.body);\n      return node;\n    }\n  };\n  var visitorMergeBodyPre = {\n    \"FunctionExpression\": mergeBodies,\n    \"FunctionDeclaration\": mergeBodies\n  };\n  var visitorRRPre = {\n    'Program': setScope,\n    'FunctionDeclaration': setScope,\n    'FunctionExpression': setScope,\n    'CatchClause': setScope\n  };\n  var visitorRRPost = {\n    'Literal': function Literal(node, context) {\n      if (context === astUtil.CONTEXT.RHS) {\n        var litType;\n        switch (_typeof(node.value)) {\n          case 'number':\n            litType = N_LOG_NUMBER_LIT;\n            break;\n          case 'string':\n            litType = N_LOG_STRING_LIT;\n            break;\n          case 'object':\n            // for null\n            if (node.value === null) litType = N_LOG_NULL_LIT;else litType = N_LOG_REGEXP_LIT;\n            break;\n          case 'boolean':\n            litType = N_LOG_BOOLEAN_LIT;\n            break;\n        }\n        var ret1 = wrapLiteral(node, node, litType);\n        return ret1;\n      } else {\n        return node;\n      }\n    },\n    \"Program\": function Program(node) {\n      var ret = instrumentScriptEntryExit(node, node.body);\n      node.body = ret;\n      scope = scope.parent;\n      return node;\n    },\n    \"VariableDeclaration\": function VariableDeclaration(node) {\n      var declarations = MAP(node.declarations, function (def) {\n        if (def.init !== null) {\n          var init = wrapWrite(def.init, createLiteralAst(def.id.name), def.init, def.id, false, scope.isGlobal(def.id.name), true);\n          init = wrapWithX1(def.init, init);\n          def.init = init;\n        }\n        return def;\n      });\n      node.declarations = declarations;\n      return node;\n    },\n    \"NewExpression\": function NewExpression(node) {\n      var ret = {\n        type: 'CallExpression',\n        callee: instrumentCall(node, true),\n        'arguments': node.arguments\n      };\n      transferLoc(ret, node);\n      return ret;\n      //            var ret1 = wrapLiteral(node, ret, N_LOG_OBJECT_LIT);\n      //            return ret1;\n    },\n    \"CallExpression\": function CallExpression(node) {\n      var isEval = node.callee.type === 'Identifier' && node.callee.name === \"eval\";\n      var callee = instrumentCall(node, false);\n      node.callee = callee;\n      if (isEval) {\n        node.arguments = MAP(node.arguments, wrapEvalArg);\n      }\n      return node;\n    },\n    \"AssignmentExpression\": function AssignmentExpression(node) {\n      var ret1;\n      if (node.operator === \"=\") {\n        ret1 = instrumentStore(node, false);\n      } else {\n        ret1 = instrumentLoadModStore(node);\n      }\n      return ret1;\n    },\n    \"UpdateExpression\": function UpdateExpression(node) {\n      var ret1;\n      ret1 = instrumentPreIncDec(node);\n      if (!node.prefix) {\n        ret1 = adjustIncDec(node.operator, ret1);\n      }\n      return ret1;\n    },\n    \"FunctionExpression\": function FunctionExpression(node, context) {\n      node.body.body = instrumentFunctionEntryExit(node, node.body.body);\n      var ret1;\n      if (context === astUtil.CONTEXT.GETTER || context === astUtil.CONTEXT.SETTER) {\n        ret1 = node;\n      } else {\n        ret1 = wrapLiteral(node, node, N_LOG_FUNCTION_LIT);\n      }\n      scope = scope.parent;\n      return ret1;\n    },\n    \"FunctionDeclaration\": function FunctionDeclaration(node) {\n      //console.log(node.body.body);\n      node.body.body = instrumentFunctionEntryExit(node, node.body.body);\n      scope = scope.parent;\n      return node;\n    },\n    \"ObjectExpression\": function ObjectExpression(node) {\n      var ret1 = wrapLiteral(node, node, N_LOG_OBJECT_LIT);\n      return ret1;\n    },\n    \"ArrayExpression\": function ArrayExpression(node) {\n      var ret1 = wrapLiteral(node, node, N_LOG_ARRAY_LIT);\n      return ret1;\n    },\n    'ThisExpression': function ThisExpression(node) {\n      var ret = wrapRead(node, createLiteralAst('this'), node, false, false, false);\n      return ret;\n    },\n    'Identifier': function Identifier(node, context) {\n      if (context === astUtil.CONTEXT.RHS) {\n        var ret = instrumentLoad(node, false);\n        return ret;\n      } else if (context === astUtil.CONTEXT.TYPEOF) {\n        ret = instrumentLoad(node, true);\n        return ret;\n      } else {\n        return node;\n      }\n    },\n    'MemberExpression': function MemberExpression(node, context) {\n      if (context === astUtil.CONTEXT.RHS) {\n        var ret = instrumentLoad(node, false);\n        return ret;\n      } else {\n        return node;\n      }\n    },\n    \"SequenceExpression\": function SequenceExpression(node) {\n      var i = 0,\n        len = node.expressions.length;\n      for (i = 0; i < len - 1 /* the last expression is the result, do not wrap that */; i++) {\n        node.expressions[i] = wrapWithX1(node.expressions[i], node.expressions[i]);\n      }\n      return node;\n    },\n    \"ForInStatement\": function ForInStatement(node) {\n      var ret = wrapHash(node.right, node.right);\n      node.right = ret;\n      node = wrapForIn(node, node.left, node.right, node.body);\n      //var name;\n      //if (node.left.type === 'VariableDeclaration') {\n      //    name = node.left.declarations[0].id.name;\n      //} else {\n      //    name = node.left.name;\n      //}\n      //node.body = wrapForInBody(node, node.body, name);\n      return node;\n    },\n    \"CatchClause\": function CatchClause(node) {\n      var name;\n      name = node.param.name;\n      wrapCatchClause(node, node.body.body, name);\n      scope = scope.parent;\n      return node;\n    },\n    \"ReturnStatement\": function ReturnStatement(node) {\n      var ret = wrapReturn(node, node.argument);\n      node.argument = wrapWithX1(node, ret);\n      return node;\n    },\n    \"ThrowStatement\": function ThrowStatement(node) {\n      var ret = wrapThrow(node, node.argument);\n      node.argument = wrapWithX1(node, ret);\n      return node;\n    },\n    \"ExpressionStatement\": function ExpressionStatement(node) {\n      node.expression = wrapWithX1(node, node.expression);\n      return node;\n    }\n  };\n  function funCond(node) {\n    var ret = wrapConditional(node.test, node.test);\n    node.test = ret;\n    node.test = wrapWithX1(node, node.test);\n    node.init = wrapWithX1(node, node.init);\n    node.update = wrapWithX1(node, node.update);\n    return node;\n  }\n  var visitorOps = {\n    \"Program\": function Program(node) {\n      var body = wrapScriptBodyWithTryCatch(node, node.body);\n      //                var ret = prependScriptBody(node, body);\n      node.body = body;\n      return node;\n    },\n    'BinaryExpression': function BinaryExpression(node) {\n      var ret = wrapBinaryOp(node, node.left, node.right, node.operator);\n      return ret;\n    },\n    'LogicalExpression': function LogicalExpression(node) {\n      var ret;\n      if (node.operator === \"&&\") {\n        ret = wrapLogicalAnd(node, node.left, node.right);\n      } else if (node.operator === \"||\") {\n        ret = wrapLogicalOr(node, node.left, node.right);\n      }\n      return ret;\n    },\n    'UnaryExpression': function UnaryExpression(node) {\n      var ret;\n      if (node.operator === \"void\") {\n        return node;\n      } else if (node.operator === \"delete\") {\n        if (node.argument.object) {\n          ret = wrapBinaryOp(node, node.argument.object, getPropertyAsAst(node.argument), node.operator, node.argument.computed);\n        } else {\n          return node;\n        }\n      } else {\n        ret = wrapUnaryOp(node, node.argument, node.operator);\n      }\n      return ret;\n    },\n    \"SwitchStatement\": function SwitchStatement(node) {\n      var dis = wrapSwitchDiscriminant(node.discriminant, node.discriminant);\n      dis = wrapWithX1(node.discriminant, dis);\n      var cases = MAP(node.cases, function (acase) {\n        var test;\n        if (acase.test) {\n          test = wrapSwitchTest(acase.test, acase.test);\n          acase.test = wrapWithX1(acase.test, test);\n        }\n        return acase;\n      });\n      node.discriminant = dis;\n      node.cases = cases;\n      return node;\n    },\n    \"FunctionExpression\": function FunctionExpression(node) {\n      node.body.body = wrapFunBodyWithTryCatch(node, node.body.body);\n      return node;\n    },\n    \"FunctionDeclaration\": function FunctionDeclaration(node) {\n      node.body.body = wrapFunBodyWithTryCatch(node, node.body.body);\n      return node;\n    },\n    \"WithStatement\": function WithStatement(node) {\n      node.object = wrapWith(node.object);\n      return node;\n    },\n    \"ConditionalExpression\": funCond,\n    \"IfStatement\": funCond,\n    \"WhileStatement\": funCond,\n    \"DoWhileStatement\": funCond,\n    \"ForStatement\": funCond\n  };\n  function addScopes(ast) {\n    function Scope(parent, isCatch) {\n      this.vars = {};\n      this.funLocs = {};\n      this.funNodes = {};\n      this.hasEval = false;\n      this.hasArguments = false;\n      this.parent = parent;\n      this.isCatch = isCatch;\n    }\n    Scope.prototype.addVar = function (name, type, loc, node) {\n      var tmpScope = this;\n      if (this.isCatch && type !== 'catch') {\n        tmpScope = this.parent;\n      }\n      if (tmpScope.vars[name] !== 'arg') {\n        tmpScope.vars[name] = type;\n      }\n      if (type === 'defun') {\n        tmpScope.funLocs[name] = loc;\n        tmpScope.funNodes[name] = node;\n      }\n    };\n    Scope.prototype.hasOwnVar = function (name) {\n      var s = this;\n      if (s && HOP(s.vars, name)) return s.vars[name];\n      return null;\n    };\n    Scope.prototype.hasVar = function (name) {\n      var s = this;\n      while (s !== null) {\n        if (HOP(s.vars, name)) return s.vars[name];\n        s = s.parent;\n      }\n      return null;\n    };\n    Scope.prototype.isGlobal = function (name) {\n      var s = this;\n      while (s !== null) {\n        if (HOP(s.vars, name) && s.parent !== null) {\n          return false;\n        }\n        s = s.parent;\n      }\n      return true;\n    };\n    Scope.prototype.addEval = function () {\n      var s = this;\n      while (s !== null) {\n        s.hasEval = true;\n        s = s.parent;\n      }\n    };\n    Scope.prototype.addArguments = function () {\n      var s = this;\n      while (s !== null) {\n        s.hasArguments = true;\n        s = s.parent;\n      }\n    };\n    Scope.prototype.usesEval = function () {\n      return this.hasEval;\n    };\n    Scope.prototype.usesArguments = function () {\n      return this.hasArguments;\n    };\n    var currentScope = null;\n\n    // rename arguments to J$_arguments\n    var fromName = 'arguments';\n    var toName = JALANGI_VAR + \"_arguments\";\n    function handleFun(node) {\n      var oldScope = currentScope;\n      currentScope = new Scope(currentScope);\n      node.scope = currentScope;\n      if (node.type === 'FunctionDeclaration') {\n        oldScope.addVar(node.id.name, \"defun\", node.loc, node);\n        MAP(node.params, function (param) {\n          if (param.name === fromName) {\n            // rename arguments to J$_arguments\n            param.name = toName;\n          }\n          currentScope.addVar(param.name, \"arg\");\n        });\n      } else if (node.type === 'FunctionExpression') {\n        if (node.id !== null) {\n          currentScope.addVar(node.id.name, \"lambda\");\n        }\n        MAP(node.params, function (param) {\n          if (param.name === fromName) {\n            // rename arguments to J$_arguments\n            param.name = toName;\n          }\n          currentScope.addVar(param.name, \"arg\");\n        });\n      }\n    }\n    function handleVar(node) {\n      currentScope.addVar(node.id.name, \"var\");\n    }\n    function handleCatch(node) {\n      var oldScope = currentScope;\n      currentScope = new Scope(currentScope, true);\n      node.scope = currentScope;\n      currentScope.addVar(node.param.name, \"catch\");\n    }\n    function popScope(node) {\n      currentScope = currentScope.parent;\n      return node;\n    }\n    var visitorPre = {\n      'Program': handleFun,\n      'FunctionDeclaration': handleFun,\n      'FunctionExpression': handleFun,\n      'VariableDeclarator': handleVar,\n      'CatchClause': handleCatch\n    };\n    var visitorPost = {\n      'Program': popScope,\n      'FunctionDeclaration': popScope,\n      'FunctionExpression': popScope,\n      'CatchClause': popScope,\n      'Identifier': function Identifier(node, context) {\n        // rename arguments to J$_arguments\n        if (context === astUtil.CONTEXT.RHS && node.name === fromName && currentScope.hasOwnVar(toName)) {\n          node.name = toName;\n        }\n        return node;\n      },\n      \"UpdateExpression\": function UpdateExpression(node) {\n        // rename arguments to J$_arguments\n        if (node.argument.type === 'Identifier' && node.argument.name === fromName && currentScope.hasOwnVar(toName)) {\n          node.argument.name = toName;\n        }\n        return node;\n      },\n      \"AssignmentExpression\": function AssignmentExpression(node) {\n        // rename arguments to J$_arguments\n        if (node.left.type === 'Identifier' && node.left.name === fromName && currentScope.hasOwnVar(toName)) {\n          node.left.name = toName;\n        }\n        return node;\n      }\n    };\n    astUtil.transformAst(ast, visitorPost, visitorPre);\n  }\n\n  // START of Liang Gong's AST post-processor\n  function hoistFunctionDeclaration(ast, hoisteredFunctions) {\n    var key,\n      child,\n      startIndex = 0;\n    if (ast.body) {\n      var newBody = [];\n      if (ast.body.length > 0) {\n        // do not hoister function declaration before J$.Fe or J$.Se\n        if (ast.body[0].type === 'ExpressionStatement') {\n          if (ast.body[0].expression.type === 'CallExpression') {\n            if (ast.body[0].expression.callee.object && ast.body[0].expression.callee.object.name === 'J$$' && ast.body[0].expression.callee.property && (ast.body[0].expression.callee.property.name === 'Se' || ast.body[0].expression.callee.property.name === 'Fe')) {\n              newBody.push(ast.body[0]);\n              startIndex = 1;\n            }\n          }\n        }\n      }\n      for (var i = startIndex; i < ast.body.length; i++) {\n        if (ast.body[i].type === 'FunctionDeclaration') {\n          newBody.push(ast.body[i]);\n          if (newBody.length !== i + 1) {\n            hoisteredFunctions.push(ast.body[i].id.name);\n          }\n        }\n      }\n      for (var i = startIndex; i < ast.body.length; i++) {\n        if (ast.body[i].type !== 'FunctionDeclaration') {\n          newBody.push(ast.body[i]);\n        }\n      }\n      while (ast.body.length > 0) {\n        ast.body.pop();\n      }\n      for (var i = 0; i < newBody.length; i++) {\n        ast.body.push(newBody[i]);\n      }\n    } else {\n      //console.log(typeof ast.body);\n    }\n    for (key in ast) {\n      if (ast.hasOwnProperty(key)) {\n        child = ast[key];\n        if (_typeof(child) === 'object' && child !== null && key !== \"scope\") {\n          hoistFunctionDeclaration(child, hoisteredFunctions);\n        }\n      }\n    }\n    return ast;\n  }\n\n  // END of Liang Gong's AST post-processor\n\n  function transformString(code, visitorsPost, visitorsPre) {\n    //         StatCollector.resumeTimer(\"parse\");\n    //        console.time(\"parse\")\n    //        var newAst = esprima.parse(code, {loc:true, range:true});\n    var newAst = acorn.parse(es6Transform(code), {\n      locations: true,\n      ecmaVersion: 6\n    });\n    //        console.timeEnd(\"parse\")\n    //        StatCollector.suspendTimer(\"parse\");\n    //        StatCollector.resumeTimer(\"transform\");\n    //        console.time(\"transform\")\n    addScopes(newAst);\n    var len = visitorsPost.length;\n    for (var i = 0; i < len; i++) {\n      newAst = astUtil.transformAst(newAst, visitorsPost[i], visitorsPre[i], astUtil.CONTEXT.RHS);\n    }\n    //        console.timeEnd(\"transform\")\n    //        StatCollector.suspendTimer(\"transform\");\n    //        console.log(JSON.stringify(newAst,null,\"  \"));\n    return newAst;\n  }\n\n  // if this string is discovered inside code passed to instrumentCode(),\n  // the code will not be instrumented\n  var noInstr = \"// JALANGI DO NOT INSTRUMENT\";\n  function initializeIIDCounters(forEval) {\n    var adj = forEval ? IID_INC_STEP / 2 : 0;\n    condIid = IID_INC_STEP + adj + 0;\n    memIid = IID_INC_STEP + adj + 1;\n    opIid = IID_INC_STEP + adj + 2;\n  }\n  function instrumentEvalCode(code, iid, isDirect) {\n    return instrumentCode({\n      code: code,\n      thisIid: iid,\n      isEval: true,\n      inlineSourceMap: true,\n      inlineSource: true,\n      isDirect: isDirect\n    }).code;\n  }\n  function removeShebang(code) {\n    if (code.indexOf(\"#!\") == 0) {\n      return code.substring(code.indexOf(\"\\n\") + 1);\n    }\n    return code;\n  }\n\n  /**\n   * Instruments the provided code.\n   *\n   * @param {{isEval: boolean, code: string, thisIid: int, origCodeFileName: string, instCodeFileName: string, inlineSourceMap: boolean, inlineSource: boolean, url: string, isDirect: boolean }} options\n   * @return {{code:string, instAST: object, sourceMapObject: object, sourceMapString: string}}\n   *\n   */\n  function instrumentCode(options) {\n    var aret,\n      skip = false;\n    var isEval = options.isEval,\n      code = options.code,\n      thisIid = options.thisIid,\n      inlineSource = options.inlineSource,\n      url = options.url;\n    iidSourceInfo = {};\n    initializeIIDCounters(isEval);\n    instCodeFileName = options.instCodeFileName ? options.instCodeFileName : options.isDirect ? \"eval\" : \"evalIndirect\";\n    origCodeFileName = options.origCodeFileName ? options.origCodeFileName : options.isDirect ? \"eval\" : \"evalIndirect\";\n    if (sandbox.analysis && sandbox.analysis.instrumentCodePre) {\n      aret = sandbox.analysis.instrumentCodePre(thisIid, code, options.isDirect);\n      if (aret) {\n        code = aret.code;\n        skip = aret.skip;\n      }\n    }\n    if (!skip && typeof code === 'string' && code.indexOf(noInstr) < 0) {\n      try {\n        code = removeShebang(code);\n        iidSourceInfo = {};\n        var newAst;\n        if (Config.ENABLE_SAMPLING) {\n          newAst = transformString(code, [visitorCloneBodyPre, visitorRRPost, visitorOps, visitorMergeBodyPre], [undefined, visitorRRPre, undefined, undefined]);\n        } else {\n          newAst = transformString(code, [visitorRRPost, visitorOps], [visitorRRPre, undefined]);\n        }\n        // post-process AST to hoist function declarations (required for Firefox)\n        var hoistedFcts = [];\n        newAst = hoistFunctionDeclaration(newAst, hoistedFcts);\n        var newCode = esotope.generate(newAst, {\n          comment: true,\n          parse: acorn.parse\n        });\n        code = newCode + \"\\n\" + noInstr + \"\\n\";\n      } catch (ex) {\n        console.log(\"Failed to instrument\", code);\n        throw ex;\n      }\n    }\n    var tmp = {};\n    tmp.nBranches = iidSourceInfo.nBranches = (condIid / IID_INC_STEP - 1) * 2;\n    tmp.originalCodeFileName = iidSourceInfo.originalCodeFileName = origCodeFileName;\n    tmp.instrumentedCodeFileName = iidSourceInfo.instrumentedCodeFileName = instCodeFileName;\n    if (url) {\n      tmp.url = iidSourceInfo.url = url;\n    }\n    if (isEval) {\n      tmp.evalSid = iidSourceInfo.evalSid = sandbox.sid;\n      tmp.evalIid = iidSourceInfo.evalIid = thisIid;\n    }\n    if (inlineSource) {\n      tmp.code = iidSourceInfo.code = options.code;\n    }\n    var prepend = JSON.stringify(iidSourceInfo);\n    var instCode;\n    if (options.inlineSourceMap) {\n      instCode = JALANGI_VAR + \".iids = \" + prepend + \";\\n\" + code;\n    } else {\n      instCode = JALANGI_VAR + \".iids = \" + JSON.stringify(tmp) + \";\\n\" + code;\n    }\n    if (isEval && sandbox.analysis && sandbox.analysis.instrumentCode) {\n      aret = sandbox.analysis.instrumentCode(thisIid, instCode, newAst, options.isDirect);\n      if (aret) {\n        instCode = aret.result;\n      }\n    }\n    return {\n      code: instCode,\n      instAST: newAst,\n      sourceMapObject: iidSourceInfo,\n      sourceMapString: prepend\n    };\n  }\n  sandbox.instrumentCode = instrumentCode;\n  sandbox.instrumentEvalCode = instrumentEvalCode;\n})(J$$);\n\n// exports J$$.instrumentCode\n// exports J$$.instrumentEvalCode\n// depends on acorn\n// depends on esotope\n// depends on babel\n// depends on J$$.Constants\n// depends on J$$.Config\n// depends on J$$.astUtil\n\n//# sourceURL=webpack://runtime-jalangi2/./src/esnstrument.js?");
+    var PREFIX1 = Constants.JALANGI_VAR = "J$$";
+    Constants.SPECIAL_PROP = "*" + PREFIX1 + "*";
+    Constants.SPECIAL_PROP2 = "*" + PREFIX1 + "I*";
+    Constants.SPECIAL_PROP3 = "*" + PREFIX1 + "C*";
+    Constants.SPECIAL_PROP4 = "*" + PREFIX1 + "W*";
+    Constants.SPECIAL_PROP_SID = "*" + PREFIX1 + "SID*";
+    Constants.SPECIAL_PROP_IID = "*" + PREFIX1 + "IID*";
+
+    Constants.UNKNOWN = -1;
+
+    //-------------------------------- End constants ---------------------------------
+
+    //-------------------------------------- Constant functions -----------------------------------------------------------
+
+    var HOP = Constants.HOP = function (obj, prop) {
+        return (prop + "" === '__proto__') || CALL.call(HAS_OWN_PROPERTY, obj, prop); //Constants.HAS_OWN_PROPERTY_CALL.apply(Constants.HAS_OWN_PROPERTY, [obj, prop]);
+    };
+
+    Constants.hasGetterSetter = function (obj, prop, isGetter) {
+        if (typeof Object.getOwnPropertyDescriptor !== 'function') {
+            return true;
+        }
+        while (obj !== null) {
+            if (typeof obj !== 'object' && typeof obj !== 'function') {
+                return false;
+            }
+            var desc = Object.getOwnPropertyDescriptor(obj, prop);
+            if (desc !== undefined) {
+                if (isGetter && typeof desc.get === 'function') {
+                    return true;
+                }
+                if (!isGetter && typeof desc.set === 'function') {
+                    return true;
+                }
+            } else if (HOP(obj, prop)) {
+                return false;
+            }
+            obj = obj.__proto__;
+        }
+        return false;
+    };
+
+    Constants.debugPrint = function (s) {
+        if (sandbox.Config.DEBUG) {
+            console.log("***" + s);
+        }
+    };
+
+    Constants.warnPrint = function (iid, s) {
+        if (sandbox.Config.WARN && iid !== 0) {
+            console.log("        at " + iid + " " + s);
+        }
+    };
+
+    Constants.seriousWarnPrint = function (iid, s) {
+        if (sandbox.Config.SERIOUS_WARN && iid !== 0) {
+            console.log("        at " + iid + " Serious " + s);
+        }
+    };
+
+})(J$$);
+
+
 
 /***/ }),
 
@@ -64,9 +182,72 @@ eval("__webpack_require__.r(__webpack_exports__);\nfunction _typeof(o) { \"@babe
 /*!******************************!*\
   !*** ./src/iidToLocation.js ***!
   \******************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ (() => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/*\n * Copyright 2013-2014 Samsung Information Systems America, Inc.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *        http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n// Author: Koushik Sen\n// do not remove the following comment\n// JALANGI DO NOT INSTRUMENT\n\nif (typeof J$$ === 'undefined') {\n  J$$ = {};\n}\n(function (sandbox) {\n  if (typeof sandbox.iidToLocation !== 'undefined') {\n    return;\n  }\n  sandbox.iidToLocation = function (sid, iid) {\n    var ret,\n      arr,\n      gid = sid;\n    if (sandbox.smap) {\n      if (typeof sid === 'string' && sid.indexOf(':') >= 0) {\n        sid = sid.split(':');\n        iid = parseInt(sid[1]);\n        sid = parseInt(sid[0]);\n      } else {\n        gid = sid + \":\" + iid;\n      }\n      if (ret = sandbox.smap[sid]) {\n        var fname = ret.originalCodeFileName;\n        if (ret.evalSid !== undefined) {\n          fname = fname + sandbox.iidToLocation(ret.evalSid, ret.evalIid);\n        }\n        arr = ret[iid];\n        if (arr) {\n          if (sandbox.Results) {\n            return \"<a href=\\\"javascript:iidToDisplayCodeLocation('\" + gid + \"');\\\">(\" + fname + \":\" + arr[0] + \":\" + arr[1] + \":\" + arr[2] + \":\" + arr[3] + \")</a>\";\n          } else {\n            return \"(\" + fname + \":\" + arr[0] + \":\" + arr[1] + \":\" + arr[2] + \":\" + arr[3] + \")\";\n          }\n        } else {\n          return \"(\" + fname + \":iid\" + iid + \")\";\n        }\n      }\n    }\n    return sid + \"\";\n  };\n  sandbox.getGlobalIID = function (iid) {\n    return sandbox.sid + \":\" + iid;\n  };\n})(J$$);\n\n//# sourceURL=webpack://runtime-jalangi2/./src/iidToLocation.js?");
+/*
+ * Copyright 2013-2014 Samsung Information Systems America, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Author: Koushik Sen
+// do not remove the following comment
+// JALANGI DO NOT INSTRUMENT
+
+if (typeof J$$ === 'undefined') {
+  J$$ = {};
+}
+
+(function (sandbox) {
+  if (typeof sandbox.iidToLocation !== 'undefined') {
+      return;
+  }
+  sandbox.iidToLocation = function (sid, iid) {
+      var ret, arr, gid=sid;
+      if (sandbox.smap) {
+          if (typeof sid === 'string' && sid.indexOf(':')>=0) {
+              sid = sid.split(':');
+              iid = parseInt(sid[1]);
+              sid = parseInt(sid[0]);
+          } else {
+              gid = sid+":"+iid;
+          }
+          if ((ret = sandbox.smap[sid])) {
+              var fname = ret.originalCodeFileName;
+              if (ret.evalSid !== undefined) {
+                  fname = fname+sandbox.iidToLocation(ret.evalSid, ret.evalIid);
+              }
+              arr = ret[iid];
+              if (arr) {
+                  if (sandbox.Results) {
+                      return "<a href=\"javascript:iidToDisplayCodeLocation('"+gid+"');\">(" + fname + ":" + arr[0] + ":" + arr[1] + ":" + arr[2] + ":" + arr[3] + ")</a>";
+                  } else {
+                      return "(" + fname + ":" + arr[0] + ":" + arr[1] + ":" + arr[2] + ":" + arr[3] + ")";
+                  }
+              } else {
+                  return "(" + fname + ":iid" + iid + ")";
+              }
+          }
+      }
+      return sid+"";
+  };
+
+  sandbox.getGlobalIID = function(iid) {
+      return sandbox.sid +":"+iid;
+  }
+
+}(J$$));
+
 
 /***/ }),
 
@@ -74,9 +255,821 @@ eval("__webpack_require__.r(__webpack_exports__);\n/*\n * Copyright 2013-2014 Sa
 /*!************************!*\
   !*** ./src/runtime.js ***!
   \************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ (() => {
 
-eval("__webpack_require__.r(__webpack_exports__);\nfunction _typeof(o) { \"@babel/helpers - typeof\"; return _typeof = \"function\" == typeof Symbol && \"symbol\" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && \"function\" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? \"symbol\" : typeof o; }, _typeof(o); }\n/*\n * Copyright 2014 Samsung Information Systems America, Inc.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *        http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n// Author: Koushik Sen\n\n// do not remove the following comment\n// JALANGI DO NOT INSTRUMENT\n\n// wrap in anonymous function to create local namespace when in browser\n// create / reset J$$ global variable to hold analysis runtime\nif (typeof J$$ === 'undefined') {\n  J$$ = {};\n}\n(function (sandbox) {\n  if (typeof sandbox.B !== 'undefined') {\n    return;\n  }\n  //----------------------------------- Begin Jalangi Library backend ---------------------------------\n\n  // stack of return values from instrumented functions.\n  // we need to keep a stack since a function may return and then\n  // have another function call in a finally block (see test\n  // call_in_finally.js)\n\n  var global = this;\n  var Function = global.Function;\n  var returnStack = [];\n  var wrappedExceptionVal;\n  var lastVal;\n  var switchLeft;\n  var switchKeyStack = [];\n  var argIndex;\n  var EVAL_ORG = eval;\n  var lastComputedValue;\n  var SPECIAL_PROP_SID = sandbox.Constants.SPECIAL_PROP_SID;\n  var SPECIAL_PROP_IID = sandbox.Constants.SPECIAL_PROP_IID;\n  function getPropSafe(base, prop) {\n    if (base === null || base === undefined) {\n      return undefined;\n    }\n    return base[prop];\n  }\n  function decodeBitPattern(i, len) {\n    var ret = new Array(len);\n    for (var j = 0; j < len; j++) {\n      var val = i & 1 ? true : false;\n      ret[len - j - 1] = val;\n      i = i >> 1;\n    }\n    return ret;\n  }\n  function createBitPattern() {\n    var ret = 0;\n    var i;\n    for (i = 0; i < arguments.length; i++) {\n      ret = (ret << 1) + (arguments[i] ? 1 : 0);\n    }\n    return ret;\n  }\n  var sidStack = [],\n    sidCounter = 0;\n  function createAndAssignNewSid() {\n    sidStack.push(sandbox.sid);\n    sandbox.sid = sidCounter = sidCounter + 1;\n    if (!sandbox.smap) sandbox.smap = {};\n    sandbox.smap[sandbox.sid] = sandbox.iids;\n  }\n  function rollBackSid() {\n    sandbox.sid = sidStack.pop();\n  }\n  function associateSidWithFunction(f, iid) {\n    if (typeof f === 'function') {\n      if (Object && Object.defineProperty && typeof Object.defineProperty === 'function') {\n        Object.defineProperty(f, SPECIAL_PROP_SID, {\n          enumerable: false,\n          writable: true\n        });\n        Object.defineProperty(f, SPECIAL_PROP_IID, {\n          enumerable: false,\n          writable: true\n        });\n      }\n      f[SPECIAL_PROP_SID] = sandbox.sid;\n      f[SPECIAL_PROP_IID] = iid;\n    }\n  }\n  function updateSid(f) {\n    sidStack.push(sandbox.sid);\n    sandbox.sid = getPropSafe(f, SPECIAL_PROP_SID);\n  }\n\n  // unused\n  function isNative(f) {\n    return f.toString().indexOf('[native code]') > -1 || f.toString().indexOf('[object ') === 0;\n  }\n\n  //   function callAsNativeConstructorWithEval(Constructor, args) {\n  //       var a = [];\n  //       for (var i = 0; i < args.length; i++)\n  //           a[i] = 'args[' + i + ']';\n  //       var eval = EVAL_ORG;\n  //       return eval('new Constructor(' + a.join() + ')');\n  //   }\n\n  function callAsNativeConstructorWithoutEval(Constructor, args) {\n    // Create a function that will call the constructor with the provided arguments\n    var func = new Function('Constructor', 'args', \"return new Constructor(\".concat(args.map(function (_, i) {\n      return 'args[' + i + ']';\n    }).join(', '), \");\"));\n    // Call the function with the constructor and the arguments\n    return func(Constructor, args);\n  }\n  function callAsNativeConstructor(Constructor, args) {\n    if (args.length === 0) {\n      return new Constructor();\n    }\n    if (args.length === 1) {\n      return new Constructor(args[0]);\n    }\n    if (args.length === 2) {\n      return new Constructor(args[0], args[1]);\n    }\n    if (args.length === 3) {\n      return new Constructor(args[0], args[1], args[2]);\n    }\n    if (args.length === 4) {\n      return new Constructor(args[0], args[1], args[2], args[3]);\n    }\n    if (args.length === 5) {\n      return new Constructor(args[0], args[1], args[2], args[3], args[4]);\n    }\n    return callAsNativeConstructorWithoutEval(Constructor, args);\n  }\n  function callAsConstructor(Constructor, args) {\n    var ret;\n    if (true) {\n      ret = callAsNativeConstructor(Constructor, args);\n      return ret;\n    } else { var Temp, inst; }\n  }\n  function invokeEval(base, f, args, iid) {\n    return f(sandbox.instrumentEvalCode(args[0], iid, false));\n  }\n  function invokeFunctionDecl(base, f, args, iid) {\n    // Invoke with the original parameters to preserve exceptional behavior if input is invalid\n    f.apply(base, args);\n    // Otherwise input is valid, so instrument and invoke via eval\n    var newArgs = [];\n    for (var i = 0; i < args.length - 1; i++) {\n      newArgs[i] = args[i];\n    }\n    var code = '(function(' + newArgs.join(', ') + ') { ' + args[args.length - 1] + ' })';\n    var code = sandbox.instrumentEvalCode(code, iid, false);\n    // Using EVAL_ORG instead of eval() is important as it preserves the scoping semantics of Function()\n    var out = EVAL_ORG(code);\n    return out;\n  }\n  function callFun(f, base, args, isConstructor, iid) {\n    var result;\n    pushSwitchKey();\n    try {\n      if (f === EVAL_ORG) {\n        result = invokeEval(base, f, args, iid);\n      } else if (f === Function) {\n        result = invokeFunctionDecl(base, f, args, iid);\n      } else if (isConstructor) {\n        result = callAsConstructor(f, args);\n      } else {\n        result = Function.prototype.apply.call(f, base, args);\n      }\n      return result;\n    } finally {\n      popSwitchKey();\n    }\n  }\n  function invokeFun(iid, base, f, args, isConstructor, isMethod) {\n    var aret,\n      skip = false,\n      result;\n    if (sandbox.analysis && sandbox.analysis.invokeFunPre) {\n      aret = sandbox.analysis.invokeFunPre(iid, f, base, args, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));\n      if (aret) {\n        f = aret.f;\n        base = aret.base;\n        args = aret.args;\n        skip = aret.skip;\n      }\n    }\n    if (!skip) {\n      result = callFun(f, base, args, isConstructor, iid);\n    }\n    if (sandbox.analysis && sandbox.analysis.invokeFun) {\n      aret = sandbox.analysis.invokeFun(iid, f, base, args, result, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));\n      if (aret) {\n        result = aret.result;\n      }\n    }\n    return result;\n  }\n\n  // Function call (e.g., f())\n  function F(iid, f, flags) {\n    var bFlags = decodeBitPattern(flags, 1); // [isConstructor]\n    return function () {\n      var base = this;\n      return lastComputedValue = invokeFun(iid, base, f, arguments, bFlags[0], false);\n    };\n  }\n\n  // Method call (e.g., e.f())\n  function M(iid, base, offset, flags) {\n    var bFlags = decodeBitPattern(flags, 2); // [isConstructor, isComputed]\n    var f = G(iid + 2, base, offset, createBitPattern(bFlags[1], false, true));\n    return function () {\n      return lastComputedValue = invokeFun(iid, base, f, arguments, bFlags[0], true);\n    };\n  }\n\n  // Ignore argument (identity).\n  function I(val) {\n    return val;\n  }\n  var hasGetOwnPropertyDescriptor = typeof Object.getOwnPropertyDescriptor === 'function';\n  // object/function/regexp/array Literal\n  function T(iid, val, type, hasGetterSetter, internalIid) {\n    var aret;\n    associateSidWithFunction(val, internalIid);\n    if (hasGetterSetter) {\n      for (var offset in val) {\n        if (hasGetOwnPropertyDescriptor && val.hasOwnProperty(offset)) {\n          var desc = Object.getOwnPropertyDescriptor(val, offset);\n          if (desc !== undefined) {\n            if (typeof desc.get === 'function') {\n              T(iid, desc.get, 12, false, internalIid);\n            }\n            if (typeof desc.set === 'function') {\n              T(iid, desc.set, 12, false, internalIid);\n            }\n          }\n        }\n      }\n    }\n    if (sandbox.analysis && sandbox.analysis.literal) {\n      aret = sandbox.analysis.literal(iid, val, hasGetterSetter);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return lastComputedValue = val;\n  }\n\n  // wrap object o in for (x in o) { ... }\n  function H(iid, val) {\n    var aret;\n    if (sandbox.analysis && sandbox.analysis.forinObject) {\n      aret = sandbox.analysis.forinObject(iid, val);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return val;\n  }\n\n  // variable declaration (Init)\n  function N(iid, name, val, flags) {\n    var bFlags = decodeBitPattern(flags, 3); // [isArgument, isLocalSync, isCatchParam]\n    // isLocalSync is only true when we sync variables inside a for-in loop\n    var aret;\n    if (bFlags[0]) {\n      argIndex++;\n    }\n    if (!bFlags[1] && sandbox.analysis && sandbox.analysis.declare) {\n      if (bFlags[0] && argIndex > 1) {\n        aret = sandbox.analysis.declare(iid, name, val, bFlags[0], argIndex - 2, bFlags[2]);\n      } else {\n        aret = sandbox.analysis.declare(iid, name, val, bFlags[0], -1, bFlags[2]);\n      }\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return val;\n  }\n\n  // getField (property read)\n  function G(iid, base, offset, flags) {\n    var bFlags = decodeBitPattern(flags, 3); // [isComputed, isOpAssign, isMethodCall]\n\n    var aret,\n      skip = false,\n      val;\n    if (sandbox.analysis && sandbox.analysis.getFieldPre) {\n      aret = sandbox.analysis.getFieldPre(iid, base, offset, bFlags[0], bFlags[1], bFlags[2]);\n      if (aret) {\n        base = aret.base;\n        offset = aret.offset;\n        skip = aret.skip;\n      }\n    }\n    if (!skip) {\n      val = base[offset];\n    }\n    if (sandbox.analysis && sandbox.analysis.getField) {\n      aret = sandbox.analysis.getField(iid, base, offset, val, bFlags[0], bFlags[1], bFlags[2]);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return lastComputedValue = val;\n  }\n\n  // putField (property write)\n  function P(iid, base, offset, val, flags) {\n    var bFlags = decodeBitPattern(flags, 2); // [isComputed, isOpAssign]\n\n    var aret,\n      skip = false;\n    if (sandbox.analysis && sandbox.analysis.putFieldPre) {\n      aret = sandbox.analysis.putFieldPre(iid, base, offset, val, bFlags[0], !!bFlags[1]);\n      if (aret) {\n        base = aret.base;\n        offset = aret.offset;\n        val = aret.val;\n        skip = aret.skip;\n      }\n    }\n    if (!skip) {\n      base[offset] = val;\n    }\n    if (sandbox.analysis && sandbox.analysis.putField) {\n      aret = sandbox.analysis.putField(iid, base, offset, val, bFlags[0], !!bFlags[1]);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return lastComputedValue = val;\n  }\n\n  // variable write\n  // isGlobal means that the variable is global and not declared as var\n  // isScriptLocal means that the variable is global and is declared as var\n  function R(iid, name, val, flags) {\n    var aret;\n    var bFlags = decodeBitPattern(flags, 2); // [isGlobal, isScriptLocal]\n\n    if (sandbox.analysis && sandbox.analysis.read) {\n      aret = sandbox.analysis.read(iid, name, val, bFlags[0], bFlags[1]);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return lastComputedValue = val;\n  }\n\n  // variable write\n  function W(iid, name, val, lhs, flags) {\n    var bFlags = decodeBitPattern(flags, 3); //[isGlobal, isScriptLocal, isDeclaration]\n    var aret;\n    if (sandbox.analysis && sandbox.analysis.write) {\n      aret = sandbox.analysis.write(iid, name, val, lhs, bFlags[0], bFlags[1]);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    if (!bFlags[2]) {\n      return lastComputedValue = val;\n    } else {\n      lastComputedValue = undefined;\n      return val;\n    }\n  }\n\n  // with statement\n  function Wi(iid, val) {\n    if (sandbox.analysis && sandbox.analysis._with) {\n      aret = sandbox.analysis._with(iid, val);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return val;\n  }\n\n  // Uncaught exception\n  function Ex(iid, e) {\n    wrappedExceptionVal = {\n      exception: e\n    };\n  }\n\n  // Throw statement\n  function Th(iid, val) {\n    var aret;\n    if (sandbox.analysis && sandbox.analysis._throw) {\n      aret = sandbox.analysis._throw(iid, val);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    return lastComputedValue = val;\n  }\n\n  // Return statement\n  function Rt(iid, val) {\n    var aret;\n    if (sandbox.analysis && sandbox.analysis._return) {\n      aret = sandbox.analysis._return(iid, val);\n      if (aret) {\n        val = aret.result;\n      }\n    }\n    returnStack.pop();\n    returnStack.push(val);\n    return lastComputedValue = val;\n  }\n\n  // Actual return from function, invoked from 'finally' block\n  // added around every function by instrumentation.  Reads\n  // the return value stored by call to Rt()\n  function Ra() {\n    var returnVal = returnStack.pop();\n    wrappedExceptionVal = undefined;\n    return returnVal;\n  }\n\n  // Function enter\n  function Fe(iid, f, dis /* this */, args) {\n    argIndex = 0;\n    returnStack.push(undefined);\n    wrappedExceptionVal = undefined;\n    updateSid(f);\n    if (sandbox.analysis && sandbox.analysis.functionEnter) {\n      sandbox.analysis.functionEnter(iid, f, dis, args);\n    }\n  }\n\n  // Function exit\n  function Fr(iid) {\n    var isBacktrack = false,\n      tmp,\n      aret,\n      returnVal;\n    returnVal = returnStack.pop();\n    if (sandbox.analysis && sandbox.analysis.functionExit) {\n      aret = sandbox.analysis.functionExit(iid, returnVal, wrappedExceptionVal);\n      if (aret) {\n        returnVal = aret.returnVal;\n        wrappedExceptionVal = aret.wrappedExceptionVal;\n        isBacktrack = aret.isBacktrack;\n      }\n    }\n    rollBackSid();\n    if (!isBacktrack) {\n      returnStack.push(returnVal);\n    }\n    // if there was an uncaught exception, throw it\n    // here, to preserve exceptional control flow\n    if (wrappedExceptionVal !== undefined) {\n      tmp = wrappedExceptionVal.exception;\n      wrappedExceptionVal = undefined;\n      throw tmp;\n    }\n    return isBacktrack;\n  }\n\n  // Script enter\n  function Se(iid, val, origFileName) {\n    createAndAssignNewSid();\n    if (sandbox.analysis && sandbox.analysis.scriptEnter) {\n      sandbox.analysis.scriptEnter(iid, val, origFileName);\n    }\n    lastComputedValue = undefined;\n  }\n\n  // Script exit\n  function Sr(iid) {\n    var tmp, aret, isBacktrack;\n    if (sandbox.analysis && sandbox.analysis.scriptExit) {\n      aret = sandbox.analysis.scriptExit(iid, wrappedExceptionVal);\n      if (aret) {\n        wrappedExceptionVal = aret.wrappedExceptionVal;\n        isBacktrack = aret.isBacktrack;\n      }\n    }\n    rollBackSid();\n    if (wrappedExceptionVal !== undefined) {\n      tmp = wrappedExceptionVal.exception;\n      wrappedExceptionVal = undefined;\n      throw tmp;\n    }\n    return isBacktrack;\n  }\n\n  // Modify and assign +=, -= ...\n  function A(iid, base, offset, op, flags) {\n    var bFlags = decodeBitPattern(flags, 1); // [isComputed]\n    // avoid iid collision: make sure that iid+2 has the same source map as iid (@todo)\n    var oprnd1 = G(iid + 2, base, offset, createBitPattern(bFlags[0], true, false));\n    return function (oprnd2) {\n      // still possible to get iid collision with a mem operation\n      var val = B(iid, op, oprnd1, oprnd2, createBitPattern(false, true, false));\n      return P(iid, base, offset, val, createBitPattern(bFlags[0], true));\n    };\n  }\n\n  // Binary operation\n  function B(iid, op, left, right, flags) {\n    var bFlags = decodeBitPattern(flags, 3); // [isComputed, isOpAssign, isSwitchCaseComparison]\n    var result,\n      aret,\n      skip = false;\n    if (sandbox.analysis && sandbox.analysis.binaryPre) {\n      aret = sandbox.analysis.binaryPre(iid, op, left, right, bFlags[1], bFlags[2], bFlags[0]);\n      if (aret) {\n        op = aret.op;\n        left = aret.left;\n        right = aret.right;\n        skip = aret.skip;\n      }\n    }\n    if (!skip) {\n      switch (op) {\n        case \"+\":\n          result = left + right;\n          break;\n        case \"-\":\n          result = left - right;\n          break;\n        case \"*\":\n          result = left * right;\n          break;\n        case \"/\":\n          result = left / right;\n          break;\n        case \"%\":\n          result = left % right;\n          break;\n        case \"<<\":\n          result = left << right;\n          break;\n        case \">>\":\n          result = left >> right;\n          break;\n        case \">>>\":\n          result = left >>> right;\n          break;\n        case \"<\":\n          result = left < right;\n          break;\n        case \">\":\n          result = left > right;\n          break;\n        case \"<=\":\n          result = left <= right;\n          break;\n        case \">=\":\n          result = left >= right;\n          break;\n        case \"==\":\n          result = left == right;\n          break;\n        case \"!=\":\n          result = left != right;\n          break;\n        case \"===\":\n          result = left === right;\n          break;\n        case \"!==\":\n          result = left !== right;\n          break;\n        case \"&\":\n          result = left & right;\n          break;\n        case \"|\":\n          result = left | right;\n          break;\n        case \"^\":\n          result = left ^ right;\n          break;\n        case \"delete\":\n          result = delete left[right];\n          break;\n        case \"instanceof\":\n          result = left instanceof right;\n          break;\n        case \"in\":\n          result = left in right;\n          break;\n        default:\n          throw new Error(op + \" at \" + iid + \" not found\");\n          break;\n      }\n    }\n    if (sandbox.analysis && sandbox.analysis.binary) {\n      aret = sandbox.analysis.binary(iid, op, left, right, result, bFlags[1], bFlags[2], bFlags[0]);\n      if (aret) {\n        result = aret.result;\n      }\n    }\n    return lastComputedValue = result;\n  }\n\n  // Unary operation\n  function U(iid, op, left) {\n    var result,\n      aret,\n      skip = false;\n    if (sandbox.analysis && sandbox.analysis.unaryPre) {\n      aret = sandbox.analysis.unaryPre(iid, op, left);\n      if (aret) {\n        op = aret.op;\n        left = aret.left;\n        skip = aret.skip;\n      }\n    }\n    if (!skip) {\n      switch (op) {\n        case \"+\":\n          result = +left;\n          break;\n        case \"-\":\n          result = -left;\n          break;\n        case \"~\":\n          result = ~left;\n          break;\n        case \"!\":\n          result = !left;\n          break;\n        case \"typeof\":\n          result = _typeof(left);\n          break;\n        case \"void\":\n          result = void left;\n          break;\n        default:\n          throw new Error(op + \" at \" + iid + \" not found\");\n          break;\n      }\n    }\n    if (sandbox.analysis && sandbox.analysis.unary) {\n      aret = sandbox.analysis.unary(iid, op, left, result);\n      if (aret) {\n        result = aret.result;\n      }\n    }\n    return lastComputedValue = result;\n  }\n  function pushSwitchKey() {\n    switchKeyStack.push(switchLeft);\n  }\n  function popSwitchKey() {\n    switchLeft = switchKeyStack.pop();\n  }\n  function last() {\n    return lastComputedValue = lastVal;\n  }\n\n  // Switch key\n  // E.g., for 'switch (x) { ... }',\n  // C1 is invoked with value of x\n  function C1(iid, left) {\n    switchLeft = left;\n    return lastComputedValue = left;\n  }\n\n  // case label inside switch\n  function C2(iid, right) {\n    var aret, result;\n\n    // avoid iid collision; iid may not have a map in the sourcemap\n    result = B(iid + 1, \"===\", switchLeft, right, createBitPattern(false, false, true));\n    if (sandbox.analysis && sandbox.analysis.conditional) {\n      aret = sandbox.analysis.conditional(iid, result);\n      if (aret) {\n        if (result && !aret.result) {\n          right = !right;\n        } else if (result && aret.result) {\n          right = switchLeft;\n        }\n      }\n    }\n    return lastComputedValue = right;\n  }\n\n  // Expression in conditional\n  function C(iid, left) {\n    var aret;\n    if (sandbox.analysis && sandbox.analysis.conditional) {\n      aret = sandbox.analysis.conditional(iid, left);\n      if (aret) {\n        left = aret.result;\n      }\n    }\n    lastVal = left;\n    return lastComputedValue = left;\n  }\n  function S(iid, f) {\n    if (sandbox.analysis && sandbox.analysis.runInstrumentedFunctionBody) {\n      return sandbox.analysis.runInstrumentedFunctionBody(iid, f, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));\n    }\n    return true;\n  }\n  function L() {\n    return lastComputedValue;\n  }\n  function X1(iid, val) {\n    if (sandbox.analysis && sandbox.analysis.endExpression) {\n      sandbox.analysis.endExpression(iid);\n    }\n    return lastComputedValue = val;\n  }\n  function endExecution() {\n    if (sandbox.analysis && sandbox.analysis.endExecution) {\n      return sandbox.analysis.endExecution();\n    }\n  }\n  function log(str) {\n    if (sandbox.Results && sandbox.Results.execute) {\n      sandbox.Results.execute(function (div, jquery, editor) {\n        div.append(str + \"<br>\");\n      });\n    } else {\n      console.log(str);\n    }\n  }\n\n  //----------------------------------- End Jalangi Library backend ---------------------------------\n\n  sandbox.U = U; // Unary operation\n  sandbox.B = B; // Binary operation\n  sandbox.C = C; // Condition\n  sandbox.C1 = C1; // Switch key\n  sandbox.C2 = C2; // case label C1 === C2\n  sandbox._ = last; // Last value passed to C\n\n  sandbox.H = H; // hash in for-in\n  sandbox.I = I; // Ignore argument\n  sandbox.G = G; // getField\n  sandbox.P = P; // putField\n  sandbox.R = R; // Read\n  sandbox.W = W; // Write\n  sandbox.N = N; // Init\n  sandbox.T = T; // object/function/regexp/array Literal\n  sandbox.F = F; // Function call\n  sandbox.M = M; // Method call\n  sandbox.A = A; // Modify and assign +=, -= ...\n  sandbox.Fe = Fe; // Function enter\n  sandbox.Fr = Fr; // Function return\n  sandbox.Se = Se; // Script enter\n  sandbox.Sr = Sr; // Script return\n  sandbox.Rt = Rt; // returned value\n  sandbox.Th = Th; // thrown value\n  sandbox.Ra = Ra;\n  sandbox.Ex = Ex;\n  sandbox.L = L;\n  sandbox.X1 = X1; // top level expression\n  sandbox.Wi = Wi; // with statement\n  sandbox.endExecution = endExecution;\n  sandbox.S = S;\n  sandbox.EVAL_ORG = EVAL_ORG;\n  sandbox.log = log;\n})(J$$);\n\n//# sourceURL=webpack://runtime-jalangi2/./src/runtime.js?");
+/*
+ * Copyright 2014 Samsung Information Systems America, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Author: Koushik Sen
+
+// do not remove the following comment
+// JALANGI DO NOT INSTRUMENT
+
+
+// wrap in anonymous function to create local namespace when in browser
+// create / reset J$$ global variable to hold analysis runtime
+if (typeof J$$ === 'undefined') {
+  J$$ = {};
+}
+
+(function (sandbox) {
+  if (typeof sandbox.B !== 'undefined') {
+      return;
+  }
+  //----------------------------------- Begin Jalangi Library backend ---------------------------------
+
+  // stack of return values from instrumented functions.
+  // we need to keep a stack since a function may return and then
+  // have another function call in a finally block (see test
+  // call_in_finally.js)
+
+  var global = this;
+  var Function = global.Function;
+  var returnStack = [];
+  var wrappedExceptionVal;
+  var lastVal;
+  var switchLeft;
+  var switchKeyStack = [];
+  var argIndex;
+  var EVAL_ORG = eval;
+  var lastComputedValue;
+  var SPECIAL_PROP_SID = sandbox.Constants.SPECIAL_PROP_SID;
+  var SPECIAL_PROP_IID = sandbox.Constants.SPECIAL_PROP_IID;
+
+  function getPropSafe(base, prop){
+    if(base === null || base === undefined){
+      return undefined;
+    }
+    return base[prop];
+  }
+
+  function decodeBitPattern(i, len) {
+      var ret = new Array(len);
+      for (var j=0; j<len; j++) {
+          var val = (i & 1)?true:false;
+          ret[len - j -1] = val;
+          i = i >> 1;
+      }
+      return ret;
+  }
+
+  function createBitPattern() {
+      var ret = 0;
+      var i;
+      for (i =0; i< arguments.length; i++) {
+          ret = (ret << 1)+(arguments[i]?1:0);
+      }
+      return ret;
+  }
+
+
+  var sidStack = [], sidCounter = 0;
+
+  function createAndAssignNewSid() {
+      sidStack.push(sandbox.sid);
+      sandbox.sid = sidCounter = sidCounter + 1;
+      if (!sandbox.smap) sandbox.smap = {};
+      sandbox.smap[sandbox.sid] = sandbox.iids;
+  }
+
+  function rollBackSid() {
+      sandbox.sid = sidStack.pop();
+  }
+
+  function associateSidWithFunction(f, iid) {
+      if (typeof f === 'function') {
+          if (Object && Object.defineProperty && typeof Object.defineProperty === 'function') {
+              Object.defineProperty(f, SPECIAL_PROP_SID, {
+                  enumerable:false,
+                  writable:true
+              });
+              Object.defineProperty(f, SPECIAL_PROP_IID, {
+                  enumerable:false,
+                  writable:true
+              });
+          }
+          f[SPECIAL_PROP_SID] = sandbox.sid;
+          f[SPECIAL_PROP_IID] = iid;
+      }
+  }
+
+  function updateSid(f) {
+      sidStack.push(sandbox.sid);
+      sandbox.sid = getPropSafe(f, SPECIAL_PROP_SID);
+  }
+
+
+  // unused
+  function isNative(f) {
+      return f.toString().indexOf('[native code]') > -1 || f.toString().indexOf('[object ') === 0;
+  }
+
+//   function callAsNativeConstructorWithEval(Constructor, args) {
+//       var a = [];
+//       for (var i = 0; i < args.length; i++)
+//           a[i] = 'args[' + i + ']';
+//       var eval = EVAL_ORG;
+//       return eval('new Constructor(' + a.join() + ')');
+//   }
+    
+    function callAsNativeConstructorWithoutEval(Constructor, args) {
+        // Create a function that will call the constructor with the provided arguments
+        const func = new Function('Constructor', 'args', 
+            `return new Constructor(${args.map((_, i) => 'args[' + i + ']').join(', ')});`);
+        // Call the function with the constructor and the arguments
+        return func(Constructor, args);
+    }
+
+  function callAsNativeConstructor(Constructor, args) {
+      if (args.length === 0) {
+          return new Constructor();
+      }
+      if (args.length === 1) {
+          return new Constructor(args[0]);
+      }
+      if (args.length === 2) {
+          return new Constructor(args[0], args[1]);
+      }
+      if (args.length === 3) {
+          return new Constructor(args[0], args[1], args[2]);
+      }
+      if (args.length === 4) {
+          return new Constructor(args[0], args[1], args[2], args[3]);
+      }
+      if (args.length === 5) {
+          return new Constructor(args[0], args[1], args[2], args[3], args[4]);
+      }
+      return callAsNativeConstructorWithoutEval(Constructor, args);
+  }
+
+  function callAsConstructor(Constructor, args) {
+      var ret;
+      if (true) {
+          ret = callAsNativeConstructor(Constructor, args);
+          return ret;
+      } else { var Temp, inst; }
+  }
+
+  function invokeEval(base, f, args, iid) {
+      return f(sandbox.instrumentEvalCode(args[0], iid, false));
+  }
+
+  function invokeFunctionDecl(base, f, args, iid) {
+      // Invoke with the original parameters to preserve exceptional behavior if input is invalid
+      f.apply(base, args);
+      // Otherwise input is valid, so instrument and invoke via eval
+      var newArgs = [];
+      for (var i = 0; i < args.length-1; i++) {
+          newArgs[i] = args[i];
+      }
+      var code = '(function(' + newArgs.join(', ') + ') { ' + args[args.length-1] + ' })';
+      var code = sandbox.instrumentEvalCode(code, iid, false);
+      // Using EVAL_ORG instead of eval() is important as it preserves the scoping semantics of Function()
+      var out = EVAL_ORG(code);
+      return out;
+  }
+
+  function callFun(f, base, args, isConstructor, iid) {
+      var result;
+      pushSwitchKey();
+      try {
+          if (f === EVAL_ORG) {
+              result = invokeEval(base, f, args, iid);
+          } else if (f === Function) {
+              result = invokeFunctionDecl(base, f, args, iid);
+          } else if (isConstructor) {
+              result = callAsConstructor(f, args);
+          } else {
+              result = Function.prototype.apply.call(f, base, args);
+          }
+          return result;
+      } finally {
+          popSwitchKey();
+      }
+  }
+
+  function invokeFun(iid, base, f, args, isConstructor, isMethod) {
+      var aret, skip = false, result;
+
+      if (sandbox.analysis && sandbox.analysis.invokeFunPre) {
+          aret = sandbox.analysis.invokeFunPre(iid, f, base, args, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));
+          if (aret) {
+              f = aret.f;
+              base = aret.base;
+              args = aret.args;
+              skip = aret.skip;
+          }
+      }
+      if (!skip) {
+          result = callFun(f, base, args, isConstructor, iid);
+      }
+      if (sandbox.analysis && sandbox.analysis.invokeFun) {
+          aret = sandbox.analysis.invokeFun(iid, f, base, args, result, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));
+          if (aret) {
+              result = aret.result;
+          }
+      }
+      return result;
+  }
+
+  // Function call (e.g., f())
+  function F(iid, f, flags) {
+      var bFlags = decodeBitPattern(flags, 1); // [isConstructor]
+      return function () {
+          var base = this;
+          return (lastComputedValue = invokeFun(iid, base, f, arguments, bFlags[0], false));
+      }
+  }
+
+  // Method call (e.g., e.f())
+  function M(iid, base, offset, flags) {
+      var bFlags = decodeBitPattern(flags, 2); // [isConstructor, isComputed]
+      var f = G(iid + 2, base, offset, createBitPattern(bFlags[1], false, true));
+      return function () {
+          return (lastComputedValue = invokeFun(iid, base, f, arguments, bFlags[0], true));
+      };
+  }
+
+  // Ignore argument (identity).
+  function I(val) {
+      return val;
+  }
+
+  var hasGetOwnPropertyDescriptor = typeof Object.getOwnPropertyDescriptor === 'function';
+  // object/function/regexp/array Literal
+  function T(iid, val, type, hasGetterSetter, internalIid) {
+      var aret;
+      associateSidWithFunction(val, internalIid);
+      if (hasGetterSetter) {
+          for (var offset in val) {
+              if (hasGetOwnPropertyDescriptor && val.hasOwnProperty(offset)) {
+                  var desc = Object.getOwnPropertyDescriptor(val, offset);
+                  if (desc !== undefined) {
+                      if (typeof desc.get === 'function') {
+                          T(iid, desc.get, 12, false, internalIid);
+                      }
+                      if (typeof desc.set === 'function') {
+                          T(iid, desc.set, 12, false, internalIid);
+                      }
+                  }
+              }
+          }
+      }
+      if (sandbox.analysis && sandbox.analysis.literal) {
+          aret = sandbox.analysis.literal(iid, val, hasGetterSetter);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return (lastComputedValue = val);
+  }
+
+  // wrap object o in for (x in o) { ... }
+  function H(iid, val) {
+      var aret;
+      if (sandbox.analysis && sandbox.analysis.forinObject) {
+          aret = sandbox.analysis.forinObject(iid, val);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return val;
+  }
+
+  // variable declaration (Init)
+  function N(iid, name, val, flags) {
+      var bFlags = decodeBitPattern(flags, 3); // [isArgument, isLocalSync, isCatchParam]
+      // isLocalSync is only true when we sync variables inside a for-in loop
+      var aret;
+
+      if (bFlags[0]) {
+          argIndex++;
+      }
+      if (!bFlags[1] && sandbox.analysis && sandbox.analysis.declare) {
+          if (bFlags[0] && argIndex > 1) {
+              aret = sandbox.analysis.declare(iid, name, val, bFlags[0], argIndex - 2, bFlags[2]);
+          } else {
+              aret = sandbox.analysis.declare(iid, name, val, bFlags[0], -1, bFlags[2]);
+          }
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return val;
+  }
+
+  // getField (property read)
+  function G(iid, base, offset, flags) {
+      var bFlags = decodeBitPattern(flags, 3); // [isComputed, isOpAssign, isMethodCall]
+
+      var aret, skip = false, val;
+
+      if (sandbox.analysis && sandbox.analysis.getFieldPre) {
+          aret = sandbox.analysis.getFieldPre(iid, base, offset, bFlags[0], bFlags[1], bFlags[2]);
+          if (aret) {
+              base = aret.base;
+              offset = aret.offset;
+              skip = aret.skip;
+          }
+      }
+
+      if (!skip) {
+          val = base[offset];
+      }
+      if (sandbox.analysis && sandbox.analysis.getField) {
+          aret = sandbox.analysis.getField(iid, base, offset, val, bFlags[0], bFlags[1], bFlags[2]);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return (lastComputedValue = val);
+  }
+
+  // putField (property write)
+  function P(iid, base, offset, val, flags) {
+      var bFlags = decodeBitPattern(flags, 2); // [isComputed, isOpAssign]
+
+      var aret, skip = false;
+
+      if (sandbox.analysis && sandbox.analysis.putFieldPre) {
+          aret = sandbox.analysis.putFieldPre(iid, base, offset, val, bFlags[0], !!bFlags[1]);
+          if (aret) {
+              base = aret.base;
+              offset = aret.offset;
+              val = aret.val;
+              skip = aret.skip;
+          }
+      }
+
+      if (!skip) {
+          base[offset] = val;
+      }
+      if (sandbox.analysis && sandbox.analysis.putField) {
+          aret = sandbox.analysis.putField(iid, base, offset, val, bFlags[0], !!bFlags[1]);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return (lastComputedValue = val);
+  }
+
+  // variable write
+  // isGlobal means that the variable is global and not declared as var
+  // isScriptLocal means that the variable is global and is declared as var
+  function R(iid, name, val, flags) {
+      var aret;
+      var bFlags = decodeBitPattern(flags, 2); // [isGlobal, isScriptLocal]
+
+      if (sandbox.analysis && sandbox.analysis.read) {
+          aret = sandbox.analysis.read(iid, name, val, bFlags[0], bFlags[1]);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return (lastComputedValue = val);
+  }
+
+  // variable write
+  function W(iid, name, val, lhs, flags) {
+      var bFlags = decodeBitPattern(flags, 3); //[isGlobal, isScriptLocal, isDeclaration]
+      var aret;
+      if (sandbox.analysis && sandbox.analysis.write) {
+          aret = sandbox.analysis.write(iid, name, val, lhs, bFlags[0], bFlags[1]);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      if (!bFlags[2]) {
+          return (lastComputedValue = val);
+      } else {
+          lastComputedValue = undefined;
+          return val;
+      }
+  }
+
+  // with statement
+  function Wi(iid, val) {
+      if (sandbox.analysis && sandbox.analysis._with) {
+          aret = sandbox.analysis._with(iid, val);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return val;
+  }
+
+  // Uncaught exception
+  function Ex(iid, e) {
+      wrappedExceptionVal = {exception:e};
+  }
+
+  // Throw statement
+  function Th(iid, val) {
+      var aret;
+      if (sandbox.analysis && sandbox.analysis._throw) {
+          aret = sandbox.analysis._throw(iid, val);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      return (lastComputedValue = val);
+  }
+
+  // Return statement
+  function Rt(iid, val) {
+      var aret;
+      if (sandbox.analysis && sandbox.analysis._return) {
+          aret = sandbox.analysis._return(iid, val);
+          if (aret) {
+              val = aret.result;
+          }
+      }
+      returnStack.pop();
+      returnStack.push(val);
+      return (lastComputedValue = val);
+  }
+
+  // Actual return from function, invoked from 'finally' block
+  // added around every function by instrumentation.  Reads
+  // the return value stored by call to Rt()
+  function Ra() {
+      var returnVal = returnStack.pop();
+      wrappedExceptionVal = undefined;
+      return returnVal;
+  }
+
+  // Function enter
+  function Fe(iid, f, dis /* this */, args) {
+      argIndex = 0;
+      returnStack.push(undefined);
+      wrappedExceptionVal = undefined;
+      updateSid(f);
+      if (sandbox.analysis && sandbox.analysis.functionEnter) {
+          sandbox.analysis.functionEnter(iid, f, dis, args);
+      }
+  }
+
+  // Function exit
+  function Fr(iid) {
+      var isBacktrack = false, tmp, aret, returnVal;
+
+      returnVal = returnStack.pop();
+      if (sandbox.analysis && sandbox.analysis.functionExit) {
+          aret = sandbox.analysis.functionExit(iid, returnVal, wrappedExceptionVal);
+          if (aret) {
+              returnVal = aret.returnVal;
+              wrappedExceptionVal = aret.wrappedExceptionVal;
+              isBacktrack = aret.isBacktrack;
+          }
+      }
+      rollBackSid();
+      if (!isBacktrack) {
+          returnStack.push(returnVal);
+      }
+      // if there was an uncaught exception, throw it
+      // here, to preserve exceptional control flow
+      if (wrappedExceptionVal !== undefined) {
+          tmp = wrappedExceptionVal.exception;
+          wrappedExceptionVal = undefined;
+          throw tmp;
+      }
+      return isBacktrack;
+  }
+
+  // Script enter
+  function Se(iid, val, origFileName) {
+      createAndAssignNewSid();
+      if (sandbox.analysis && sandbox.analysis.scriptEnter) {
+          sandbox.analysis.scriptEnter(iid, val, origFileName);
+      }
+      lastComputedValue = undefined;
+  }
+
+  // Script exit
+  function Sr(iid) {
+      var tmp, aret, isBacktrack;
+      if (sandbox.analysis && sandbox.analysis.scriptExit) {
+          aret = sandbox.analysis.scriptExit(iid, wrappedExceptionVal);
+          if (aret) {
+              wrappedExceptionVal = aret.wrappedExceptionVal;
+              isBacktrack = aret.isBacktrack;
+          }
+      }
+      rollBackSid();
+      if (wrappedExceptionVal !== undefined) {
+          tmp = wrappedExceptionVal.exception;
+          wrappedExceptionVal = undefined;
+          throw tmp;
+      }
+      return isBacktrack;
+  }
+
+
+  // Modify and assign +=, -= ...
+  function A(iid, base, offset, op, flags) {
+      var bFlags = decodeBitPattern(flags, 1); // [isComputed]
+      // avoid iid collision: make sure that iid+2 has the same source map as iid (@todo)
+      var oprnd1 = G(iid+2, base, offset, createBitPattern(bFlags[0], true, false));
+      return function (oprnd2) {
+          // still possible to get iid collision with a mem operation
+          var val = B(iid, op, oprnd1, oprnd2, createBitPattern(false, true, false));
+          return P(iid, base, offset, val, createBitPattern(bFlags[0], true));
+      };
+  }
+
+  // Binary operation
+  function B(iid, op, left, right, flags) {
+      var bFlags = decodeBitPattern(flags, 3); // [isComputed, isOpAssign, isSwitchCaseComparison]
+      var result, aret, skip = false;
+
+      if (sandbox.analysis && sandbox.analysis.binaryPre) {
+          aret = sandbox.analysis.binaryPre(iid, op, left, right, bFlags[1], bFlags[2], bFlags[0]);
+          if (aret) {
+              op = aret.op;
+              left = aret.left;
+              right = aret.right;
+              skip = aret.skip;
+          }
+      }
+
+
+      if (!skip) {
+          switch (op) {
+              case "+":
+                  result = left + right;
+                  break;
+              case "-":
+                  result = left - right;
+                  break;
+              case "*":
+                  result = left * right;
+                  break;
+              case "/":
+                  result = left / right;
+                  break;
+              case "%":
+                  result = left % right;
+                  break;
+              case "<<":
+                  result = left << right;
+                  break;
+              case ">>":
+                  result = left >> right;
+                  break;
+              case ">>>":
+                  result = left >>> right;
+                  break;
+              case "<":
+                  result = left < right;
+                  break;
+              case ">":
+                  result = left > right;
+                  break;
+              case "<=":
+                  result = left <= right;
+                  break;
+              case ">=":
+                  result = left >= right;
+                  break;
+              case "==":
+                  result = left == right;
+                  break;
+              case "!=":
+                  result = left != right;
+                  break;
+              case "===":
+                  result = left === right;
+                  break;
+              case "!==":
+                  result = left !== right;
+                  break;
+              case "&":
+                  result = left & right;
+                  break;
+              case "|":
+                  result = left | right;
+                  break;
+              case "^":
+                  result = left ^ right;
+                  break;
+              case "delete":
+                  result = delete left[right];
+                  break;
+              case "instanceof":
+                  result = left instanceof right;
+                  break;
+              case "in":
+                  result = left in right;
+                  break;
+              default:
+                  throw new Error(op + " at " + iid + " not found");
+                  break;
+          }
+      }
+
+      if (sandbox.analysis && sandbox.analysis.binary) {
+          aret = sandbox.analysis.binary(iid, op, left, right, result, bFlags[1], bFlags[2], bFlags[0]);
+          if (aret) {
+              result = aret.result;
+          }
+      }
+      return (lastComputedValue = result);
+  }
+
+
+  // Unary operation
+  function U(iid, op, left) {
+      var result, aret, skip = false;
+
+      if (sandbox.analysis && sandbox.analysis.unaryPre) {
+          aret = sandbox.analysis.unaryPre(iid, op, left);
+          if (aret) {
+              op = aret.op;
+              left = aret.left;
+              skip = aret.skip
+          }
+      }
+
+      if (!skip) {
+          switch (op) {
+              case "+":
+                  result = +left;
+                  break;
+              case "-":
+                  result = -left;
+                  break;
+              case "~":
+                  result = ~left;
+                  break;
+              case "!":
+                  result = !left;
+                  break;
+              case "typeof":
+                  result = typeof left;
+                  break;
+              case "void":
+                  result = void(left);
+                  break;
+              default:
+                  throw new Error(op + " at " + iid + " not found");
+                  break;
+          }
+      }
+
+      if (sandbox.analysis && sandbox.analysis.unary) {
+          aret = sandbox.analysis.unary(iid, op, left, result);
+          if (aret) {
+              result = aret.result;
+          }
+      }
+      return (lastComputedValue = result);
+  }
+
+  function pushSwitchKey() {
+      switchKeyStack.push(switchLeft);
+  }
+
+  function popSwitchKey() {
+      switchLeft = switchKeyStack.pop();
+  }
+
+  function last() {
+      return (lastComputedValue = lastVal);
+  }
+
+  // Switch key
+  // E.g., for 'switch (x) { ... }',
+  // C1 is invoked with value of x
+  function C1(iid, left) {
+      switchLeft = left;
+      return (lastComputedValue = left);
+  }
+
+  // case label inside switch
+  function C2(iid, right) {
+      var aret, result;
+
+      // avoid iid collision; iid may not have a map in the sourcemap
+      result = B(iid+1, "===", switchLeft, right, createBitPattern(false, false, true));
+
+      if (sandbox.analysis && sandbox.analysis.conditional) {
+          aret = sandbox.analysis.conditional(iid, result);
+          if (aret) {
+              if (result && !aret.result) {
+                  right = !right;
+              } else if (result && aret.result) {
+                  right = switchLeft;
+              }
+          }
+      }
+      return (lastComputedValue = right);
+  }
+
+  // Expression in conditional
+  function C(iid, left) {
+      var aret;
+      if (sandbox.analysis && sandbox.analysis.conditional) {
+          aret = sandbox.analysis.conditional(iid, left);
+          if (aret) {
+              left = aret.result;
+          }
+      }
+
+      lastVal = left;
+      return (lastComputedValue = left);
+  }
+
+  function S(iid, f) {
+      if (sandbox.analysis && sandbox.analysis.runInstrumentedFunctionBody) {
+          return sandbox.analysis.runInstrumentedFunctionBody(iid, f, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));
+      }
+      return true;
+  }
+
+  function L() {
+      return lastComputedValue;
+  }
+
+
+  function X1(iid, val) {
+      if (sandbox.analysis && sandbox.analysis.endExpression) {
+          sandbox.analysis.endExpression(iid);
+      }
+
+      return (lastComputedValue = val);
+  }
+
+  function endExecution() {
+      if (sandbox.analysis && sandbox.analysis.endExecution) {
+          return sandbox.analysis.endExecution();
+      }
+  }
+
+
+  function log(str) {
+      if (sandbox.Results && sandbox.Results.execute) {
+          sandbox.Results.execute(function(div, jquery, editor){
+              div.append(str+"<br>");
+          });
+      } else {
+          console.log(str);
+      }
+  }
+
+
+  //----------------------------------- End Jalangi Library backend ---------------------------------
+
+  sandbox.U = U; // Unary operation
+  sandbox.B = B; // Binary operation
+  sandbox.C = C; // Condition
+  sandbox.C1 = C1; // Switch key
+  sandbox.C2 = C2; // case label C1 === C2
+  sandbox._ = last;  // Last value passed to C
+
+  sandbox.H = H; // hash in for-in
+  sandbox.I = I; // Ignore argument
+  sandbox.G = G; // getField
+  sandbox.P = P; // putField
+  sandbox.R = R; // Read
+  sandbox.W = W; // Write
+  sandbox.N = N; // Init
+  sandbox.T = T; // object/function/regexp/array Literal
+  sandbox.F = F; // Function call
+  sandbox.M = M; // Method call
+  sandbox.A = A; // Modify and assign +=, -= ...
+  sandbox.Fe = Fe; // Function enter
+  sandbox.Fr = Fr; // Function return
+  sandbox.Se = Se; // Script enter
+  sandbox.Sr = Sr; // Script return
+  sandbox.Rt = Rt; // returned value
+  sandbox.Th = Th; // thrown value
+  sandbox.Ra = Ra;
+  sandbox.Ex = Ex;
+  sandbox.L = L;
+  sandbox.X1 = X1; // top level expression
+  sandbox.Wi = Wi; // with statement
+  sandbox.endExecution = endExecution;
+
+  sandbox.S = S;
+
+  sandbox.EVAL_ORG = EVAL_ORG;
+  sandbox.log = log;
+})(J$$);
+
+
 
 /***/ })
 
@@ -107,23 +1100,20 @@ eval("__webpack_require__.r(__webpack_exports__);\nfunction _typeof(o) { \"@babe
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module can't be inlined because the eval devtool is used.
-/******/ 	var __webpack_exports__ = __webpack_require__("./src/entry.js");
-/******/ 	
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+/*!**********************!*\
+  !*** ./src/entry.js ***!
+  \**********************/
+__webpack_require__(/*! ./config.js */ "./src/config.js");
+__webpack_require__(/*! ./constants.js */ "./src/constants.js");
+__webpack_require__(/*! ./runtime.js */ "./src/runtime.js");
+__webpack_require__(/*! ./iidToLocation.js */ "./src/iidToLocation.js");
+// require('./astUtil.js');
+// require('./esnstrument.js');
+})();
+
 /******/ })()
 ;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidGhlaHVsay1qYWxhbmdpMi1ydW50aW1lLmJ1bmRsZS5qcyIsIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBOztBQUVBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLGdEQUFnRDtBQUNoRCxnREFBZ0Q7QUFDaEQsaURBQWlEO0FBQ2pELHNEQUFzRCxnQkFBZ0I7QUFDdEUsc0RBQXNELGdCQUFnQjtBQUN0RSxzREFBc0Q7QUFDdEQsa0ZBQWtGLGdCQUFnQjtBQUNsRyxxREFBcUQ7QUFDckQsc0RBQXNELGVBQWU7QUFDckUsdURBQXVELGdCQUFnQjtBQUN2RSx3REFBd0QsaUJBQWlCO0FBQ3pFLG1EQUFtRCxnQkFBZ0I7QUFDbkUsQ0FBQzs7Ozs7Ozs7Ozs7QUN0REQ7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBLDRCQUE0QixLQUE4Qjs7QUFFMUQ7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7OztBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBOztBQUVBOztBQUVBOztBQUVBO0FBQ0Esc0ZBQXNGO0FBQ3RGOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsY0FBYztBQUNkO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQSxDQUFDOzs7Ozs7Ozs7Ozs7QUNwR0Q7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLFlBQVk7QUFDWjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLHVGQUF1RjtBQUN2RixvQkFBb0I7QUFDcEI7QUFDQTtBQUNBLGdCQUFnQjtBQUNoQjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBOztBQUVBLENBQUM7Ozs7Ozs7Ozs7O0FDOUREO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTs7QUFFQTtBQUNBOzs7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0Esb0JBQW9CLE9BQU87QUFDM0I7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBLGlCQUFpQixxQkFBcUI7QUFDdEM7QUFDQTtBQUNBO0FBQ0E7OztBQUdBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsZUFBZTtBQUNmO0FBQ0E7QUFDQTtBQUNBLGVBQWU7QUFDZjtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBOzs7QUFHQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0EseUJBQXlCLGlCQUFpQjtBQUMxQztBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0Esc0NBQXNDLGlEQUFpRCxFQUFFO0FBQ3pGO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBLFVBQVUsSUFBSTtBQUNkO0FBQ0E7QUFDQSxRQUFRLEtBQUssbUJBT047QUFDUDs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLHNCQUFzQixtQkFBbUI7QUFDekM7QUFDQTtBQUNBLDBEQUEwRCw2QkFBNkI7QUFDdkY7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxZQUFZO0FBQ1o7QUFDQSxZQUFZO0FBQ1o7QUFDQSxZQUFZO0FBQ1o7QUFDQTtBQUNBO0FBQ0EsUUFBUTtBQUNSO0FBQ0E7QUFDQTs7QUFFQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBLCtDQUErQztBQUMvQztBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQSwrQ0FBK0M7QUFDL0M7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQSxxQ0FBcUM7QUFDckM7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBLCtDQUErQztBQUMvQztBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLFlBQVk7QUFDWjtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQSwrQ0FBK0M7O0FBRS9DOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0EsK0NBQStDOztBQUUvQzs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsK0NBQStDOztBQUUvQztBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQSwrQ0FBK0M7QUFDL0M7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsUUFBUTtBQUNSO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQSw2QkFBNkI7QUFDN0I7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7O0FBR0E7QUFDQTtBQUNBLCtDQUErQztBQUMvQztBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQSwrQ0FBK0M7QUFDL0M7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOzs7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOzs7QUFHQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBOztBQUVBO0FBQ0EsNkJBQTZCLEtBQUs7QUFDbEM7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUEsOEJBQThCO0FBQzlCOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxnQkFBZ0I7QUFDaEI7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTs7O0FBR0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOzs7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLFdBQVc7QUFDWCxRQUFRO0FBQ1I7QUFDQTtBQUNBOzs7QUFHQTs7QUFFQSxpQkFBaUI7QUFDakIsaUJBQWlCO0FBQ2pCLGlCQUFpQjtBQUNqQixtQkFBbUI7QUFDbkIsbUJBQW1CO0FBQ25CLHFCQUFxQjs7QUFFckIsaUJBQWlCO0FBQ2pCLGlCQUFpQjtBQUNqQixpQkFBaUI7QUFDakIsaUJBQWlCO0FBQ2pCLGlCQUFpQjtBQUNqQixpQkFBaUI7QUFDakIsaUJBQWlCO0FBQ2pCLGlCQUFpQjtBQUNqQixpQkFBaUI7QUFDakIsaUJBQWlCO0FBQ2pCLGlCQUFpQjtBQUNqQixtQkFBbUI7QUFDbkIsbUJBQW1CO0FBQ25CLG1CQUFtQjtBQUNuQixtQkFBbUI7QUFDbkIsbUJBQW1CO0FBQ25CLG1CQUFtQjtBQUNuQjtBQUNBO0FBQ0E7QUFDQSxtQkFBbUI7QUFDbkIsbUJBQW1CO0FBQ25COztBQUVBOztBQUVBO0FBQ0E7QUFDQSxDQUFDOzs7Ozs7OztVQ2p6QkQ7VUFDQTs7VUFFQTtVQUNBO1VBQ0E7VUFDQTtVQUNBO1VBQ0E7VUFDQTtVQUNBO1VBQ0E7VUFDQTtVQUNBO1VBQ0E7VUFDQTs7VUFFQTtVQUNBOztVQUVBO1VBQ0E7VUFDQTs7Ozs7Ozs7O0FDdEJBLG1CQUFPLENBQUMsb0NBQWE7QUFDckIsbUJBQU8sQ0FBQywwQ0FBZ0I7QUFDeEIsbUJBQU8sQ0FBQyxzQ0FBYztBQUN0QixtQkFBTyxDQUFDLGtEQUFvQjtBQUM1QjtBQUNBLCtCIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vamFsYW5naTItcnVudGltZS8uL3NyYy9jb25maWcuanMiLCJ3ZWJwYWNrOi8vamFsYW5naTItcnVudGltZS8uL3NyYy9jb25zdGFudHMuanMiLCJ3ZWJwYWNrOi8vamFsYW5naTItcnVudGltZS8uL3NyYy9paWRUb0xvY2F0aW9uLmpzIiwid2VicGFjazovL2phbGFuZ2kyLXJ1bnRpbWUvLi9zcmMvcnVudGltZS5qcyIsIndlYnBhY2s6Ly9qYWxhbmdpMi1ydW50aW1lL3dlYnBhY2svYm9vdHN0cmFwIiwid2VicGFjazovL2phbGFuZ2kyLXJ1bnRpbWUvLi9zcmMvZW50cnkuanMiXSwic291cmNlc0NvbnRlbnQiOlsiLypcbiAqIENvcHlyaWdodCAoYykgMjAxNCBTYW1zdW5nIEVsZWN0cm9uaWNzIENvLiwgTHRkLlxuICpcbiAqIExpY2Vuc2VkIHVuZGVyIHRoZSBBcGFjaGUgTGljZW5zZSwgVmVyc2lvbiAyLjAgKHRoZSBcIkxpY2Vuc2VcIik7XG4gKiB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuXG4gKiBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXRcbiAqXG4gKiAgICAgICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wXG4gKlxuICogVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZVxuICogZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gXCJBUyBJU1wiIEJBU0lTLFxuICogV0lUSE9VVCBXQVJSQU5USUVTIE9SIENPTkRJVElPTlMgT0YgQU5ZIEtJTkQsIGVpdGhlciBleHByZXNzIG9yIGltcGxpZWQuXG4gKiBTZWUgdGhlIExpY2Vuc2UgZm9yIHRoZSBzcGVjaWZpYyBsYW5ndWFnZSBnb3Zlcm5pbmcgcGVybWlzc2lvbnMgYW5kXG4gKiBsaW1pdGF0aW9ucyB1bmRlciB0aGUgTGljZW5zZS5cbiAqL1xuLy8gZG8gbm90IHJlbW92ZSB0aGUgZm9sbG93aW5nIGNvbW1lbnRcbi8vIEpBTEFOR0kgRE8gTk9UIElOU1RSVU1FTlRcbmlmICh0eXBlb2YgSiQkID09PSAndW5kZWZpbmVkJykge1xuICAgIEokJCA9IHt9O1xufVxuXG4oZnVuY3Rpb24gKHNhbmRib3gpIHtcbiAgICBpZiAodHlwZW9mIHNhbmRib3guQ29uZmlnICE9PSAndW5kZWZpbmVkJykge1xuICAgICAgICByZXR1cm47XG4gICAgfVxuXG4gICAgdmFyIENvbmZpZyA9IHNhbmRib3guQ29uZmlnID0ge307XG5cbiAgICBDb25maWcuREVCVUcgPSBmYWxzZTtcbiAgICBDb25maWcuV0FSTiA9IGZhbHNlO1xuICAgIENvbmZpZy5TRVJJT1VTX1dBUk4gPSBmYWxzZTtcbi8vIG1ha2UgTUFYX0JVRl9TSVpFIHNsaWdodGx5IGxlc3MgdGhhbiAyXjE2LCB0byBhbGxvdyBvdmVyIGxvdy1sZXZlbCBvdmVyaGVhZHNcbiAgICBDb25maWcuTUFYX0JVRl9TSVpFID0gNjQwMDA7XG4gICAgQ29uZmlnLkxPR19BTExfUkVBRFNfQU5EX0JSQU5DSEVTID0gZmFsc2U7XG5cbiAgICAvLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKipcbiAgICAvLyAgRnVuY3Rpb25zIGZvciBzZWxlY3RpdmUgaW5zdHJ1bWVudGF0aW9uIG9mIG9wZXJhdGlvbnNcbiAgICAvLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKipcbiAgICAvLyBJbiB0aGUgZm9sbG93aW5nIGZ1bmN0aW9uc1xuICAgIC8vIHJldHVybiB0cnVlIGluIGEgZnVuY3Rpb24sIGlmIHlvdSB3YW50IHRoZSBhc3Qgbm9kZSAocGFzc2VkIGFzIHRoZSBzZWNvbmQgYXJndW1lbnQpIHRvIGJlIGluc3RydW1lbnRlZFxuICAgIC8vIGFzdCBub2RlIGdldHMgaW5zdHJ1bWVudGVkIGlmIHlvdSBkbyBub3QgZGVmaW5lIHRoZSBjb3JyZXNwb25kaW5nIGZ1bmN0aW9uXG4gICAgQ29uZmlnLkVOQUJMRV9TQU1QTElORyA9IGZhbHNlO1xuLy8gICAgQ29uZmlnLklOU1RSX0lOSVQgPSBmdW5jdGlvbihuYW1lLCBhc3QpIHsgcmV0dXJuIGZhbHNlOyB9O1xuLy8gICAgQ29uZmlnLklOU1RSX1JFQUQgPSBmdW5jdGlvbihuYW1lLCBhc3QpIHsgcmV0dXJuIGZhbHNlOyB9O1xuLy8gICAgQ29uZmlnLklOU1RSX1dSSVRFID0gZnVuY3Rpb24obmFtZSwgYXN0KSB7IHJldHVybiB0cnVlOyB9O1xuLy8gICAgQ29uZmlnLklOU1RSX0dFVEZJRUxEID0gZnVuY3Rpb24ob2Zmc2V0LCBhc3QpIHsgcmV0dXJuIHRydWU7IH07IC8vIG9mZnNldCBpcyBudWxsIGlmIHRoZSBwcm9wZXJ0eSBpcyBjb21wdXRlZFxuLy8gICAgQ29uZmlnLklOU1RSX1BVVEZJRUxEID0gZnVuY3Rpb24ob2Zmc2V0LCBhc3QpIHsgcmV0dXJuIHRydWU7IH07IC8vIG9mZnNldCBpcyBudWxsIGlmIHRoZSBwcm9wZXJ0eSBpcyBjb21wdXRlZFxuLy8gICAgQ29uZmlnLklOU1RSX0JJTkFSWSA9IGZ1bmN0aW9uKG9wZXJhdG9yLCBhc3QpIHsgcmV0dXJuIHRydWU7IH07XG4vLyAgICBDb25maWcuSU5TVFJfUFJPUEVSVFlfQklOQVJZX0FTU0lHTk1FTlQgPSBmdW5jdGlvbihvcGVyYXRvciwgb2Zmc2V0LCBhc3QpIHsgcmV0dXJuIHRydWU7IH07IC8vIGEueCArPSBlIG9yIGFbZTFdICs9IGUyXG4vLyAgICBDb25maWcuSU5TVFJfVU5BUlkgPSBmdW5jdGlvbihvcGVyYXRvciwgYXN0KSB7IHJldHVybiB0cnVlOyB9O1xuLy8gICAgQ29uZmlnLklOU1RSX0xJVEVSQUwgPSBmdW5jdGlvbihsaXRlcmFsLCBhc3QpIHsgcmV0dXJuIHRydWU7fTsgLy8gbGl0ZXJhbCBnZXRzIHNvbWUgZHVtbXkgdmFsdWUgaWYgdGhlIHR5cGUgaXMgb2JqZWN0LCBmdW5jdGlvbiwgb3IgYXJyYXlcbi8vICAgIENvbmZpZy5JTlNUUl9DT05ESVRJT05BTCA9IGZ1bmN0aW9uKHR5cGUsIGFzdCkgeyByZXR1cm4gdHJ1ZTsgfTsgLy8gdHlwZSBjb3VsZCBiZSBcIiYmXCIsIFwifHxcIiwgXCJzd2l0Y2hcIiwgXCJvdGhlclwiXG4vLyAgICBDb25maWcuSU5TVFJfVFJZX0NBVENIX0FSR1VNRU5UUyA9IGZ1bmN0aW9uKGFzdCkge3JldHVybiBmYWxzZTsgfTsgLy8gd3JhcCBmdW5jdGlvbiBhbmQgc2NyaXB0IGJvZGllcyB3aXRoIHRyeSBjYXRjaCBibG9jayBhbmQgdXNlIGFyZ3VtZW50cyBpbiBKJC5GZS4gIERPIE5PVCBVU0UgVEhJUy5cbi8vICAgIENvbmZpZy5JTlNUUl9FTkRfRVhQUkVTU0lPTiA9IGZ1bmN0aW9uKGFzdCkge3JldHVybiB0cnVlOyB9OyAvLyB0b3AtbGV2ZWwgZXhwcmVzc2lvbiBtYXJrZXJcbn0oSiQkKSk7XG4iLCIvKlxuICogQ29weXJpZ2h0IChjKSAyMDE0IFNhbXN1bmcgRWxlY3Ryb25pY3MgQ28uLCBMdGQuXG4gKlxuICogTGljZW5zZWQgdW5kZXIgdGhlIEFwYWNoZSBMaWNlbnNlLCBWZXJzaW9uIDIuMCAodGhlIFwiTGljZW5zZVwiKTtcbiAqIHlvdSBtYXkgbm90IHVzZSB0aGlzIGZpbGUgZXhjZXB0IGluIGNvbXBsaWFuY2Ugd2l0aCB0aGUgTGljZW5zZS5cbiAqIFlvdSBtYXkgb2J0YWluIGEgY29weSBvZiB0aGUgTGljZW5zZSBhdFxuICpcbiAqICAgICAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjBcbiAqXG4gKiBVbmxlc3MgcmVxdWlyZWQgYnkgYXBwbGljYWJsZSBsYXcgb3IgYWdyZWVkIHRvIGluIHdyaXRpbmcsIHNvZnR3YXJlXG4gKiBkaXN0cmlidXRlZCB1bmRlciB0aGUgTGljZW5zZSBpcyBkaXN0cmlidXRlZCBvbiBhbiBcIkFTIElTXCIgQkFTSVMsXG4gKiBXSVRIT1VUIFdBUlJBTlRJRVMgT1IgQ09ORElUSU9OUyBPRiBBTlkgS0lORCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC5cbiAqIFNlZSB0aGUgTGljZW5zZSBmb3IgdGhlIHNwZWNpZmljIGxhbmd1YWdlIGdvdmVybmluZyBwZXJtaXNzaW9ucyBhbmRcbiAqIGxpbWl0YXRpb25zIHVuZGVyIHRoZSBMaWNlbnNlLlxuICovXG4vLyBkbyBub3QgcmVtb3ZlIHRoZSBmb2xsb3dpbmcgY29tbWVudFxuLy8gSkFMQU5HSSBETyBOT1QgSU5TVFJVTUVOVFxuaWYgKHR5cGVvZiBKJCQgPT09ICd1bmRlZmluZWQnKSB7XG4gICAgSiQkID0ge307XG59XG5cbihmdW5jdGlvbiAoc2FuZGJveCkge1xuICAgIGlmICh0eXBlb2Ygc2FuZGJveC5Db25zdGFudHMgIT09ICd1bmRlZmluZWQnKSB7XG4gICAgICAgIHJldHVybjtcbiAgICB9XG4gICAgdmFyIENvbnN0YW50cyA9IHNhbmRib3guQ29uc3RhbnRzID0ge307XG5cbiAgICBDb25zdGFudHMuaXNCcm93c2VyID0gISh0eXBlb2YgZXhwb3J0cyAhPT0gJ3VuZGVmaW5lZCcgJiYgdGhpcy5leHBvcnRzICE9PSBleHBvcnRzKTtcblxuICAgIHZhciBBUFBMWSA9IENvbnN0YW50cy5BUFBMWSA9IEZ1bmN0aW9uLnByb3RvdHlwZS5hcHBseTtcbiAgICB2YXIgQ0FMTCA9IENvbnN0YW50cy5DQUxMID0gRnVuY3Rpb24ucHJvdG90eXBlLmNhbGw7XG4gICAgQVBQTFkuYXBwbHkgPSBBUFBMWTtcbiAgICBBUFBMWS5jYWxsID0gQ0FMTDtcbiAgICBDQUxMLmFwcGx5ID0gQVBQTFk7XG4gICAgQ0FMTC5jYWxsID0gQ0FMTDtcblxuICAgIHZhciBIQVNfT1dOX1BST1BFUlRZID0gQ29uc3RhbnRzLkhBU19PV05fUFJPUEVSVFkgPSBPYmplY3QucHJvdG90eXBlLmhhc093blByb3BlcnR5O1xuICAgIENvbnN0YW50cy5IQVNfT1dOX1BST1BFUlRZX0NBTEwgPSBPYmplY3QucHJvdG90eXBlLmhhc093blByb3BlcnR5LmNhbGw7XG5cblxuICAgIHZhciBQUkVGSVgxID0gQ29uc3RhbnRzLkpBTEFOR0lfVkFSID0gXCJKJCRcIjtcbiAgICBDb25zdGFudHMuU1BFQ0lBTF9QUk9QID0gXCIqXCIgKyBQUkVGSVgxICsgXCIqXCI7XG4gICAgQ29uc3RhbnRzLlNQRUNJQUxfUFJPUDIgPSBcIipcIiArIFBSRUZJWDEgKyBcIkkqXCI7XG4gICAgQ29uc3RhbnRzLlNQRUNJQUxfUFJPUDMgPSBcIipcIiArIFBSRUZJWDEgKyBcIkMqXCI7XG4gICAgQ29uc3RhbnRzLlNQRUNJQUxfUFJPUDQgPSBcIipcIiArIFBSRUZJWDEgKyBcIlcqXCI7XG4gICAgQ29uc3RhbnRzLlNQRUNJQUxfUFJPUF9TSUQgPSBcIipcIiArIFBSRUZJWDEgKyBcIlNJRCpcIjtcbiAgICBDb25zdGFudHMuU1BFQ0lBTF9QUk9QX0lJRCA9IFwiKlwiICsgUFJFRklYMSArIFwiSUlEKlwiO1xuXG4gICAgQ29uc3RhbnRzLlVOS05PV04gPSAtMTtcblxuICAgIC8vLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0gRW5kIGNvbnN0YW50cyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cblxuICAgIC8vLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0gQ29uc3RhbnQgZnVuY3Rpb25zIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5cbiAgICB2YXIgSE9QID0gQ29uc3RhbnRzLkhPUCA9IGZ1bmN0aW9uIChvYmosIHByb3ApIHtcbiAgICAgICAgcmV0dXJuIChwcm9wICsgXCJcIiA9PT0gJ19fcHJvdG9fXycpIHx8IENBTEwuY2FsbChIQVNfT1dOX1BST1BFUlRZLCBvYmosIHByb3ApOyAvL0NvbnN0YW50cy5IQVNfT1dOX1BST1BFUlRZX0NBTEwuYXBwbHkoQ29uc3RhbnRzLkhBU19PV05fUFJPUEVSVFksIFtvYmosIHByb3BdKTtcbiAgICB9O1xuXG4gICAgQ29uc3RhbnRzLmhhc0dldHRlclNldHRlciA9IGZ1bmN0aW9uIChvYmosIHByb3AsIGlzR2V0dGVyKSB7XG4gICAgICAgIGlmICh0eXBlb2YgT2JqZWN0LmdldE93blByb3BlcnR5RGVzY3JpcHRvciAhPT0gJ2Z1bmN0aW9uJykge1xuICAgICAgICAgICAgcmV0dXJuIHRydWU7XG4gICAgICAgIH1cbiAgICAgICAgd2hpbGUgKG9iaiAhPT0gbnVsbCkge1xuICAgICAgICAgICAgaWYgKHR5cGVvZiBvYmogIT09ICdvYmplY3QnICYmIHR5cGVvZiBvYmogIT09ICdmdW5jdGlvbicpIHtcbiAgICAgICAgICAgICAgICByZXR1cm4gZmFsc2U7XG4gICAgICAgICAgICB9XG4gICAgICAgICAgICB2YXIgZGVzYyA9IE9iamVjdC5nZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3Iob2JqLCBwcm9wKTtcbiAgICAgICAgICAgIGlmIChkZXNjICE9PSB1bmRlZmluZWQpIHtcbiAgICAgICAgICAgICAgICBpZiAoaXNHZXR0ZXIgJiYgdHlwZW9mIGRlc2MuZ2V0ID09PSAnZnVuY3Rpb24nKSB7XG4gICAgICAgICAgICAgICAgICAgIHJldHVybiB0cnVlO1xuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICBpZiAoIWlzR2V0dGVyICYmIHR5cGVvZiBkZXNjLnNldCA9PT0gJ2Z1bmN0aW9uJykge1xuICAgICAgICAgICAgICAgICAgICByZXR1cm4gdHJ1ZTtcbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICB9IGVsc2UgaWYgKEhPUChvYmosIHByb3ApKSB7XG4gICAgICAgICAgICAgICAgcmV0dXJuIGZhbHNlO1xuICAgICAgICAgICAgfVxuICAgICAgICAgICAgb2JqID0gb2JqLl9fcHJvdG9fXztcbiAgICAgICAgfVxuICAgICAgICByZXR1cm4gZmFsc2U7XG4gICAgfTtcblxuICAgIENvbnN0YW50cy5kZWJ1Z1ByaW50ID0gZnVuY3Rpb24gKHMpIHtcbiAgICAgICAgaWYgKHNhbmRib3guQ29uZmlnLkRFQlVHKSB7XG4gICAgICAgICAgICBjb25zb2xlLmxvZyhcIioqKlwiICsgcyk7XG4gICAgICAgIH1cbiAgICB9O1xuXG4gICAgQ29uc3RhbnRzLndhcm5QcmludCA9IGZ1bmN0aW9uIChpaWQsIHMpIHtcbiAgICAgICAgaWYgKHNhbmRib3guQ29uZmlnLldBUk4gJiYgaWlkICE9PSAwKSB7XG4gICAgICAgICAgICBjb25zb2xlLmxvZyhcIiAgICAgICAgYXQgXCIgKyBpaWQgKyBcIiBcIiArIHMpO1xuICAgICAgICB9XG4gICAgfTtcblxuICAgIENvbnN0YW50cy5zZXJpb3VzV2FyblByaW50ID0gZnVuY3Rpb24gKGlpZCwgcykge1xuICAgICAgICBpZiAoc2FuZGJveC5Db25maWcuU0VSSU9VU19XQVJOICYmIGlpZCAhPT0gMCkge1xuICAgICAgICAgICAgY29uc29sZS5sb2coXCIgICAgICAgIGF0IFwiICsgaWlkICsgXCIgU2VyaW91cyBcIiArIHMpO1xuICAgICAgICB9XG4gICAgfTtcblxufSkoSiQkKTtcblxuIiwiLypcbiAqIENvcHlyaWdodCAyMDEzLTIwMTQgU2Ftc3VuZyBJbmZvcm1hdGlvbiBTeXN0ZW1zIEFtZXJpY2EsIEluYy5cbiAqXG4gKiBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgXCJMaWNlbnNlXCIpO1xuICogeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLlxuICogWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0XG4gKlxuICogICAgICAgIGh0dHA6Ly93d3cuYXBhY2hlLm9yZy9saWNlbnNlcy9MSUNFTlNFLTIuMFxuICpcbiAqIFVubGVzcyByZXF1aXJlZCBieSBhcHBsaWNhYmxlIGxhdyBvciBhZ3JlZWQgdG8gaW4gd3JpdGluZywgc29mdHdhcmVcbiAqIGRpc3RyaWJ1dGVkIHVuZGVyIHRoZSBMaWNlbnNlIGlzIGRpc3RyaWJ1dGVkIG9uIGFuIFwiQVMgSVNcIiBCQVNJUyxcbiAqIFdJVEhPVVQgV0FSUkFOVElFUyBPUiBDT05ESVRJT05TIE9GIEFOWSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLlxuICogU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZFxuICogbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuXG4gKi9cblxuLy8gQXV0aG9yOiBLb3VzaGlrIFNlblxuLy8gZG8gbm90IHJlbW92ZSB0aGUgZm9sbG93aW5nIGNvbW1lbnRcbi8vIEpBTEFOR0kgRE8gTk9UIElOU1RSVU1FTlRcblxuaWYgKHR5cGVvZiBKJCQgPT09ICd1bmRlZmluZWQnKSB7XG4gIEokJCA9IHt9O1xufVxuXG4oZnVuY3Rpb24gKHNhbmRib3gpIHtcbiAgaWYgKHR5cGVvZiBzYW5kYm94LmlpZFRvTG9jYXRpb24gIT09ICd1bmRlZmluZWQnKSB7XG4gICAgICByZXR1cm47XG4gIH1cbiAgc2FuZGJveC5paWRUb0xvY2F0aW9uID0gZnVuY3Rpb24gKHNpZCwgaWlkKSB7XG4gICAgICB2YXIgcmV0LCBhcnIsIGdpZD1zaWQ7XG4gICAgICBpZiAoc2FuZGJveC5zbWFwKSB7XG4gICAgICAgICAgaWYgKHR5cGVvZiBzaWQgPT09ICdzdHJpbmcnICYmIHNpZC5pbmRleE9mKCc6Jyk+PTApIHtcbiAgICAgICAgICAgICAgc2lkID0gc2lkLnNwbGl0KCc6Jyk7XG4gICAgICAgICAgICAgIGlpZCA9IHBhcnNlSW50KHNpZFsxXSk7XG4gICAgICAgICAgICAgIHNpZCA9IHBhcnNlSW50KHNpZFswXSk7XG4gICAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICAgICAgZ2lkID0gc2lkK1wiOlwiK2lpZDtcbiAgICAgICAgICB9XG4gICAgICAgICAgaWYgKChyZXQgPSBzYW5kYm94LnNtYXBbc2lkXSkpIHtcbiAgICAgICAgICAgICAgdmFyIGZuYW1lID0gcmV0Lm9yaWdpbmFsQ29kZUZpbGVOYW1lO1xuICAgICAgICAgICAgICBpZiAocmV0LmV2YWxTaWQgIT09IHVuZGVmaW5lZCkge1xuICAgICAgICAgICAgICAgICAgZm5hbWUgPSBmbmFtZStzYW5kYm94LmlpZFRvTG9jYXRpb24ocmV0LmV2YWxTaWQsIHJldC5ldmFsSWlkKTtcbiAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICBhcnIgPSByZXRbaWlkXTtcbiAgICAgICAgICAgICAgaWYgKGFycikge1xuICAgICAgICAgICAgICAgICAgaWYgKHNhbmRib3guUmVzdWx0cykge1xuICAgICAgICAgICAgICAgICAgICAgIHJldHVybiBcIjxhIGhyZWY9XFxcImphdmFzY3JpcHQ6aWlkVG9EaXNwbGF5Q29kZUxvY2F0aW9uKCdcIitnaWQrXCInKTtcXFwiPihcIiArIGZuYW1lICsgXCI6XCIgKyBhcnJbMF0gKyBcIjpcIiArIGFyclsxXSArIFwiOlwiICsgYXJyWzJdICsgXCI6XCIgKyBhcnJbM10gKyBcIik8L2E+XCI7XG4gICAgICAgICAgICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgICAgICAgICAgICAgIHJldHVybiBcIihcIiArIGZuYW1lICsgXCI6XCIgKyBhcnJbMF0gKyBcIjpcIiArIGFyclsxXSArIFwiOlwiICsgYXJyWzJdICsgXCI6XCIgKyBhcnJbM10gKyBcIilcIjtcbiAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICAgICAgICAgIHJldHVybiBcIihcIiArIGZuYW1lICsgXCI6aWlkXCIgKyBpaWQgKyBcIilcIjtcbiAgICAgICAgICAgICAgfVxuICAgICAgICAgIH1cbiAgICAgIH1cbiAgICAgIHJldHVybiBzaWQrXCJcIjtcbiAgfTtcblxuICBzYW5kYm94LmdldEdsb2JhbElJRCA9IGZ1bmN0aW9uKGlpZCkge1xuICAgICAgcmV0dXJuIHNhbmRib3guc2lkICtcIjpcIitpaWQ7XG4gIH1cblxufShKJCQpKTtcbiIsIi8qXG4gKiBDb3B5cmlnaHQgMjAxNCBTYW1zdW5nIEluZm9ybWF0aW9uIFN5c3RlbXMgQW1lcmljYSwgSW5jLlxuICpcbiAqIExpY2Vuc2VkIHVuZGVyIHRoZSBBcGFjaGUgTGljZW5zZSwgVmVyc2lvbiAyLjAgKHRoZSBcIkxpY2Vuc2VcIik7XG4gKiB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuXG4gKiBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXRcbiAqXG4gKiAgICAgICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wXG4gKlxuICogVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZVxuICogZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gXCJBUyBJU1wiIEJBU0lTLFxuICogV0lUSE9VVCBXQVJSQU5USUVTIE9SIENPTkRJVElPTlMgT0YgQU5ZIEtJTkQsIGVpdGhlciBleHByZXNzIG9yIGltcGxpZWQuXG4gKiBTZWUgdGhlIExpY2Vuc2UgZm9yIHRoZSBzcGVjaWZpYyBsYW5ndWFnZSBnb3Zlcm5pbmcgcGVybWlzc2lvbnMgYW5kXG4gKiBsaW1pdGF0aW9ucyB1bmRlciB0aGUgTGljZW5zZS5cbiAqL1xuXG4vLyBBdXRob3I6IEtvdXNoaWsgU2VuXG5cbi8vIGRvIG5vdCByZW1vdmUgdGhlIGZvbGxvd2luZyBjb21tZW50XG4vLyBKQUxBTkdJIERPIE5PVCBJTlNUUlVNRU5UXG5cblxuLy8gd3JhcCBpbiBhbm9ueW1vdXMgZnVuY3Rpb24gdG8gY3JlYXRlIGxvY2FsIG5hbWVzcGFjZSB3aGVuIGluIGJyb3dzZXJcbi8vIGNyZWF0ZSAvIHJlc2V0IEokJCBnbG9iYWwgdmFyaWFibGUgdG8gaG9sZCBhbmFseXNpcyBydW50aW1lXG5pZiAodHlwZW9mIEokJCA9PT0gJ3VuZGVmaW5lZCcpIHtcbiAgSiQkID0ge307XG59XG5cbihmdW5jdGlvbiAoc2FuZGJveCkge1xuICBpZiAodHlwZW9mIHNhbmRib3guQiAhPT0gJ3VuZGVmaW5lZCcpIHtcbiAgICAgIHJldHVybjtcbiAgfVxuICAvLy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tIEJlZ2luIEphbGFuZ2kgTGlicmFyeSBiYWNrZW5kIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuXG4gIC8vIHN0YWNrIG9mIHJldHVybiB2YWx1ZXMgZnJvbSBpbnN0cnVtZW50ZWQgZnVuY3Rpb25zLlxuICAvLyB3ZSBuZWVkIHRvIGtlZXAgYSBzdGFjayBzaW5jZSBhIGZ1bmN0aW9uIG1heSByZXR1cm4gYW5kIHRoZW5cbiAgLy8gaGF2ZSBhbm90aGVyIGZ1bmN0aW9uIGNhbGwgaW4gYSBmaW5hbGx5IGJsb2NrIChzZWUgdGVzdFxuICAvLyBjYWxsX2luX2ZpbmFsbHkuanMpXG5cbiAgdmFyIGdsb2JhbCA9IHRoaXM7XG4gIHZhciBGdW5jdGlvbiA9IGdsb2JhbC5GdW5jdGlvbjtcbiAgdmFyIHJldHVyblN0YWNrID0gW107XG4gIHZhciB3cmFwcGVkRXhjZXB0aW9uVmFsO1xuICB2YXIgbGFzdFZhbDtcbiAgdmFyIHN3aXRjaExlZnQ7XG4gIHZhciBzd2l0Y2hLZXlTdGFjayA9IFtdO1xuICB2YXIgYXJnSW5kZXg7XG4gIHZhciBFVkFMX09SRyA9IGV2YWw7XG4gIHZhciBsYXN0Q29tcHV0ZWRWYWx1ZTtcbiAgdmFyIFNQRUNJQUxfUFJPUF9TSUQgPSBzYW5kYm94LkNvbnN0YW50cy5TUEVDSUFMX1BST1BfU0lEO1xuICB2YXIgU1BFQ0lBTF9QUk9QX0lJRCA9IHNhbmRib3guQ29uc3RhbnRzLlNQRUNJQUxfUFJPUF9JSUQ7XG5cbiAgZnVuY3Rpb24gZ2V0UHJvcFNhZmUoYmFzZSwgcHJvcCl7XG4gICAgaWYoYmFzZSA9PT0gbnVsbCB8fCBiYXNlID09PSB1bmRlZmluZWQpe1xuICAgICAgcmV0dXJuIHVuZGVmaW5lZDtcbiAgICB9XG4gICAgcmV0dXJuIGJhc2VbcHJvcF07XG4gIH1cblxuICBmdW5jdGlvbiBkZWNvZGVCaXRQYXR0ZXJuKGksIGxlbikge1xuICAgICAgdmFyIHJldCA9IG5ldyBBcnJheShsZW4pO1xuICAgICAgZm9yICh2YXIgaj0wOyBqPGxlbjsgaisrKSB7XG4gICAgICAgICAgdmFyIHZhbCA9IChpICYgMSk/dHJ1ZTpmYWxzZTtcbiAgICAgICAgICByZXRbbGVuIC0gaiAtMV0gPSB2YWw7XG4gICAgICAgICAgaSA9IGkgPj4gMTtcbiAgICAgIH1cbiAgICAgIHJldHVybiByZXQ7XG4gIH1cblxuICBmdW5jdGlvbiBjcmVhdGVCaXRQYXR0ZXJuKCkge1xuICAgICAgdmFyIHJldCA9IDA7XG4gICAgICB2YXIgaTtcbiAgICAgIGZvciAoaSA9MDsgaTwgYXJndW1lbnRzLmxlbmd0aDsgaSsrKSB7XG4gICAgICAgICAgcmV0ID0gKHJldCA8PCAxKSsoYXJndW1lbnRzW2ldPzE6MCk7XG4gICAgICB9XG4gICAgICByZXR1cm4gcmV0O1xuICB9XG5cblxuICB2YXIgc2lkU3RhY2sgPSBbXSwgc2lkQ291bnRlciA9IDA7XG5cbiAgZnVuY3Rpb24gY3JlYXRlQW5kQXNzaWduTmV3U2lkKCkge1xuICAgICAgc2lkU3RhY2sucHVzaChzYW5kYm94LnNpZCk7XG4gICAgICBzYW5kYm94LnNpZCA9IHNpZENvdW50ZXIgPSBzaWRDb3VudGVyICsgMTtcbiAgICAgIGlmICghc2FuZGJveC5zbWFwKSBzYW5kYm94LnNtYXAgPSB7fTtcbiAgICAgIHNhbmRib3guc21hcFtzYW5kYm94LnNpZF0gPSBzYW5kYm94LmlpZHM7XG4gIH1cblxuICBmdW5jdGlvbiByb2xsQmFja1NpZCgpIHtcbiAgICAgIHNhbmRib3guc2lkID0gc2lkU3RhY2sucG9wKCk7XG4gIH1cblxuICBmdW5jdGlvbiBhc3NvY2lhdGVTaWRXaXRoRnVuY3Rpb24oZiwgaWlkKSB7XG4gICAgICBpZiAodHlwZW9mIGYgPT09ICdmdW5jdGlvbicpIHtcbiAgICAgICAgICBpZiAoT2JqZWN0ICYmIE9iamVjdC5kZWZpbmVQcm9wZXJ0eSAmJiB0eXBlb2YgT2JqZWN0LmRlZmluZVByb3BlcnR5ID09PSAnZnVuY3Rpb24nKSB7XG4gICAgICAgICAgICAgIE9iamVjdC5kZWZpbmVQcm9wZXJ0eShmLCBTUEVDSUFMX1BST1BfU0lELCB7XG4gICAgICAgICAgICAgICAgICBlbnVtZXJhYmxlOmZhbHNlLFxuICAgICAgICAgICAgICAgICAgd3JpdGFibGU6dHJ1ZVxuICAgICAgICAgICAgICB9KTtcbiAgICAgICAgICAgICAgT2JqZWN0LmRlZmluZVByb3BlcnR5KGYsIFNQRUNJQUxfUFJPUF9JSUQsIHtcbiAgICAgICAgICAgICAgICAgIGVudW1lcmFibGU6ZmFsc2UsXG4gICAgICAgICAgICAgICAgICB3cml0YWJsZTp0cnVlXG4gICAgICAgICAgICAgIH0pO1xuICAgICAgICAgIH1cbiAgICAgICAgICBmW1NQRUNJQUxfUFJPUF9TSURdID0gc2FuZGJveC5zaWQ7XG4gICAgICAgICAgZltTUEVDSUFMX1BST1BfSUlEXSA9IGlpZDtcbiAgICAgIH1cbiAgfVxuXG4gIGZ1bmN0aW9uIHVwZGF0ZVNpZChmKSB7XG4gICAgICBzaWRTdGFjay5wdXNoKHNhbmRib3guc2lkKTtcbiAgICAgIHNhbmRib3guc2lkID0gZ2V0UHJvcFNhZmUoZiwgU1BFQ0lBTF9QUk9QX1NJRCk7XG4gIH1cblxuXG4gIC8vIHVudXNlZFxuICBmdW5jdGlvbiBpc05hdGl2ZShmKSB7XG4gICAgICByZXR1cm4gZi50b1N0cmluZygpLmluZGV4T2YoJ1tuYXRpdmUgY29kZV0nKSA+IC0xIHx8IGYudG9TdHJpbmcoKS5pbmRleE9mKCdbb2JqZWN0ICcpID09PSAwO1xuICB9XG5cbi8vICAgZnVuY3Rpb24gY2FsbEFzTmF0aXZlQ29uc3RydWN0b3JXaXRoRXZhbChDb25zdHJ1Y3RvciwgYXJncykge1xuLy8gICAgICAgdmFyIGEgPSBbXTtcbi8vICAgICAgIGZvciAodmFyIGkgPSAwOyBpIDwgYXJncy5sZW5ndGg7IGkrKylcbi8vICAgICAgICAgICBhW2ldID0gJ2FyZ3NbJyArIGkgKyAnXSc7XG4vLyAgICAgICB2YXIgZXZhbCA9IEVWQUxfT1JHO1xuLy8gICAgICAgcmV0dXJuIGV2YWwoJ25ldyBDb25zdHJ1Y3RvcignICsgYS5qb2luKCkgKyAnKScpO1xuLy8gICB9XG4gICAgXG4gICAgZnVuY3Rpb24gY2FsbEFzTmF0aXZlQ29uc3RydWN0b3JXaXRob3V0RXZhbChDb25zdHJ1Y3RvciwgYXJncykge1xuICAgICAgICAvLyBDcmVhdGUgYSBmdW5jdGlvbiB0aGF0IHdpbGwgY2FsbCB0aGUgY29uc3RydWN0b3Igd2l0aCB0aGUgcHJvdmlkZWQgYXJndW1lbnRzXG4gICAgICAgIGNvbnN0IGZ1bmMgPSBuZXcgRnVuY3Rpb24oJ0NvbnN0cnVjdG9yJywgJ2FyZ3MnLCBcbiAgICAgICAgICAgIGByZXR1cm4gbmV3IENvbnN0cnVjdG9yKCR7YXJncy5tYXAoKF8sIGkpID0+ICdhcmdzWycgKyBpICsgJ10nKS5qb2luKCcsICcpfSk7YCk7XG4gICAgICAgIC8vIENhbGwgdGhlIGZ1bmN0aW9uIHdpdGggdGhlIGNvbnN0cnVjdG9yIGFuZCB0aGUgYXJndW1lbnRzXG4gICAgICAgIHJldHVybiBmdW5jKENvbnN0cnVjdG9yLCBhcmdzKTtcbiAgICB9XG5cbiAgZnVuY3Rpb24gY2FsbEFzTmF0aXZlQ29uc3RydWN0b3IoQ29uc3RydWN0b3IsIGFyZ3MpIHtcbiAgICAgIGlmIChhcmdzLmxlbmd0aCA9PT0gMCkge1xuICAgICAgICAgIHJldHVybiBuZXcgQ29uc3RydWN0b3IoKTtcbiAgICAgIH1cbiAgICAgIGlmIChhcmdzLmxlbmd0aCA9PT0gMSkge1xuICAgICAgICAgIHJldHVybiBuZXcgQ29uc3RydWN0b3IoYXJnc1swXSk7XG4gICAgICB9XG4gICAgICBpZiAoYXJncy5sZW5ndGggPT09IDIpIHtcbiAgICAgICAgICByZXR1cm4gbmV3IENvbnN0cnVjdG9yKGFyZ3NbMF0sIGFyZ3NbMV0pO1xuICAgICAgfVxuICAgICAgaWYgKGFyZ3MubGVuZ3RoID09PSAzKSB7XG4gICAgICAgICAgcmV0dXJuIG5ldyBDb25zdHJ1Y3RvcihhcmdzWzBdLCBhcmdzWzFdLCBhcmdzWzJdKTtcbiAgICAgIH1cbiAgICAgIGlmIChhcmdzLmxlbmd0aCA9PT0gNCkge1xuICAgICAgICAgIHJldHVybiBuZXcgQ29uc3RydWN0b3IoYXJnc1swXSwgYXJnc1sxXSwgYXJnc1syXSwgYXJnc1szXSk7XG4gICAgICB9XG4gICAgICBpZiAoYXJncy5sZW5ndGggPT09IDUpIHtcbiAgICAgICAgICByZXR1cm4gbmV3IENvbnN0cnVjdG9yKGFyZ3NbMF0sIGFyZ3NbMV0sIGFyZ3NbMl0sIGFyZ3NbM10sIGFyZ3NbNF0pO1xuICAgICAgfVxuICAgICAgcmV0dXJuIGNhbGxBc05hdGl2ZUNvbnN0cnVjdG9yV2l0aG91dEV2YWwoQ29uc3RydWN0b3IsIGFyZ3MpO1xuICB9XG5cbiAgZnVuY3Rpb24gY2FsbEFzQ29uc3RydWN0b3IoQ29uc3RydWN0b3IsIGFyZ3MpIHtcbiAgICAgIHZhciByZXQ7XG4gICAgICBpZiAodHJ1ZSkge1xuICAgICAgICAgIHJldCA9IGNhbGxBc05hdGl2ZUNvbnN0cnVjdG9yKENvbnN0cnVjdG9yLCBhcmdzKTtcbiAgICAgICAgICByZXR1cm4gcmV0O1xuICAgICAgfSBlbHNlIHsgLy8gZWxzZSBicmFuY2ggaXMgYSBtb3JlIGVsZWdhbnQgdG8gY2FsbCBhIGNvbnN0cnVjdG9yIHJlZmxlY3RpdmVseSwgYnV0IGl0IGxlYWRzIHRvIG1lbW9yeSBsZWFrIGluIHY4LlxuICAgICAgICAgIHZhciBUZW1wID0gZnVuY3Rpb24gKCkge1xuICAgICAgICAgIH0sIGluc3Q7XG4gICAgICAgICAgVGVtcC5wcm90b3R5cGUgPSBDb25zdHJ1Y3Rvci5wcm90b3R5cGU7XG4gICAgICAgICAgaW5zdCA9IG5ldyBUZW1wO1xuICAgICAgICAgIHJldCA9IENvbnN0cnVjdG9yLmFwcGx5KGluc3QsIGFyZ3MpO1xuICAgICAgICAgIHJldHVybiBPYmplY3QocmV0KSA9PT0gcmV0ID8gcmV0IDogaW5zdDtcbiAgICAgIH1cbiAgfVxuXG4gIGZ1bmN0aW9uIGludm9rZUV2YWwoYmFzZSwgZiwgYXJncywgaWlkKSB7XG4gICAgICByZXR1cm4gZihzYW5kYm94Lmluc3RydW1lbnRFdmFsQ29kZShhcmdzWzBdLCBpaWQsIGZhbHNlKSk7XG4gIH1cblxuICBmdW5jdGlvbiBpbnZva2VGdW5jdGlvbkRlY2woYmFzZSwgZiwgYXJncywgaWlkKSB7XG4gICAgICAvLyBJbnZva2Ugd2l0aCB0aGUgb3JpZ2luYWwgcGFyYW1ldGVycyB0byBwcmVzZXJ2ZSBleGNlcHRpb25hbCBiZWhhdmlvciBpZiBpbnB1dCBpcyBpbnZhbGlkXG4gICAgICBmLmFwcGx5KGJhc2UsIGFyZ3MpO1xuICAgICAgLy8gT3RoZXJ3aXNlIGlucHV0IGlzIHZhbGlkLCBzbyBpbnN0cnVtZW50IGFuZCBpbnZva2UgdmlhIGV2YWxcbiAgICAgIHZhciBuZXdBcmdzID0gW107XG4gICAgICBmb3IgKHZhciBpID0gMDsgaSA8IGFyZ3MubGVuZ3RoLTE7IGkrKykge1xuICAgICAgICAgIG5ld0FyZ3NbaV0gPSBhcmdzW2ldO1xuICAgICAgfVxuICAgICAgdmFyIGNvZGUgPSAnKGZ1bmN0aW9uKCcgKyBuZXdBcmdzLmpvaW4oJywgJykgKyAnKSB7ICcgKyBhcmdzW2FyZ3MubGVuZ3RoLTFdICsgJyB9KSc7XG4gICAgICB2YXIgY29kZSA9IHNhbmRib3guaW5zdHJ1bWVudEV2YWxDb2RlKGNvZGUsIGlpZCwgZmFsc2UpO1xuICAgICAgLy8gVXNpbmcgRVZBTF9PUkcgaW5zdGVhZCBvZiBldmFsKCkgaXMgaW1wb3J0YW50IGFzIGl0IHByZXNlcnZlcyB0aGUgc2NvcGluZyBzZW1hbnRpY3Mgb2YgRnVuY3Rpb24oKVxuICAgICAgdmFyIG91dCA9IEVWQUxfT1JHKGNvZGUpO1xuICAgICAgcmV0dXJuIG91dDtcbiAgfVxuXG4gIGZ1bmN0aW9uIGNhbGxGdW4oZiwgYmFzZSwgYXJncywgaXNDb25zdHJ1Y3RvciwgaWlkKSB7XG4gICAgICB2YXIgcmVzdWx0O1xuICAgICAgcHVzaFN3aXRjaEtleSgpO1xuICAgICAgdHJ5IHtcbiAgICAgICAgICBpZiAoZiA9PT0gRVZBTF9PUkcpIHtcbiAgICAgICAgICAgICAgcmVzdWx0ID0gaW52b2tlRXZhbChiYXNlLCBmLCBhcmdzLCBpaWQpO1xuICAgICAgICAgIH0gZWxzZSBpZiAoZiA9PT0gRnVuY3Rpb24pIHtcbiAgICAgICAgICAgICAgcmVzdWx0ID0gaW52b2tlRnVuY3Rpb25EZWNsKGJhc2UsIGYsIGFyZ3MsIGlpZCk7XG4gICAgICAgICAgfSBlbHNlIGlmIChpc0NvbnN0cnVjdG9yKSB7XG4gICAgICAgICAgICAgIHJlc3VsdCA9IGNhbGxBc0NvbnN0cnVjdG9yKGYsIGFyZ3MpO1xuICAgICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgICAgIHJlc3VsdCA9IEZ1bmN0aW9uLnByb3RvdHlwZS5hcHBseS5jYWxsKGYsIGJhc2UsIGFyZ3MpO1xuICAgICAgICAgIH1cbiAgICAgICAgICByZXR1cm4gcmVzdWx0O1xuICAgICAgfSBmaW5hbGx5IHtcbiAgICAgICAgICBwb3BTd2l0Y2hLZXkoKTtcbiAgICAgIH1cbiAgfVxuXG4gIGZ1bmN0aW9uIGludm9rZUZ1bihpaWQsIGJhc2UsIGYsIGFyZ3MsIGlzQ29uc3RydWN0b3IsIGlzTWV0aG9kKSB7XG4gICAgICB2YXIgYXJldCwgc2tpcCA9IGZhbHNlLCByZXN1bHQ7XG5cbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuaW52b2tlRnVuUHJlKSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMuaW52b2tlRnVuUHJlKGlpZCwgZiwgYmFzZSwgYXJncywgaXNDb25zdHJ1Y3RvciwgaXNNZXRob2QsIGdldFByb3BTYWZlKGYsIFNQRUNJQUxfUFJPUF9JSUQpLCBnZXRQcm9wU2FmZShmLCBTUEVDSUFMX1BST1BfU0lEKSk7XG4gICAgICAgICAgaWYgKGFyZXQpIHtcbiAgICAgICAgICAgICAgZiA9IGFyZXQuZjtcbiAgICAgICAgICAgICAgYmFzZSA9IGFyZXQuYmFzZTtcbiAgICAgICAgICAgICAgYXJncyA9IGFyZXQuYXJncztcbiAgICAgICAgICAgICAgc2tpcCA9IGFyZXQuc2tpcDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICBpZiAoIXNraXApIHtcbiAgICAgICAgICByZXN1bHQgPSBjYWxsRnVuKGYsIGJhc2UsIGFyZ3MsIGlzQ29uc3RydWN0b3IsIGlpZCk7XG4gICAgICB9XG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLmludm9rZUZ1bikge1xuICAgICAgICAgIGFyZXQgPSBzYW5kYm94LmFuYWx5c2lzLmludm9rZUZ1bihpaWQsIGYsIGJhc2UsIGFyZ3MsIHJlc3VsdCwgaXNDb25zdHJ1Y3RvciwgaXNNZXRob2QsIGdldFByb3BTYWZlKGYsIFNQRUNJQUxfUFJPUF9JSUQpLCBnZXRQcm9wU2FmZShmLCBTUEVDSUFMX1BST1BfU0lEKSk7XG4gICAgICAgICAgaWYgKGFyZXQpIHtcbiAgICAgICAgICAgICAgcmVzdWx0ID0gYXJldC5yZXN1bHQ7XG4gICAgICAgICAgfVxuICAgICAgfVxuICAgICAgcmV0dXJuIHJlc3VsdDtcbiAgfVxuXG4gIC8vIEZ1bmN0aW9uIGNhbGwgKGUuZy4sIGYoKSlcbiAgZnVuY3Rpb24gRihpaWQsIGYsIGZsYWdzKSB7XG4gICAgICB2YXIgYkZsYWdzID0gZGVjb2RlQml0UGF0dGVybihmbGFncywgMSk7IC8vIFtpc0NvbnN0cnVjdG9yXVxuICAgICAgcmV0dXJuIGZ1bmN0aW9uICgpIHtcbiAgICAgICAgICB2YXIgYmFzZSA9IHRoaXM7XG4gICAgICAgICAgcmV0dXJuIChsYXN0Q29tcHV0ZWRWYWx1ZSA9IGludm9rZUZ1bihpaWQsIGJhc2UsIGYsIGFyZ3VtZW50cywgYkZsYWdzWzBdLCBmYWxzZSkpO1xuICAgICAgfVxuICB9XG5cbiAgLy8gTWV0aG9kIGNhbGwgKGUuZy4sIGUuZigpKVxuICBmdW5jdGlvbiBNKGlpZCwgYmFzZSwgb2Zmc2V0LCBmbGFncykge1xuICAgICAgdmFyIGJGbGFncyA9IGRlY29kZUJpdFBhdHRlcm4oZmxhZ3MsIDIpOyAvLyBbaXNDb25zdHJ1Y3RvciwgaXNDb21wdXRlZF1cbiAgICAgIHZhciBmID0gRyhpaWQgKyAyLCBiYXNlLCBvZmZzZXQsIGNyZWF0ZUJpdFBhdHRlcm4oYkZsYWdzWzFdLCBmYWxzZSwgdHJ1ZSkpO1xuICAgICAgcmV0dXJuIGZ1bmN0aW9uICgpIHtcbiAgICAgICAgICByZXR1cm4gKGxhc3RDb21wdXRlZFZhbHVlID0gaW52b2tlRnVuKGlpZCwgYmFzZSwgZiwgYXJndW1lbnRzLCBiRmxhZ3NbMF0sIHRydWUpKTtcbiAgICAgIH07XG4gIH1cblxuICAvLyBJZ25vcmUgYXJndW1lbnQgKGlkZW50aXR5KS5cbiAgZnVuY3Rpb24gSSh2YWwpIHtcbiAgICAgIHJldHVybiB2YWw7XG4gIH1cblxuICB2YXIgaGFzR2V0T3duUHJvcGVydHlEZXNjcmlwdG9yID0gdHlwZW9mIE9iamVjdC5nZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3IgPT09ICdmdW5jdGlvbic7XG4gIC8vIG9iamVjdC9mdW5jdGlvbi9yZWdleHAvYXJyYXkgTGl0ZXJhbFxuICBmdW5jdGlvbiBUKGlpZCwgdmFsLCB0eXBlLCBoYXNHZXR0ZXJTZXR0ZXIsIGludGVybmFsSWlkKSB7XG4gICAgICB2YXIgYXJldDtcbiAgICAgIGFzc29jaWF0ZVNpZFdpdGhGdW5jdGlvbih2YWwsIGludGVybmFsSWlkKTtcbiAgICAgIGlmIChoYXNHZXR0ZXJTZXR0ZXIpIHtcbiAgICAgICAgICBmb3IgKHZhciBvZmZzZXQgaW4gdmFsKSB7XG4gICAgICAgICAgICAgIGlmIChoYXNHZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3IgJiYgdmFsLmhhc093blByb3BlcnR5KG9mZnNldCkpIHtcbiAgICAgICAgICAgICAgICAgIHZhciBkZXNjID0gT2JqZWN0LmdldE93blByb3BlcnR5RGVzY3JpcHRvcih2YWwsIG9mZnNldCk7XG4gICAgICAgICAgICAgICAgICBpZiAoZGVzYyAhPT0gdW5kZWZpbmVkKSB7XG4gICAgICAgICAgICAgICAgICAgICAgaWYgKHR5cGVvZiBkZXNjLmdldCA9PT0gJ2Z1bmN0aW9uJykge1xuICAgICAgICAgICAgICAgICAgICAgICAgICBUKGlpZCwgZGVzYy5nZXQsIDEyLCBmYWxzZSwgaW50ZXJuYWxJaWQpO1xuICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgICBpZiAodHlwZW9mIGRlc2Muc2V0ID09PSAnZnVuY3Rpb24nKSB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgIFQoaWlkLCBkZXNjLnNldCwgMTIsIGZhbHNlLCBpbnRlcm5hbElpZCk7XG4gICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICB9XG4gICAgICAgICAgfVxuICAgICAgfVxuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy5saXRlcmFsKSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMubGl0ZXJhbChpaWQsIHZhbCwgaGFzR2V0dGVyU2V0dGVyKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm4gKGxhc3RDb21wdXRlZFZhbHVlID0gdmFsKTtcbiAgfVxuXG4gIC8vIHdyYXAgb2JqZWN0IG8gaW4gZm9yICh4IGluIG8pIHsgLi4uIH1cbiAgZnVuY3Rpb24gSChpaWQsIHZhbCkge1xuICAgICAgdmFyIGFyZXQ7XG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLmZvcmluT2JqZWN0KSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMuZm9yaW5PYmplY3QoaWlkLCB2YWwpO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIHZhbCA9IGFyZXQucmVzdWx0O1xuICAgICAgICAgIH1cbiAgICAgIH1cbiAgICAgIHJldHVybiB2YWw7XG4gIH1cblxuICAvLyB2YXJpYWJsZSBkZWNsYXJhdGlvbiAoSW5pdClcbiAgZnVuY3Rpb24gTihpaWQsIG5hbWUsIHZhbCwgZmxhZ3MpIHtcbiAgICAgIHZhciBiRmxhZ3MgPSBkZWNvZGVCaXRQYXR0ZXJuKGZsYWdzLCAzKTsgLy8gW2lzQXJndW1lbnQsIGlzTG9jYWxTeW5jLCBpc0NhdGNoUGFyYW1dXG4gICAgICAvLyBpc0xvY2FsU3luYyBpcyBvbmx5IHRydWUgd2hlbiB3ZSBzeW5jIHZhcmlhYmxlcyBpbnNpZGUgYSBmb3ItaW4gbG9vcFxuICAgICAgdmFyIGFyZXQ7XG5cbiAgICAgIGlmIChiRmxhZ3NbMF0pIHtcbiAgICAgICAgICBhcmdJbmRleCsrO1xuICAgICAgfVxuICAgICAgaWYgKCFiRmxhZ3NbMV0gJiYgc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLmRlY2xhcmUpIHtcbiAgICAgICAgICBpZiAoYkZsYWdzWzBdICYmIGFyZ0luZGV4ID4gMSkge1xuICAgICAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5kZWNsYXJlKGlpZCwgbmFtZSwgdmFsLCBiRmxhZ3NbMF0sIGFyZ0luZGV4IC0gMiwgYkZsYWdzWzJdKTtcbiAgICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5kZWNsYXJlKGlpZCwgbmFtZSwgdmFsLCBiRmxhZ3NbMF0sIC0xLCBiRmxhZ3NbMl0pO1xuICAgICAgICAgIH1cbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm4gdmFsO1xuICB9XG5cbiAgLy8gZ2V0RmllbGQgKHByb3BlcnR5IHJlYWQpXG4gIGZ1bmN0aW9uIEcoaWlkLCBiYXNlLCBvZmZzZXQsIGZsYWdzKSB7XG4gICAgICB2YXIgYkZsYWdzID0gZGVjb2RlQml0UGF0dGVybihmbGFncywgMyk7IC8vIFtpc0NvbXB1dGVkLCBpc09wQXNzaWduLCBpc01ldGhvZENhbGxdXG5cbiAgICAgIHZhciBhcmV0LCBza2lwID0gZmFsc2UsIHZhbDtcblxuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy5nZXRGaWVsZFByZSkge1xuICAgICAgICAgIGFyZXQgPSBzYW5kYm94LmFuYWx5c2lzLmdldEZpZWxkUHJlKGlpZCwgYmFzZSwgb2Zmc2V0LCBiRmxhZ3NbMF0sIGJGbGFnc1sxXSwgYkZsYWdzWzJdKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICBiYXNlID0gYXJldC5iYXNlO1xuICAgICAgICAgICAgICBvZmZzZXQgPSBhcmV0Lm9mZnNldDtcbiAgICAgICAgICAgICAgc2tpcCA9IGFyZXQuc2tpcDtcbiAgICAgICAgICB9XG4gICAgICB9XG5cbiAgICAgIGlmICghc2tpcCkge1xuICAgICAgICAgIHZhbCA9IGJhc2Vbb2Zmc2V0XTtcbiAgICAgIH1cbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuZ2V0RmllbGQpIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5nZXRGaWVsZChpaWQsIGJhc2UsIG9mZnNldCwgdmFsLCBiRmxhZ3NbMF0sIGJGbGFnc1sxXSwgYkZsYWdzWzJdKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm4gKGxhc3RDb21wdXRlZFZhbHVlID0gdmFsKTtcbiAgfVxuXG4gIC8vIHB1dEZpZWxkIChwcm9wZXJ0eSB3cml0ZSlcbiAgZnVuY3Rpb24gUChpaWQsIGJhc2UsIG9mZnNldCwgdmFsLCBmbGFncykge1xuICAgICAgdmFyIGJGbGFncyA9IGRlY29kZUJpdFBhdHRlcm4oZmxhZ3MsIDIpOyAvLyBbaXNDb21wdXRlZCwgaXNPcEFzc2lnbl1cblxuICAgICAgdmFyIGFyZXQsIHNraXAgPSBmYWxzZTtcblxuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy5wdXRGaWVsZFByZSkge1xuICAgICAgICAgIGFyZXQgPSBzYW5kYm94LmFuYWx5c2lzLnB1dEZpZWxkUHJlKGlpZCwgYmFzZSwgb2Zmc2V0LCB2YWwsIGJGbGFnc1swXSwgISFiRmxhZ3NbMV0pO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIGJhc2UgPSBhcmV0LmJhc2U7XG4gICAgICAgICAgICAgIG9mZnNldCA9IGFyZXQub2Zmc2V0O1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnZhbDtcbiAgICAgICAgICAgICAgc2tpcCA9IGFyZXQuc2tpcDtcbiAgICAgICAgICB9XG4gICAgICB9XG5cbiAgICAgIGlmICghc2tpcCkge1xuICAgICAgICAgIGJhc2Vbb2Zmc2V0XSA9IHZhbDtcbiAgICAgIH1cbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMucHV0RmllbGQpIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5wdXRGaWVsZChpaWQsIGJhc2UsIG9mZnNldCwgdmFsLCBiRmxhZ3NbMF0sICEhYkZsYWdzWzFdKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm4gKGxhc3RDb21wdXRlZFZhbHVlID0gdmFsKTtcbiAgfVxuXG4gIC8vIHZhcmlhYmxlIHdyaXRlXG4gIC8vIGlzR2xvYmFsIG1lYW5zIHRoYXQgdGhlIHZhcmlhYmxlIGlzIGdsb2JhbCBhbmQgbm90IGRlY2xhcmVkIGFzIHZhclxuICAvLyBpc1NjcmlwdExvY2FsIG1lYW5zIHRoYXQgdGhlIHZhcmlhYmxlIGlzIGdsb2JhbCBhbmQgaXMgZGVjbGFyZWQgYXMgdmFyXG4gIGZ1bmN0aW9uIFIoaWlkLCBuYW1lLCB2YWwsIGZsYWdzKSB7XG4gICAgICB2YXIgYXJldDtcbiAgICAgIHZhciBiRmxhZ3MgPSBkZWNvZGVCaXRQYXR0ZXJuKGZsYWdzLCAyKTsgLy8gW2lzR2xvYmFsLCBpc1NjcmlwdExvY2FsXVxuXG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLnJlYWQpIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5yZWFkKGlpZCwgbmFtZSwgdmFsLCBiRmxhZ3NbMF0sIGJGbGFnc1sxXSk7XG4gICAgICAgICAgaWYgKGFyZXQpIHtcbiAgICAgICAgICAgICAgdmFsID0gYXJldC5yZXN1bHQ7XG4gICAgICAgICAgfVxuICAgICAgfVxuICAgICAgcmV0dXJuIChsYXN0Q29tcHV0ZWRWYWx1ZSA9IHZhbCk7XG4gIH1cblxuICAvLyB2YXJpYWJsZSB3cml0ZVxuICBmdW5jdGlvbiBXKGlpZCwgbmFtZSwgdmFsLCBsaHMsIGZsYWdzKSB7XG4gICAgICB2YXIgYkZsYWdzID0gZGVjb2RlQml0UGF0dGVybihmbGFncywgMyk7IC8vW2lzR2xvYmFsLCBpc1NjcmlwdExvY2FsLCBpc0RlY2xhcmF0aW9uXVxuICAgICAgdmFyIGFyZXQ7XG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLndyaXRlKSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMud3JpdGUoaWlkLCBuYW1lLCB2YWwsIGxocywgYkZsYWdzWzBdLCBiRmxhZ3NbMV0pO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIHZhbCA9IGFyZXQucmVzdWx0O1xuICAgICAgICAgIH1cbiAgICAgIH1cbiAgICAgIGlmICghYkZsYWdzWzJdKSB7XG4gICAgICAgICAgcmV0dXJuIChsYXN0Q29tcHV0ZWRWYWx1ZSA9IHZhbCk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICAgIGxhc3RDb21wdXRlZFZhbHVlID0gdW5kZWZpbmVkO1xuICAgICAgICAgIHJldHVybiB2YWw7XG4gICAgICB9XG4gIH1cblxuICAvLyB3aXRoIHN0YXRlbWVudFxuICBmdW5jdGlvbiBXaShpaWQsIHZhbCkge1xuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy5fd2l0aCkge1xuICAgICAgICAgIGFyZXQgPSBzYW5kYm94LmFuYWx5c2lzLl93aXRoKGlpZCwgdmFsKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm4gdmFsO1xuICB9XG5cbiAgLy8gVW5jYXVnaHQgZXhjZXB0aW9uXG4gIGZ1bmN0aW9uIEV4KGlpZCwgZSkge1xuICAgICAgd3JhcHBlZEV4Y2VwdGlvblZhbCA9IHtleGNlcHRpb246ZX07XG4gIH1cblxuICAvLyBUaHJvdyBzdGF0ZW1lbnRcbiAgZnVuY3Rpb24gVGgoaWlkLCB2YWwpIHtcbiAgICAgIHZhciBhcmV0O1xuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy5fdGhyb3cpIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5fdGhyb3coaWlkLCB2YWwpO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIHZhbCA9IGFyZXQucmVzdWx0O1xuICAgICAgICAgIH1cbiAgICAgIH1cbiAgICAgIHJldHVybiAobGFzdENvbXB1dGVkVmFsdWUgPSB2YWwpO1xuICB9XG5cbiAgLy8gUmV0dXJuIHN0YXRlbWVudFxuICBmdW5jdGlvbiBSdChpaWQsIHZhbCkge1xuICAgICAgdmFyIGFyZXQ7XG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLl9yZXR1cm4pIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5fcmV0dXJuKGlpZCwgdmFsKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICB2YWwgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByZXR1cm5TdGFjay5wb3AoKTtcbiAgICAgIHJldHVyblN0YWNrLnB1c2godmFsKTtcbiAgICAgIHJldHVybiAobGFzdENvbXB1dGVkVmFsdWUgPSB2YWwpO1xuICB9XG5cbiAgLy8gQWN0dWFsIHJldHVybiBmcm9tIGZ1bmN0aW9uLCBpbnZva2VkIGZyb20gJ2ZpbmFsbHknIGJsb2NrXG4gIC8vIGFkZGVkIGFyb3VuZCBldmVyeSBmdW5jdGlvbiBieSBpbnN0cnVtZW50YXRpb24uICBSZWFkc1xuICAvLyB0aGUgcmV0dXJuIHZhbHVlIHN0b3JlZCBieSBjYWxsIHRvIFJ0KClcbiAgZnVuY3Rpb24gUmEoKSB7XG4gICAgICB2YXIgcmV0dXJuVmFsID0gcmV0dXJuU3RhY2sucG9wKCk7XG4gICAgICB3cmFwcGVkRXhjZXB0aW9uVmFsID0gdW5kZWZpbmVkO1xuICAgICAgcmV0dXJuIHJldHVyblZhbDtcbiAgfVxuXG4gIC8vIEZ1bmN0aW9uIGVudGVyXG4gIGZ1bmN0aW9uIEZlKGlpZCwgZiwgZGlzIC8qIHRoaXMgKi8sIGFyZ3MpIHtcbiAgICAgIGFyZ0luZGV4ID0gMDtcbiAgICAgIHJldHVyblN0YWNrLnB1c2godW5kZWZpbmVkKTtcbiAgICAgIHdyYXBwZWRFeGNlcHRpb25WYWwgPSB1bmRlZmluZWQ7XG4gICAgICB1cGRhdGVTaWQoZik7XG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLmZ1bmN0aW9uRW50ZXIpIHtcbiAgICAgICAgICBzYW5kYm94LmFuYWx5c2lzLmZ1bmN0aW9uRW50ZXIoaWlkLCBmLCBkaXMsIGFyZ3MpO1xuICAgICAgfVxuICB9XG5cbiAgLy8gRnVuY3Rpb24gZXhpdFxuICBmdW5jdGlvbiBGcihpaWQpIHtcbiAgICAgIHZhciBpc0JhY2t0cmFjayA9IGZhbHNlLCB0bXAsIGFyZXQsIHJldHVyblZhbDtcblxuICAgICAgcmV0dXJuVmFsID0gcmV0dXJuU3RhY2sucG9wKCk7XG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLmZ1bmN0aW9uRXhpdCkge1xuICAgICAgICAgIGFyZXQgPSBzYW5kYm94LmFuYWx5c2lzLmZ1bmN0aW9uRXhpdChpaWQsIHJldHVyblZhbCwgd3JhcHBlZEV4Y2VwdGlvblZhbCk7XG4gICAgICAgICAgaWYgKGFyZXQpIHtcbiAgICAgICAgICAgICAgcmV0dXJuVmFsID0gYXJldC5yZXR1cm5WYWw7XG4gICAgICAgICAgICAgIHdyYXBwZWRFeGNlcHRpb25WYWwgPSBhcmV0LndyYXBwZWRFeGNlcHRpb25WYWw7XG4gICAgICAgICAgICAgIGlzQmFja3RyYWNrID0gYXJldC5pc0JhY2t0cmFjaztcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByb2xsQmFja1NpZCgpO1xuICAgICAgaWYgKCFpc0JhY2t0cmFjaykge1xuICAgICAgICAgIHJldHVyblN0YWNrLnB1c2gocmV0dXJuVmFsKTtcbiAgICAgIH1cbiAgICAgIC8vIGlmIHRoZXJlIHdhcyBhbiB1bmNhdWdodCBleGNlcHRpb24sIHRocm93IGl0XG4gICAgICAvLyBoZXJlLCB0byBwcmVzZXJ2ZSBleGNlcHRpb25hbCBjb250cm9sIGZsb3dcbiAgICAgIGlmICh3cmFwcGVkRXhjZXB0aW9uVmFsICE9PSB1bmRlZmluZWQpIHtcbiAgICAgICAgICB0bXAgPSB3cmFwcGVkRXhjZXB0aW9uVmFsLmV4Y2VwdGlvbjtcbiAgICAgICAgICB3cmFwcGVkRXhjZXB0aW9uVmFsID0gdW5kZWZpbmVkO1xuICAgICAgICAgIHRocm93IHRtcDtcbiAgICAgIH1cbiAgICAgIHJldHVybiBpc0JhY2t0cmFjaztcbiAgfVxuXG4gIC8vIFNjcmlwdCBlbnRlclxuICBmdW5jdGlvbiBTZShpaWQsIHZhbCwgb3JpZ0ZpbGVOYW1lKSB7XG4gICAgICBjcmVhdGVBbmRBc3NpZ25OZXdTaWQoKTtcbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuc2NyaXB0RW50ZXIpIHtcbiAgICAgICAgICBzYW5kYm94LmFuYWx5c2lzLnNjcmlwdEVudGVyKGlpZCwgdmFsLCBvcmlnRmlsZU5hbWUpO1xuICAgICAgfVxuICAgICAgbGFzdENvbXB1dGVkVmFsdWUgPSB1bmRlZmluZWQ7XG4gIH1cblxuICAvLyBTY3JpcHQgZXhpdFxuICBmdW5jdGlvbiBTcihpaWQpIHtcbiAgICAgIHZhciB0bXAsIGFyZXQsIGlzQmFja3RyYWNrO1xuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy5zY3JpcHRFeGl0KSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMuc2NyaXB0RXhpdChpaWQsIHdyYXBwZWRFeGNlcHRpb25WYWwpO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIHdyYXBwZWRFeGNlcHRpb25WYWwgPSBhcmV0LndyYXBwZWRFeGNlcHRpb25WYWw7XG4gICAgICAgICAgICAgIGlzQmFja3RyYWNrID0gYXJldC5pc0JhY2t0cmFjaztcbiAgICAgICAgICB9XG4gICAgICB9XG4gICAgICByb2xsQmFja1NpZCgpO1xuICAgICAgaWYgKHdyYXBwZWRFeGNlcHRpb25WYWwgIT09IHVuZGVmaW5lZCkge1xuICAgICAgICAgIHRtcCA9IHdyYXBwZWRFeGNlcHRpb25WYWwuZXhjZXB0aW9uO1xuICAgICAgICAgIHdyYXBwZWRFeGNlcHRpb25WYWwgPSB1bmRlZmluZWQ7XG4gICAgICAgICAgdGhyb3cgdG1wO1xuICAgICAgfVxuICAgICAgcmV0dXJuIGlzQmFja3RyYWNrO1xuICB9XG5cblxuICAvLyBNb2RpZnkgYW5kIGFzc2lnbiArPSwgLT0gLi4uXG4gIGZ1bmN0aW9uIEEoaWlkLCBiYXNlLCBvZmZzZXQsIG9wLCBmbGFncykge1xuICAgICAgdmFyIGJGbGFncyA9IGRlY29kZUJpdFBhdHRlcm4oZmxhZ3MsIDEpOyAvLyBbaXNDb21wdXRlZF1cbiAgICAgIC8vIGF2b2lkIGlpZCBjb2xsaXNpb246IG1ha2Ugc3VyZSB0aGF0IGlpZCsyIGhhcyB0aGUgc2FtZSBzb3VyY2UgbWFwIGFzIGlpZCAoQHRvZG8pXG4gICAgICB2YXIgb3BybmQxID0gRyhpaWQrMiwgYmFzZSwgb2Zmc2V0LCBjcmVhdGVCaXRQYXR0ZXJuKGJGbGFnc1swXSwgdHJ1ZSwgZmFsc2UpKTtcbiAgICAgIHJldHVybiBmdW5jdGlvbiAob3BybmQyKSB7XG4gICAgICAgICAgLy8gc3RpbGwgcG9zc2libGUgdG8gZ2V0IGlpZCBjb2xsaXNpb24gd2l0aCBhIG1lbSBvcGVyYXRpb25cbiAgICAgICAgICB2YXIgdmFsID0gQihpaWQsIG9wLCBvcHJuZDEsIG9wcm5kMiwgY3JlYXRlQml0UGF0dGVybihmYWxzZSwgdHJ1ZSwgZmFsc2UpKTtcbiAgICAgICAgICByZXR1cm4gUChpaWQsIGJhc2UsIG9mZnNldCwgdmFsLCBjcmVhdGVCaXRQYXR0ZXJuKGJGbGFnc1swXSwgdHJ1ZSkpO1xuICAgICAgfTtcbiAgfVxuXG4gIC8vIEJpbmFyeSBvcGVyYXRpb25cbiAgZnVuY3Rpb24gQihpaWQsIG9wLCBsZWZ0LCByaWdodCwgZmxhZ3MpIHtcbiAgICAgIHZhciBiRmxhZ3MgPSBkZWNvZGVCaXRQYXR0ZXJuKGZsYWdzLCAzKTsgLy8gW2lzQ29tcHV0ZWQsIGlzT3BBc3NpZ24sIGlzU3dpdGNoQ2FzZUNvbXBhcmlzb25dXG4gICAgICB2YXIgcmVzdWx0LCBhcmV0LCBza2lwID0gZmFsc2U7XG5cbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuYmluYXJ5UHJlKSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMuYmluYXJ5UHJlKGlpZCwgb3AsIGxlZnQsIHJpZ2h0LCBiRmxhZ3NbMV0sIGJGbGFnc1syXSwgYkZsYWdzWzBdKTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICBvcCA9IGFyZXQub3A7XG4gICAgICAgICAgICAgIGxlZnQgPSBhcmV0LmxlZnQ7XG4gICAgICAgICAgICAgIHJpZ2h0ID0gYXJldC5yaWdodDtcbiAgICAgICAgICAgICAgc2tpcCA9IGFyZXQuc2tpcDtcbiAgICAgICAgICB9XG4gICAgICB9XG5cblxuICAgICAgaWYgKCFza2lwKSB7XG4gICAgICAgICAgc3dpdGNoIChvcCkge1xuICAgICAgICAgICAgICBjYXNlIFwiK1wiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCArIHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCItXCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0IC0gcmlnaHQ7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICAgICAgY2FzZSBcIipcIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IGxlZnQgKiByaWdodDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiL1wiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCAvIHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCIlXCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0ICUgcmlnaHQ7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICAgICAgY2FzZSBcIjw8XCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0IDw8IHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCI+PlwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCA+PiByaWdodDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiPj4+XCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0ID4+PiByaWdodDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiPFwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCA8IHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCI+XCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0ID4gcmlnaHQ7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICAgICAgY2FzZSBcIjw9XCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0IDw9IHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCI+PVwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCA+PSByaWdodDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiPT1cIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IGxlZnQgPT0gcmlnaHQ7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICAgICAgY2FzZSBcIiE9XCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0ICE9IHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCI9PT1cIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IGxlZnQgPT09IHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCIhPT1cIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IGxlZnQgIT09IHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCImXCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSBsZWZ0ICYgcmlnaHQ7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICAgICAgY2FzZSBcInxcIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IGxlZnQgfCByaWdodDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiXlwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCBeIHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCJkZWxldGVcIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IGRlbGV0ZSBsZWZ0W3JpZ2h0XTtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiaW5zdGFuY2VvZlwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCBpbnN0YW5jZW9mIHJpZ2h0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCJpblwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gbGVmdCBpbiByaWdodDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBkZWZhdWx0OlxuICAgICAgICAgICAgICAgICAgdGhyb3cgbmV3IEVycm9yKG9wICsgXCIgYXQgXCIgKyBpaWQgKyBcIiBub3QgZm91bmRcIik7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICB9XG4gICAgICB9XG5cbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuYmluYXJ5KSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMuYmluYXJ5KGlpZCwgb3AsIGxlZnQsIHJpZ2h0LCByZXN1bHQsIGJGbGFnc1sxXSwgYkZsYWdzWzJdLCBiRmxhZ3NbMF0pO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIHJlc3VsdCA9IGFyZXQucmVzdWx0O1xuICAgICAgICAgIH1cbiAgICAgIH1cbiAgICAgIHJldHVybiAobGFzdENvbXB1dGVkVmFsdWUgPSByZXN1bHQpO1xuICB9XG5cblxuICAvLyBVbmFyeSBvcGVyYXRpb25cbiAgZnVuY3Rpb24gVShpaWQsIG9wLCBsZWZ0KSB7XG4gICAgICB2YXIgcmVzdWx0LCBhcmV0LCBza2lwID0gZmFsc2U7XG5cbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMudW5hcnlQcmUpIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy51bmFyeVByZShpaWQsIG9wLCBsZWZ0KTtcbiAgICAgICAgICBpZiAoYXJldCkge1xuICAgICAgICAgICAgICBvcCA9IGFyZXQub3A7XG4gICAgICAgICAgICAgIGxlZnQgPSBhcmV0LmxlZnQ7XG4gICAgICAgICAgICAgIHNraXAgPSBhcmV0LnNraXBcbiAgICAgICAgICB9XG4gICAgICB9XG5cbiAgICAgIGlmICghc2tpcCkge1xuICAgICAgICAgIHN3aXRjaCAob3ApIHtcbiAgICAgICAgICAgICAgY2FzZSBcIitcIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9ICtsZWZ0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCItXCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSAtbGVmdDtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgICAgICBjYXNlIFwiflwiOlxuICAgICAgICAgICAgICAgICAgcmVzdWx0ID0gfmxlZnQ7XG4gICAgICAgICAgICAgICAgICBicmVhaztcbiAgICAgICAgICAgICAgY2FzZSBcIiFcIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9ICFsZWZ0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCJ0eXBlb2ZcIjpcbiAgICAgICAgICAgICAgICAgIHJlc3VsdCA9IHR5cGVvZiBsZWZ0O1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGNhc2UgXCJ2b2lkXCI6XG4gICAgICAgICAgICAgICAgICByZXN1bHQgPSB2b2lkKGxlZnQpO1xuICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgIGRlZmF1bHQ6XG4gICAgICAgICAgICAgICAgICB0aHJvdyBuZXcgRXJyb3Iob3AgKyBcIiBhdCBcIiArIGlpZCArIFwiIG5vdCBmb3VuZFwiKTtcbiAgICAgICAgICAgICAgICAgIGJyZWFrO1xuICAgICAgICAgIH1cbiAgICAgIH1cblxuICAgICAgaWYgKHNhbmRib3guYW5hbHlzaXMgJiYgc2FuZGJveC5hbmFseXNpcy51bmFyeSkge1xuICAgICAgICAgIGFyZXQgPSBzYW5kYm94LmFuYWx5c2lzLnVuYXJ5KGlpZCwgb3AsIGxlZnQsIHJlc3VsdCk7XG4gICAgICAgICAgaWYgKGFyZXQpIHtcbiAgICAgICAgICAgICAgcmVzdWx0ID0gYXJldC5yZXN1bHQ7XG4gICAgICAgICAgfVxuICAgICAgfVxuICAgICAgcmV0dXJuIChsYXN0Q29tcHV0ZWRWYWx1ZSA9IHJlc3VsdCk7XG4gIH1cblxuICBmdW5jdGlvbiBwdXNoU3dpdGNoS2V5KCkge1xuICAgICAgc3dpdGNoS2V5U3RhY2sucHVzaChzd2l0Y2hMZWZ0KTtcbiAgfVxuXG4gIGZ1bmN0aW9uIHBvcFN3aXRjaEtleSgpIHtcbiAgICAgIHN3aXRjaExlZnQgPSBzd2l0Y2hLZXlTdGFjay5wb3AoKTtcbiAgfVxuXG4gIGZ1bmN0aW9uIGxhc3QoKSB7XG4gICAgICByZXR1cm4gKGxhc3RDb21wdXRlZFZhbHVlID0gbGFzdFZhbCk7XG4gIH1cblxuICAvLyBTd2l0Y2gga2V5XG4gIC8vIEUuZy4sIGZvciAnc3dpdGNoICh4KSB7IC4uLiB9JyxcbiAgLy8gQzEgaXMgaW52b2tlZCB3aXRoIHZhbHVlIG9mIHhcbiAgZnVuY3Rpb24gQzEoaWlkLCBsZWZ0KSB7XG4gICAgICBzd2l0Y2hMZWZ0ID0gbGVmdDtcbiAgICAgIHJldHVybiAobGFzdENvbXB1dGVkVmFsdWUgPSBsZWZ0KTtcbiAgfVxuXG4gIC8vIGNhc2UgbGFiZWwgaW5zaWRlIHN3aXRjaFxuICBmdW5jdGlvbiBDMihpaWQsIHJpZ2h0KSB7XG4gICAgICB2YXIgYXJldCwgcmVzdWx0O1xuXG4gICAgICAvLyBhdm9pZCBpaWQgY29sbGlzaW9uOyBpaWQgbWF5IG5vdCBoYXZlIGEgbWFwIGluIHRoZSBzb3VyY2VtYXBcbiAgICAgIHJlc3VsdCA9IEIoaWlkKzEsIFwiPT09XCIsIHN3aXRjaExlZnQsIHJpZ2h0LCBjcmVhdGVCaXRQYXR0ZXJuKGZhbHNlLCBmYWxzZSwgdHJ1ZSkpO1xuXG4gICAgICBpZiAoc2FuZGJveC5hbmFseXNpcyAmJiBzYW5kYm94LmFuYWx5c2lzLmNvbmRpdGlvbmFsKSB7XG4gICAgICAgICAgYXJldCA9IHNhbmRib3guYW5hbHlzaXMuY29uZGl0aW9uYWwoaWlkLCByZXN1bHQpO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIGlmIChyZXN1bHQgJiYgIWFyZXQucmVzdWx0KSB7XG4gICAgICAgICAgICAgICAgICByaWdodCA9ICFyaWdodDtcbiAgICAgICAgICAgICAgfSBlbHNlIGlmIChyZXN1bHQgJiYgYXJldC5yZXN1bHQpIHtcbiAgICAgICAgICAgICAgICAgIHJpZ2h0ID0gc3dpdGNoTGVmdDtcbiAgICAgICAgICAgICAgfVxuICAgICAgICAgIH1cbiAgICAgIH1cbiAgICAgIHJldHVybiAobGFzdENvbXB1dGVkVmFsdWUgPSByaWdodCk7XG4gIH1cblxuICAvLyBFeHByZXNzaW9uIGluIGNvbmRpdGlvbmFsXG4gIGZ1bmN0aW9uIEMoaWlkLCBsZWZ0KSB7XG4gICAgICB2YXIgYXJldDtcbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuY29uZGl0aW9uYWwpIHtcbiAgICAgICAgICBhcmV0ID0gc2FuZGJveC5hbmFseXNpcy5jb25kaXRpb25hbChpaWQsIGxlZnQpO1xuICAgICAgICAgIGlmIChhcmV0KSB7XG4gICAgICAgICAgICAgIGxlZnQgPSBhcmV0LnJlc3VsdDtcbiAgICAgICAgICB9XG4gICAgICB9XG5cbiAgICAgIGxhc3RWYWwgPSBsZWZ0O1xuICAgICAgcmV0dXJuIChsYXN0Q29tcHV0ZWRWYWx1ZSA9IGxlZnQpO1xuICB9XG5cbiAgZnVuY3Rpb24gUyhpaWQsIGYpIHtcbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMucnVuSW5zdHJ1bWVudGVkRnVuY3Rpb25Cb2R5KSB7XG4gICAgICAgICAgcmV0dXJuIHNhbmRib3guYW5hbHlzaXMucnVuSW5zdHJ1bWVudGVkRnVuY3Rpb25Cb2R5KGlpZCwgZiwgZ2V0UHJvcFNhZmUoZiwgU1BFQ0lBTF9QUk9QX0lJRCksIGdldFByb3BTYWZlKGYsIFNQRUNJQUxfUFJPUF9TSUQpKTtcbiAgICAgIH1cbiAgICAgIHJldHVybiB0cnVlO1xuICB9XG5cbiAgZnVuY3Rpb24gTCgpIHtcbiAgICAgIHJldHVybiBsYXN0Q29tcHV0ZWRWYWx1ZTtcbiAgfVxuXG5cbiAgZnVuY3Rpb24gWDEoaWlkLCB2YWwpIHtcbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuZW5kRXhwcmVzc2lvbikge1xuICAgICAgICAgIHNhbmRib3guYW5hbHlzaXMuZW5kRXhwcmVzc2lvbihpaWQpO1xuICAgICAgfVxuXG4gICAgICByZXR1cm4gKGxhc3RDb21wdXRlZFZhbHVlID0gdmFsKTtcbiAgfVxuXG4gIGZ1bmN0aW9uIGVuZEV4ZWN1dGlvbigpIHtcbiAgICAgIGlmIChzYW5kYm94LmFuYWx5c2lzICYmIHNhbmRib3guYW5hbHlzaXMuZW5kRXhlY3V0aW9uKSB7XG4gICAgICAgICAgcmV0dXJuIHNhbmRib3guYW5hbHlzaXMuZW5kRXhlY3V0aW9uKCk7XG4gICAgICB9XG4gIH1cblxuXG4gIGZ1bmN0aW9uIGxvZyhzdHIpIHtcbiAgICAgIGlmIChzYW5kYm94LlJlc3VsdHMgJiYgc2FuZGJveC5SZXN1bHRzLmV4ZWN1dGUpIHtcbiAgICAgICAgICBzYW5kYm94LlJlc3VsdHMuZXhlY3V0ZShmdW5jdGlvbihkaXYsIGpxdWVyeSwgZWRpdG9yKXtcbiAgICAgICAgICAgICAgZGl2LmFwcGVuZChzdHIrXCI8YnI+XCIpO1xuICAgICAgICAgIH0pO1xuICAgICAgfSBlbHNlIHtcbiAgICAgICAgICBjb25zb2xlLmxvZyhzdHIpO1xuICAgICAgfVxuICB9XG5cblxuICAvLy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tIEVuZCBKYWxhbmdpIExpYnJhcnkgYmFja2VuZCAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cblxuICBzYW5kYm94LlUgPSBVOyAvLyBVbmFyeSBvcGVyYXRpb25cbiAgc2FuZGJveC5CID0gQjsgLy8gQmluYXJ5IG9wZXJhdGlvblxuICBzYW5kYm94LkMgPSBDOyAvLyBDb25kaXRpb25cbiAgc2FuZGJveC5DMSA9IEMxOyAvLyBTd2l0Y2gga2V5XG4gIHNhbmRib3guQzIgPSBDMjsgLy8gY2FzZSBsYWJlbCBDMSA9PT0gQzJcbiAgc2FuZGJveC5fID0gbGFzdDsgIC8vIExhc3QgdmFsdWUgcGFzc2VkIHRvIENcblxuICBzYW5kYm94LkggPSBIOyAvLyBoYXNoIGluIGZvci1pblxuICBzYW5kYm94LkkgPSBJOyAvLyBJZ25vcmUgYXJndW1lbnRcbiAgc2FuZGJveC5HID0gRzsgLy8gZ2V0RmllbGRcbiAgc2FuZGJveC5QID0gUDsgLy8gcHV0RmllbGRcbiAgc2FuZGJveC5SID0gUjsgLy8gUmVhZFxuICBzYW5kYm94LlcgPSBXOyAvLyBXcml0ZVxuICBzYW5kYm94Lk4gPSBOOyAvLyBJbml0XG4gIHNhbmRib3guVCA9IFQ7IC8vIG9iamVjdC9mdW5jdGlvbi9yZWdleHAvYXJyYXkgTGl0ZXJhbFxuICBzYW5kYm94LkYgPSBGOyAvLyBGdW5jdGlvbiBjYWxsXG4gIHNhbmRib3guTSA9IE07IC8vIE1ldGhvZCBjYWxsXG4gIHNhbmRib3guQSA9IEE7IC8vIE1vZGlmeSBhbmQgYXNzaWduICs9LCAtPSAuLi5cbiAgc2FuZGJveC5GZSA9IEZlOyAvLyBGdW5jdGlvbiBlbnRlclxuICBzYW5kYm94LkZyID0gRnI7IC8vIEZ1bmN0aW9uIHJldHVyblxuICBzYW5kYm94LlNlID0gU2U7IC8vIFNjcmlwdCBlbnRlclxuICBzYW5kYm94LlNyID0gU3I7IC8vIFNjcmlwdCByZXR1cm5cbiAgc2FuZGJveC5SdCA9IFJ0OyAvLyByZXR1cm5lZCB2YWx1ZVxuICBzYW5kYm94LlRoID0gVGg7IC8vIHRocm93biB2YWx1ZVxuICBzYW5kYm94LlJhID0gUmE7XG4gIHNhbmRib3guRXggPSBFeDtcbiAgc2FuZGJveC5MID0gTDtcbiAgc2FuZGJveC5YMSA9IFgxOyAvLyB0b3AgbGV2ZWwgZXhwcmVzc2lvblxuICBzYW5kYm94LldpID0gV2k7IC8vIHdpdGggc3RhdGVtZW50XG4gIHNhbmRib3guZW5kRXhlY3V0aW9uID0gZW5kRXhlY3V0aW9uO1xuXG4gIHNhbmRib3guUyA9IFM7XG5cbiAgc2FuZGJveC5FVkFMX09SRyA9IEVWQUxfT1JHO1xuICBzYW5kYm94LmxvZyA9IGxvZztcbn0pKEokJCk7XG5cbiIsIi8vIFRoZSBtb2R1bGUgY2FjaGVcbnZhciBfX3dlYnBhY2tfbW9kdWxlX2NhY2hlX18gPSB7fTtcblxuLy8gVGhlIHJlcXVpcmUgZnVuY3Rpb25cbmZ1bmN0aW9uIF9fd2VicGFja19yZXF1aXJlX18obW9kdWxlSWQpIHtcblx0Ly8gQ2hlY2sgaWYgbW9kdWxlIGlzIGluIGNhY2hlXG5cdHZhciBjYWNoZWRNb2R1bGUgPSBfX3dlYnBhY2tfbW9kdWxlX2NhY2hlX19bbW9kdWxlSWRdO1xuXHRpZiAoY2FjaGVkTW9kdWxlICE9PSB1bmRlZmluZWQpIHtcblx0XHRyZXR1cm4gY2FjaGVkTW9kdWxlLmV4cG9ydHM7XG5cdH1cblx0Ly8gQ3JlYXRlIGEgbmV3IG1vZHVsZSAoYW5kIHB1dCBpdCBpbnRvIHRoZSBjYWNoZSlcblx0dmFyIG1vZHVsZSA9IF9fd2VicGFja19tb2R1bGVfY2FjaGVfX1ttb2R1bGVJZF0gPSB7XG5cdFx0Ly8gbm8gbW9kdWxlLmlkIG5lZWRlZFxuXHRcdC8vIG5vIG1vZHVsZS5sb2FkZWQgbmVlZGVkXG5cdFx0ZXhwb3J0czoge31cblx0fTtcblxuXHQvLyBFeGVjdXRlIHRoZSBtb2R1bGUgZnVuY3Rpb25cblx0X193ZWJwYWNrX21vZHVsZXNfX1ttb2R1bGVJZF0obW9kdWxlLCBtb2R1bGUuZXhwb3J0cywgX193ZWJwYWNrX3JlcXVpcmVfXyk7XG5cblx0Ly8gUmV0dXJuIHRoZSBleHBvcnRzIG9mIHRoZSBtb2R1bGVcblx0cmV0dXJuIG1vZHVsZS5leHBvcnRzO1xufVxuXG4iLCJyZXF1aXJlKCcuL2NvbmZpZy5qcycpO1xucmVxdWlyZSgnLi9jb25zdGFudHMuanMnKTtcbnJlcXVpcmUoJy4vcnVudGltZS5qcycpO1xucmVxdWlyZSgnLi9paWRUb0xvY2F0aW9uLmpzJyk7XG4vLyByZXF1aXJlKCcuL2FzdFV0aWwuanMnKTtcbi8vIHJlcXVpcmUoJy4vZXNuc3RydW1lbnQuanMnKTsiXSwibmFtZXMiOltdLCJzb3VyY2VSb290IjoiIn0=
