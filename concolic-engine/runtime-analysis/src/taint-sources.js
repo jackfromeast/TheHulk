@@ -55,6 +55,11 @@ export class TaintSourceRules {
    * - SOURCE-FROM-BROWSER-API
    * - Value flows from the browser APIs as taint sources
    * - E.g. exampleAttr = div1.getAttribute("id");
+   * - Conditions:
+   *   - `base` is a DOM Element or the document object
+   *   - `f`is a built-in function
+   *   - `result` is not a function (we don't taint functions)
+   *   - `f.name` is not in the blacklistForBrowserAPIs
    * 
    * @param {Function} f - The function being invoked.
    * @param {*} base - The base object of the getField operation. (which should not be a WrappedValue)
@@ -65,7 +70,8 @@ export class TaintSourceRules {
   shouldTaintSourceAtInvokeFun(f, base, args, result, iid) {
     if (this.isBuiltInFunction(f) && 
        (this.isDOMElement(base) || this.isDocumentObject(base)) &&
-       !this.isBuiltInFunction(result)) {
+       !this.isBuiltInFunction(result) &&
+       !this.blacklistForBrowserAPIs.includes(f.name)) {
         return "SOURCE-FROM-BROWSER-API";
     }
 
@@ -87,4 +93,8 @@ export class TaintSourceRules {
   isFunction(f) {
     return typeof f === 'function';
   }
+
+  blacklistForBrowserAPIs = [
+    'createElement'
+  ];
 }
