@@ -7,15 +7,86 @@ export class TaintSinkRules {
   /**
    * @description
    * --------------------------------
-   * This class defines the taint sink policy
-   * This function will be invoked during the putField operation hook
+   * This class defines the taint sink policy.
+   * This function will be invoked during the putField operation hook.
    * 
-   * @TODO
-   * add sink descriptions for the following cases
+   * SINK-TYPE-1-0:
+   * - SINK-TO-SCRIPT-SRC
+   * - Tainted value flows to the script.src property.
+   * - E.g. script.src = taintedValue
+   * - Conditions:
+   *   - `base` is a script element
+   *   - `offset` is 'src'
    * 
-   * @param {*} base - The base object of the getField operation. (which not be a WrappedValue)
-   * @param {*} offset - The offset of the getField operation.
-   * @param {*} val - The value of the getField operation.
+   * SINK-TYPE-1-1:
+   * - SINK-TO-DOM-ELEMENT-INNERHTML
+   * - Tainted value flows to the innerHTML property of a DOM element.
+   * - E.g. element.innerHTML = taintedValue
+   * - Conditions:
+   *   - `base` is a DOM element
+   *   - `offset` is 'innerHTML'
+   * 
+   * SINK-TYPE-1-2:
+   * - SINK-TO-DOM-ELEMENT-OUTERHTML
+   * - Tainted value flows to the outerHTML property of a DOM element.
+   * - E.g. element.outerHTML = taintedValue
+   * - Conditions:
+   *   - `base` is a DOM element
+   *   - `offset` is 'outerHTML'
+   * 
+   * SINK-TYPE-1-3:
+   * - SINK-TO-DOM-ELEMENT-SRCDOC
+   * - Tainted value flows to the srcdoc property of an iframe element.
+   * - E.g. iframe.srcdoc = taintedValue
+   * - Conditions:
+   *   - `base` is an iframe element
+   *   - `offset` is 'srcdoc'
+   * 
+   * SINK-TYPE-1-4:
+   * - SINK-TO-LINK-HREF
+   * - Tainted value flows to the srcdoc property of an iframe element.
+   * - E.g. link.rel = 'script'; link.href = taintedValue
+   * - Conditions:
+   *   - `base` is an link element
+   *   - `offset` is 'href'
+   *   - (`base.rel` is 'script') 
+   *     sometimes rel attribute is defined after href attribute
+   * 
+   * SINK-TYPE-2:
+   * - SINK-TO-WINDOW-LOCATION
+   * - Tainted value flows to the window.location property.
+   * - E.g. window.location = taintedValue
+   * - Conditions:
+   *   - `base` is the window object
+   *   - `offset` is 'location'
+   * 
+   * SINK-TYPE-3:
+   * - SINK-TO-LOCATION-HREF
+   * - Tainted value flows to the href property of the window.location object.
+   * - E.g. window.location.href = taintedValue
+   * - Conditions:
+   *   - `base` is the window.location object
+   *   - `offset` is 'href'
+   * 
+   * SINK-TYPE-4:
+   * - SINK-TO-DOCUMENT-COOKIE
+   * - Tainted value flows to the cookie property of the document object.
+   * - E.g. document.cookie = taintedValue
+   * - Conditions:
+   *   - `base` is the document object
+   *   - `offset` is 'cookie'
+   * 
+   * SINK-TYPE-5:
+   * - SINK-TO-DOCUMENT-DOMAIN
+   * - Tainted value flows to the domain property of the document object.
+   * - E.g. document.domain = taintedValue
+   * - Conditions:
+   *   - `base` is the document object
+   *   - `offset` is 'domain'
+   * 
+   * @param {*} base - The base object of the getField operation (which should not be a WrappedValue).
+   * @param {*} offset - The offset (property name) of the getField operation.
+   * @param {*} val - The value being assigned in the getField operation.
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkPutField(base, offset, val) {
@@ -25,38 +96,30 @@ export class TaintSinkRules {
 
     if (base instanceof Element) {
       if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'src') {
-        if (this.isTainted(val)) {
-          return "SINK-TO-SCRIPT-SRC";
-        }
+        return "SINK-TO-SCRIPT-SRC";
       } else if (offset === 'innerHTML' || offset === 'outerHTML') {
-        if (this.isTainted(val)) {
-          return `SINK-FROM-DOM-ELEMENT-${offset.toUpperCase()}`;
-        }
+        return `SINK-TO-DOM-ELEMENT-${offset.toUpperCase()}`;
+      } else if (offset === 'srcdoc') {
+        return "SINK-TO-DOM-ELEMENT-SRCDOC";
+      } else if (base.tagName && base.tagName.toUpperCase() === 'LINK' && offset === 'href') {
+        return "SINK-TO-LINK-HREF";
       }
     }
 
     if (base === window && offset === 'location') {
-      if (this.isTainted(val)) {
-        return "SINK-FROM-WINDOW-LOCATION";
-      }
+      return "SINK-TO-WINDOW-LOCATION";
     }
 
     if (base === window.location && offset === 'href') {
-      if (this.isTainted(val)) {
-        return "SINK-FROM-LOCATION-HREF";
-      }
+      return "SINK-TO-LOCATION-HREF";
     }
 
     if (base === document && offset === 'cookie') {
-      if (this.isTainted(val)) {
-        return "SINK-FROM-DOCUMENT-COOKIE";
-      }
+      return "SINK-TO-DOCUMENT-COOKIE";
     }
 
     if (base === document && offset === 'domain') {
-      if (this.isTainted(val)) {
-        return "SINK-FROM-DOCUMENT-DOMAIN";
-      }
+      return "SINK-TO-DOCUMENT-DOMAIN";
     }
   }
 
