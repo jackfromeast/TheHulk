@@ -23,6 +23,7 @@ import { TaintPropRules } from './rules/rules.js';
 import { TaintSourceRules } from './taint-sources.js';
 import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
+import { TaintHelper } from './taint-helper.js';
 
 export class TaintTracking {
   constructor(sandbox) {
@@ -227,35 +228,51 @@ export class TaintTracking {
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
     let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
     if (reason) {
-      // TODO: move this to another function
-      console.log("[TheHulk] Found a dangerous flow from %s to %s",
-                 taintedArg.taintInfo.getTaintSourceReason(), reason);
-      this.dangerousFlows.push({
-        source: taintedArg.taintInfo.getTaintSourceReason(),
-        sourceLocation: taintedArg.taintInfo.getTaintSourceLocation(),
-        sink: reason,
-        sinkLocation: iid,
-        taintValue: taintedArg
-      });
+      // TODO: Handle multiple tainted arguments here
+      TaintHelper.reportDangerousFlow(
+        taintedArg.getTaintInfo().getTaintSource().reason,
+        taintedArg.getTaintInfo().getTaintSource().location,
+        reason,
+        iid,
+        taintedArg,
+        iid
+      )
     }
 
     // Check if any of the arguments are tainted
-    // let taintedArgs = args.length && Array.from(args).filter(arg => arg instanceof TaintValue);
-    // if (taintedArgs.length > 0) {
+    let taintedArgs = args.length && Array.from(args).filter(arg => arg instanceof TaintValue);
+    let base_c = TaintHelper.concrete(base);
+    let f_c = TaintHelper.concrete(f);
 
-    
-    // this.taintRules
+    if (f_c !== f) {
+      // We don't taint the function object
+      throw new Error("[TheHulk] Function object is tainted!");
+    }
 
-
+    // If none of the arguments are tainted, we skip to the use any rules
+    if (!taintedArgs.length && !(base instanceof TaintValue)) {
+      return {f: f_c, base: base_c, args: args, skip: false};
+    }
 
     // Check if the function is a built-in function
-    // TODO - move this to another function
-    
-    // Currently, we concretize the taint value and apply the original function
-    if (base instanceof TaintValue) { base = base.getConcrete(); };
-    args = Array.from(args).map(arg => arg instanceof TaintValue ? arg.getConcrete() : arg);
+    if (TaintHelper.isNativeFunction(f)) {
+      // f is a built-in function and found the appropriate rule
+      let rule = this.taintPropRules.invokeFunRules.getRule(base_c, f);
+      if (rule) {
+        return {f: rule, base: base_c, args: args, skip: false};
+      }
+      else {
+        // f is a built-in function but no rule found
+        // We concretize the taint value and apply the original function
+        // TODO: We might need recursive concretization
+        args = Array.from(args).map(arg => arg instanceof TaintValue ? arg.getConcrete() : arg);
 
-    return {f: f, base: base, args: args, skip: false};
+        return {f: f_c, base: base_c, args: args, skip: false};
+      }
+    }
+  
+    // f is not a built-in function
+    return {f: f_c, base: base_c, args: args, skip: false};
   };
 
   /**
@@ -454,7 +471,10 @@ export class TaintTracking {
 
   /**
    * This callback is called before a property of an object is written.
-   *
+   * 
+   * @steps
+   * 1/ We always skip the original putFieldPre operation and let putField handle the operation.
+   * 
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {*} base - Base object
    * @param {*} offset - Property
@@ -477,6 +497,7 @@ export class TaintTracking {
    * 
    * @steps
    * 1/ Check whether a taint value has been set to the sink property (e.g. .innerHTML)
+   * 2/ Apply the taint propagation rules for the put field operation
    *
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {*} base - Base object
@@ -491,19 +512,18 @@ export class TaintTracking {
    */
   putField (iid, base, offset, val, isComputed, isOpAssign) {
     let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
-
     if (reason) {
-      // TODO: move this to taint helper?
-      console.log("[TheHulk] Found a dangerous flow from %s to %s",
-                  val.taintInfo.getTaintSourceReason(), reason);
-      this.dangerousFlows.push({
-        source: val.taintInfo.getTaintSourceReason(),
-        sourceLocation: val.taintInfo.getTaintSourceLocation(),
-        sink: reason,
-        sinkLocation: iid,
-        taintValue: val
-      });
+      TaintHelper.reportDangerousFlow(
+        val.taintInfo.getTaintSourceReason(),
+        val.taintInfo.getTaintSourceLocation(),
+        reason,
+        iid,
+        val,
+        iid
+      )
     }
+
+    val = this.taintPropRules.putFieldRules.getRule(base, offset)(base, offset, val, iid)
 
     return {result: val};
   };

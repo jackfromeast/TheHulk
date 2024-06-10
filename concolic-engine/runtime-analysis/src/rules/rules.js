@@ -2,12 +2,17 @@
 import { BinaryOpsTaintPropRules } from './operations/binary-ops.js'
 import { UnaryOpsTaintPropRules } from './operations/unary-ops.js'
 import { GetFieldTaintPropRules } from './operations/get-field.js'
+import { PutFieldTaintPropRules } from './operations/put-field.js';
+import { StringBuiltinsTaintPropRules } from './js-builtins/string-builtins.js'
 
 export class TaintPropRules {
   constructor() {
+    this.putFieldRules = new PutFieldTaintPropRules()
     this.getFieldRules = new GetFieldTaintPropRules();
     this.binaryRules = new BinaryOpsTaintPropRules();
     this.unaryRules = new UnaryOpsTaintPropRules();
+
+    this.invokeFunRules = new StringBuiltinsTaintPropRules();
   }
 
   /**

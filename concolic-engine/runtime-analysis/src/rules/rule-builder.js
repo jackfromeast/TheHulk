@@ -21,6 +21,7 @@
 import { TaintHelper } from '../taint-helper.js';
 import { WrappedValue, _, TaintValue } from '../values/wrapped-values.js';
 import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
+import { BinaryOpsTaintPropRules } from './operations/binary-ops.js';
 
 export class RuleBuilder {
 
@@ -123,7 +124,7 @@ export class RuleBuilder {
         if (!featureDisabled && condition(base) &&
             !(result instanceof Function)) {
           let taintInfo;
-          taintInfo = new TaintInfo(iid, "SOURCE-FROM-TAINTED-VALUE");
+          taintInfo = new TaintInfo(iid, base.taintInfo.taintSource.reason);
           taintInfo.addTaintPropOperation('getField', [base, offset], iid);
           result = new TaintValue(result, taintInfo);
         }
@@ -131,6 +132,34 @@ export class RuleBuilder {
         return result;
       };
   }
+
+  /**
+   * @description
+   * --------------------------------
+   * Creates a new rule.
+   * 
+   * The makeRule function for the putField operation is *different* from the other operations.
+   * Because, for other operations, in the makeRule stage, we handle the behavior of the concrete field.
+   * But for the putField operation, the concrete field is handled in the modeling function.
+   * Because, it depends on whether the base object is a DOM Node or not.
+   * 
+   * @param {Function} f - The function to apply the rule to.
+   * @param {Function} condition - The condition check function.
+   * @param {Function} model - The modeling function.
+   * @returns {Object} The rule object.
+   */
+    static makeRulePutField(condition, modelF, concretize = true, featureDisabled = false) {
+      return (base, offset, val, iid) => {
+
+        if (!featureDisabled && condition(val)) {
+          val = modelF(base, offset, val);
+        }
+
+        return val;
+      };
+  }
+
+
 
   /**
    * @description
@@ -147,11 +176,11 @@ export class RuleBuilder {
    * @returns {Object} The rule object.
    */
   static makeRule(f, condition, modelF, concretize = true, featureDisabled = false) {
-    return (base, args) => {
+    return (base, args, iid) => {
       let [result, thrown] = this.runOriginFunc(f, base, args, concretize);
 
       if (!featureDisabled && condition(base, args)) {
-          result = modelF(base, args, result);
+          result = modelF(base, args, result, iid);
       }
 
       if (thrown) {
