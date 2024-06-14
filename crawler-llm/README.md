@@ -78,17 +78,23 @@ But, when it passed to the llm:
 
 Too many interactable elements and exceed the maximum tokens, can we deploy any heuristic strategy to filter out some of them first?
 
-<<<<<<< HEAD
-### 4/ Too slow
-=======
-### 3/ Too slow.
->>>>>>> 292d4341aa087c53f6bc9fba7b2f6519be044983
+### 3/ Too slow
 
 We can start more docker to run it. This is fine as long as they can find the html injection vulnerability.
 
 ### 4/ Captcha
 
 The crawler gets detected as a bot and is unable to solve Captchas.
+
+### 5/ Exploration
+
+Skyvern lacks planning for exploration.
+
+### 6/ 2FA
+
+Idea: allow skyvern to accept confirmation emails
+
+Skyvern can't do text 2FA.
 
 ## Improvements
 
