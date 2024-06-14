@@ -10,3 +10,6 @@
 [submodule "crawler-llm/skyvern"]
 	path = crawler-llm/skyvern
 	url = https://github.com/ishmeals/skyvern.git
+[submodule "dataset/dom-clobbering-collection"]
+	path = dataset/dom-clobbering-collection
+	url = https://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@github.com/jackfromeast/dom-clobbering-collection
