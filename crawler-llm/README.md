@@ -88,13 +88,23 @@ The crawler gets detected as a bot and is unable to solve Captchas.
 
 ### 5/ Exploration
 
-Skyvern lacks planning for exploration.
+Skyvern lacks planning/memory for exploration.
 
 ### 6/ 2FA
 
 Idea: allow skyvern to accept confirmation emails
 
 Skyvern can't do text 2FA.
+
+### 7/ Hidden inputs
+
+We will only consider inputs that are displayed upon initial loading of the page. If the input requires further user interaction, we are currently not able to locate it.
+
+## Skyvern Modifications
+
+1. Skyvern runs using a user-data-dir
+2. Due to above, Skyvern is run single threaded
+3. Logs all urls visited.
 
 ## Improvements
 
