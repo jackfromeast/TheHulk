@@ -200,7 +200,7 @@ DebuggingConfig() { this = "PPGagdets-${this.domain}-${this.curURLHash}" }
 from DebuggingConfig cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
-"$@ is potentially clobberable and flows to the XSS sink.", source.getNode(), source.getNode().toString()
+    "$@ is potentially clobberable and flows to the sink with type $@.", source.getNode(), source.getNode().toString(), sink.getNode(), sink.getNode().(ClientSideSinks).getLabel()
 `
     }
 

@@ -11,10 +11,20 @@ chrome:
   HEADLESS: false
   DEVTOOLS: false
 
+foxhound:
+  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  FOXHOUND_HEADLESS: false
+  FOXHOUND_DEVTOOLS: false
+
 collector:
   # Collectors configuration
   COLLECT_AND_CREATE_PAGE: true
-  COLLECT_CONSOLE_LOGS: false
+  COLLECT_CONSOLE_LOGS: true
   COLLECT_REQUESTS: false
   COLLECT_WEB_STORAGE: false
   COLLECT_COOKIES: false
@@ -26,30 +36,32 @@ collector:
   COLLECT_XHR_REQUESTS: true
   COLLECT_FETCH_REQUESTS: true
   EXTRACT_DOM_LOOKUPS: true
+  COLLECT_TAINTING_FLOWS: false
   COLLECT_ALT_URLS: false
 
 
 navigator:
+  BROWSER: "chrome" # or "foxhound"
   WAIT_BEFORE_NEXT_URL: 1000
-  # Used during page.goto(url, {waitUnitl: NAVIGATION_WAIT_UNTIL})
-  # Options:
+
+  # For puppeteer, options:
   # ['load', 'domcontentloaded']
   # ['networkidle0']
-  NAVIGATION_WAIT_UNTIL: ['networkidle2']
+
+  # For playwright:
+  # load|domcontentloaded|networkidle|commit
+  NAVIGATION_WAIT_UNTIL: 'domcontentloaded'
   NAVIGATION_TIMEOUT: 0
 
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/disable-csp-callbacks.js"
-      function_name: "disableCSPCb"
-      
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/forbid-url-loading-callbacks.js"
-      function_name: "forbidURLNavigationCb"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/bind-taint-handler-foxhound-callbacks.js"
+      function_name: "setupFoxhoundTaintHandlerCb"
   
-  PAGE_ACTIONS_CBS:
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/wait-forever-callbacks.js"
-      function_name: "manuallyInteractForeverCb"
+  PAGE_ACTIONS_CBS: []
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/manually-actions-callbacks.js"
+    #   function_name: "manuallyInteractCb"
 
   AFTER_LOAD_CBS: []
 
@@ -64,5 +76,7 @@ callbacks:
       function_name: "createCodeQLDatabaseCb"
 
 others:
+  FOXHOUND_TAINT_HANDLER_PATH: "/home/jackfromeast/Desktop/TheHulk/crawler/src/scripts/flow-handler-foxhound.js"
   CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"
-  COLLECT_DOM_LOOKUP_HINTS: "Collect Start." # or ''
+  COLLECT_DOM_LOOKUP_HINTS: "" # or 'SafeLookup'
+  COOKIE_RAW: 'CC_ANA=cfab97b1-fe12-41c3-941b-9ecead972e8f; CC_ANA=b2f54f1f-88cd-4dcf-8374-9ea0dba4c982; cocalc_version=1715083343; SMCSERVERID3=s4|ZmjlT|Zmjgs; connect.sid=s%3AQPZv2slCDO_dB-kfyABaJd4KCzWZObQ_.Ck79KaAOieDLj7UjMX4szx5F2OblXw25XgV0sW0Hxis; remember_me=sha512$98349e743f6fc9ae181db96fd487c70c$1000$f006e7ed-1c59-4381-bcca-204d80841dde'

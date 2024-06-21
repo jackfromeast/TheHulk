@@ -1,14 +1,14 @@
 scheduler:
-  TEST_NAME: "jupyter-lab"
+  TEST_NAME: "playwright-test"
   # Path to workspace (base directory for storing results)
   WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/"
 
   # Option: "seed" or "list"
-  MODE: "seed"
-  SEED_URL: "https://jupyter.org/try-jupyter/lab/"
-  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/tmp/urls.csv"
+  MODE: "list"
+  SEED_URL: "https://cocalc.com/818375c4-7b25-4e42-b5f4-31c9bc744be8/raw/2024-05-05-file-1.html"
+  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
-  URL_LIST_TO: 1
+  URL_LIST_TO: 5
 
   # Format of the urls.csv file:
   #   1,google.com

@@ -1,7 +1,6 @@
 /**
  * This file contains utility functions used by the crawler.
  */
-const puppeteer = require('puppeteer');
 const fs = require('fs');
 const pathModule = require('path');
 const crypto = require('crypto')

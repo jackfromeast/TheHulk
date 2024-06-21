@@ -2,8 +2,7 @@ const fs = require("fs");
 
 // This file is an example of a user-defined callback module.
 module.exports = {
-    extractDOMCLookupsCb,
-    extractDOMCLookups
+    extractDOMCLookupsCb
 };
 
 /**
@@ -129,3 +128,11 @@ async function extractDOMCLookups(logs, startLine='') {
 // extractDOMCLookups(rawLog, startLine).then((lookups) => {
 //     console.log(lookups);
 // });
+
+
+// let rawLog = JSON.parse(fs.readFileSync("/home/jackfromeast/Desktop/TheHulk/output/cocalc.com-06-11-21-46/cocalc.com/c0ce088e18/crawler/console-logs.json", { encoding: 'utf8', flag: 'r' }));
+// let startLine = "Collect Start.";
+
+// extractDOMCLookups(rawLog, startLine).then((lookups) => {
+//     console.log(lookups);
+// })

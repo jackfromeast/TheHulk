@@ -2,6 +2,7 @@
  * Third-party libraries
  */
 // const puppeteer = require('puppeteer');
+const { chromium, firefox } = require('playwright');
 const fs = require('fs');
 const pathModule = require('path');
 const elapsed = require("elapsed-time-logger");
@@ -9,10 +10,6 @@ const utils = require('./utils.js');
 const Logger = require('./logger');
 const path = require('path');
 const { warn } = require('console');
-
-const puppeteer = require('puppeteer-extra')
-const StealthPlugin = require('puppeteer-extra-plugin-stealth')
-puppeteer.use(StealthPlugin())
 
 /**
  * 
@@ -39,14 +36,25 @@ puppeteer.use(StealthPlugin())
 function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActionCbs, afterLoadCbs, postVisitCbs){
 	this.config = config;
 
-	if (config.chrome){
-		this.chromeExecutablePath = config.chrome.CHROME_EXECUTABLE_PATH;
-		this.chromeFlags = config.chrome.CHROME_FLAGS;
-		this.headless = config.chrome.HEADLESS
+	if (config.navigator.BROWSER === "chrome"){
+		this.browserType = chromium;
+		this.browserExecutablePath = config.chrome.CHROME_EXECUTABLE_PATH;
+		this.browserFlags = config.chrome.CHROME_FLAGS;
+		this.browserHeadless = config.chrome.HEADLESS;
+		this.browserDevtools = config.chrome.DEVTOOLS;
+	} else if (config.navigator.BROWSER === "foxhound") {
+		this.browserType = firefox;
+		this.browserExecutablePath = config.foxhound.FOXHOUND_EXECUTABLE_PATH;
+		this.browserFlags = config.foxhound.FOXHOUND_FLAGS;
+		this.browserHeadless = config.foxhound.HEADLESS;
+		this.browserDevtools = config.foxhound.DEVTOOLS;
+	} else {
+		throw "Configuration Error: Not chrome or foxhound. BROWSER is not supported!"
 	}
 
 	this.logger = undefined;
 	this.browser = undefined;
+	this.context = undefined; // in playwright, the context is isolated browser environment
 	this.startURL = url;
 	this.domain = domain;
 	this.basedir = basedir;
@@ -57,7 +65,7 @@ function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActio
 	this.visited = [];
 	this.curURL = url;
 	this.curURLHash = utils.hashURL(url);
-	this.curCDPsession = undefined;
+	// this.curCDPsession = undefined;
 
 	// collected data
 	this.collected = {}
@@ -83,7 +91,7 @@ function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActio
  * Besides, if visitAPage fails, it will close the browser and re-launch a new one
  */
 Visitor.prototype.visit = async function(){
-	this.browser = await this.launch_puppeteer();
+	this.browser = await this.launch_browser();
 	const globalTimer = elapsed.start('global_crawling_timer');
 
 	while(true){
@@ -124,14 +132,14 @@ Visitor.prototype.visit = async function(){
 	}
 
 	try{
+		await this.context.close();
 		await this.browser.close();
 	}
 	catch(e){
-		this.logger.error(e);
+		// PASS
 	}
 
 	const globalTime = globalTimer.get();
-	// _ = globalTimer.end();
 
 	// store elapsed time to disk
 	fs.writeFileSync(pathModule.join(this.basedir, "time.crawling.out"), JSON.stringify({
@@ -142,10 +150,10 @@ Visitor.prototype.visit = async function(){
 }
 
 Visitor.prototype.visitPage = async function(){
-	let page = await this.browser.newPage();
+	this.context = await this.browser.newContext({ bypassCSP: true });
+	let page = await this.context.newPage();
 
-	// this.disableCSP(page);
-	await page.setViewport({ width: 4096, height: 2048});
+	await page.setViewportSize({ width: 4096, height: 2048});
 
 	try{
 		/*
@@ -153,10 +161,10 @@ Visitor.prototype.visitPage = async function(){
 		*  [PreLoading] Install the Event Handlers 
 		*  ----------------------------------------------
 		*/
-		this.curCDPsession = await this.setupCDP(page);
+		await this.setupInterception(page);
 		if (this.config.collector.COLLECT_CONSOLE_LOGS){ this.collectConsoleLogs(page); }
-		if (this.config.collector.COLLECT_BROWSER_STDOUT){ this.collectBrowserStdout(); }
-		if (this.config.collector.COLLECT_BROWSER_STDERR){ this.collectBrowserStderr(); }
+		// if (this.config.collector.COLLECT_BROWSER_STDOUT){ this.collectBrowserStdout(); }
+		// if (this.config.collector.COLLECT_BROWSER_STDERR){ this.collectBrowserStderr(); }
 
 		// Run the before callbacks which can redefine event handlers above
 		for(let cb of this.beforeLoadCbs){
@@ -212,30 +220,43 @@ Visitor.prototype.visitPage = async function(){
 		*/
 		if  (this.config.collector.COLLECT_ALT_URLS){ await this.collectAltURLs(page); }
 		
-		page.waitForTimeout(this.config.collector.WAIT_BEFORE_NEXT_URL); // wait for 3 seconds before closing the page
-		await page.close();
+		// If the page is still alive:
+		try{
+			await page.waitForTimeout(this.config.navigator.WAIT_BEFORE_NEXT_URL);
+			await page.close();
+		}catch(e){
+			if (e.message.includes('Target page, context or browser has been closed')){
+				this.logger.warn('PageClosedError: Target page, context or browser has been closed (page.waitForTimeout)');
+			}else{
+				throw e;
+			} 
+		}
 
 	}catch(e){
 		if (e.message.includes('Navigation timeout of')){
 			this.logger.error('TimeoutError: Navigation timeout exceeded for URL: ' + this.curURL);
-		}else if (e.message.includes('net::ERR_CONNECTION_REFUSED')){
-			this.logger.error('ConnectionRefusedError: ERR_CONNECTION_REFUSED for URL: ' + this.curURL);
-		}else if (e.message.includes('net::ERR_NAME_NOT_RESOLVED')){
-			this.logger.error('DomainNameError: ERR_NAME_NOT_RESOLVED for URL: ' + this.curURL);
+		}else if (e.message.includes('NS_ERROR_CONNECTION_REFUSED') ||
+							e.message.includes('net::ERR_CONNECTION_REFUSED')){
+			this.logger.error('ConnectionRefusedError: NS_ERROR_CONNECTION_REFUSED for URL: ' + this.curURL);
+		}else if (e.message.includes('NS_ERROR_UNKNOWN_HOST') || 
+							e.message.includes('net::ERR_NAME_NOT_RESOLVED')){
+			this.logger.error('DomainNameError: NS_ERROR_UNKNOWN_HOST for URL: ' + this.curURL);
 		}else if (e.message.includes('ERR_HTTP2_PROTOCOL_ERROR')){
 			this.logger.error('HTTP2ProtocolError: ERR_HTTP2_PROTOCOL_ERROR for URL: ' + this.curURL);
 		}else if (e.message.includes('ERR_CONNECTION_CLOSED')){
 			this.logger.warn('ERR_CONNECTION_CLOSED: for URL: ' + this.curURL);
 		}else if (e.message.includes('ERR_TUNNEL_CONNECTION_FAILED')){
 			this.logger.warn('TunnelConnectionError: ERR_TUNNEL_CONNECTION_FAILED for URL: ' + this.curURL);
+		}else if (e.message.includes('Target page, context or browser has been closed')){
+			this.logger.warn('PageClosedError: Target page, context or browser has been closed.');
 		}
 		else{
 			this.logger.error(e);
 		}
-		// utils.logError(e, this.basedir);
 		try{
 			// close the previous browser
 			await page.close();
+			await context.close();
 			await browser.close()
 		}catch{
 			// PASS
@@ -269,7 +290,7 @@ Visitor.prototype.navigate = async function(page){
 			await page.goto(this.curURL, 
 				{waitUntil: this.config.navigator["NAVIGATION_WAIT_UNTIL"], timeout: this.config.navigator["NAVIGATION_TIMEOUT"]});
 		}else{
-			await page.goto(this.curURL, {waitUntil: ['networkidle2'], timeout: this.config.navigator["NAVIGATION_TIMEOUT"]});
+			await page.goto(this.curURL, {waitUntil: 'networkidle', timeout: this.config.navigator["NAVIGATION_TIMEOUT"]});
 		}
 	} catch (e) {
 		if (e.message.includes('Navigation timeout')){
@@ -293,6 +314,7 @@ Visitor.prototype.emptyCollectData = function() {
 		'consoleLogs': [],
 		'browserStdout': [],
 		'browserStderr': [],
+		'taintflows': [],
 		'crawlerErrors': [],
 	};
 }
@@ -301,132 +323,81 @@ Visitor.prototype.refreshCollectData = function() {
 	this.collected.curURLHash = this.emptyCollectData();
 }
 
-// Visitor.prototype.disableCSP = async function(page){
-// 	await page.setBypassCSP(true);
-// }
 
-Visitor.prototype.setupCDP = async function(page){
-	
-	let CDPsession = await page.target().createCDPSession();
+Visitor.prototype.setupInterception = function(page) {
+	page.route('**/*', async (route) => {
+			const request = route.request();
+			const url = request.url();
+			const resourceType = request.resourceType();
+			const method = request.method();
+			const headers = request.headers();
 
-	try{
-		await CDPsession.send('Debugger.enable');
-		await CDPsession.send('Runtime.enable');
-		await CDPsession.send('Page.enable');
-		
-		await CDPsession.send("Fetch.enable", {
-			handleAuthRequests: true,
-			patterns: [{ requestStage: "Response" }]
-		});
+			// Log the request
+			// this.logger.debug(`Request intercepted: ${method} ${url} [${resourceType}]`);
 
-		await CDPsession.on('Fetch.requestPaused', async ({requestId, request, _, resourceType, responseErrorReason, responseStatusCode, responseStatusText, responseHeaders}) => {
-			// logger.debug(`Request will be sent for ${requestId} with url: ${request.url} with resource type: ${resourceType}`);
-
-			if (responseErrorReason == 'Failed'){
-				try{
-					await CDPsession.send('Fetch.continueRequest', { requestId });
-				}catch(e){
-					if (e.message.includes('Session closed. ') || e.message.includes('Target closed.')){
-						this.logger.debug('ProtocolError (Due to domain unreachable): CDP (Fetch.continueRequest) failed for URL: ' + this.curURL);
-					}else if (e.message.includes('Invalid InterceptionId.')){
-						this.logger.debug('ProtocolError failed (Invalid InterceptionId.): ' + this.curURL);
-					}else{
-						this.logger.error(e);
-					}
-				}
-				// log the error;
-				return;
-			}
-
-			// Handle the redirection
-			if (responseStatusCode == '301' || responseStatusCode == '302' || responseStatusCode == '303' || responseStatusCode == '307' || responseStatusCode == '308'){
-				try{
-					await CDPsession.send('Fetch.continueRequest', { requestId });
-				}catch(e){
-					if (e.message.includes('Session closed. ') || e.message.includes('Target closed.')){
-						this.logger.debug('ProtocolError (Due to domain unreachable): CDP (Fetch.continueRequest) failed for URL: ' + this.curURL);
-					}else if (e.message.includes('Invalid InterceptionId.')){
-						this.logger.debug('ProtocolError failed (Invalid InterceptionId.): ' + this.curURL);
-					}else{
-						this.logger.error(e);
-					}
-				}
-				return;
-			}
-
-			try{
-				if (resourceType === 'Document' || resourceType === 'Stylesheet' || resourceType === 'Other' || resourceType === 'Script'){
-					const response = await CDPsession.send('Fetch.getResponseBody', { requestId });
-
-					if (request.url.endsWith('.ico')){
-						return;
+			try {
+					if (request.redirectedFrom()) {
+							// Handle redirects
+							this.logger.debug(`Handling redirect for: ${url}`);
+							await route.continue();
+					} else {
+							await route.continue();
 					}
 
-					// The main page sometimes will has resourceType as 'Other'
-					if (this.config.collector.COLLECT_HTML && resourceType === 'Document' || resourceType === 'Other'){
-						this.collected.curURLHash.htmls.push({url: request.url,
-															 source: response.body});
-					}else if (this.config.collector.COLLECT_CSS && resourceType === 'Stylesheet'){
-						this.collected.curURLHash.css.push({url: request.url,
-															source: response.body});
-					}else if (this.config.collector.COLLECT_SCRIPTS && resourceType === 'Script'){
-						this.collected.curURLHash.scripts.push({
-							scriptId: request.scriptId,
-							url: request.url,
-							executionContextId: request.executionContextId,
-							source: response.body
-						});
+					try {
+							const response = await page.waitForResponse(response => response.url() === url && response.request().resourceType() === resourceType);
+							const responseStatus = response.status();
+
+							if (responseStatus >= 300 && responseStatus < 400) {
+									this.collected.curURLHash.redirects = this.collected.curURLHash.redirects || [];
+									this.collected.curURLHash.redirects.push({ url: url, status: responseStatus });
+							} else if (resourceType === 'document' || resourceType === 'stylesheet' || resourceType === 'script' || resourceType === 'Other') {
+									if (request.url().endsWith('.ico')){ return; }
+
+									const body = await response.text();
+
+									// The main page sometimes will has resourceType as 'Other'
+									if (this.config.collector.COLLECT_HTML &&
+										 (resourceType === 'document' || resourceType === 'Other')) {
+											this.collected.curURLHash.htmls.push({ url: url, source: body });
+									} else if (this.config.collector.COLLECT_CSS &&
+														 resourceType === 'stylesheet') {
+											this.collected.curURLHash.css.push({ url: url, source: body });
+									} else if (this.config.collector.COLLECT_SCRIPTS &&
+														 resourceType === 'script') {
+											this.collected.curURLHash.scripts.push({ url: url, source: body });
+									}
+							}
+
+							if (this.config.collector.COLLECT_XHR_REQUESTS &&
+								  resourceType === 'xhr') {
+									this.collected.curURLHash.XHRRequests.push({ url: url, method: method, headers: headers });
+							}
+
+							if (this.config.collector.COLLECT_FETCH_REQUESTS &&
+								  resourceType === 'fetch') {
+									this.collected.curURLHash.FetchRequests.push({ url: url, method: method, headers: headers });
+							}
+					} catch (responseError) {
+							if (responseError.message.includes('Target page, context or browser has been closed')) {
+									this.logger.warn(`Response handling skipped for ${url} as the target page, context, or browser has been closed`);
+							} else {
+									throw responseError;
+							}
 					}
-
-				}
-
-				if (this.config.collector.COLLECT_XHR_REQUESTS && resourceType === 'XHR'){
-					this.collected.curURLHash.XHRRequests.push({url: request.url, method: request.method, headers: request.headers});
-				}
-
-				if (this.config.collector.COLLECT_FETCH_REQUESTS && resourceType === 'Fetch'){
-					this.collected.curURLHash.FetchRequests.push({url: request.url, method: request.method, headers: request.headers});
-				}
-
-				try{
-					await CDPsession.send('Fetch.continueRequest', { requestId });
-				}catch(e){
-					if (e.message.includes('Session closed. ') || e.message.includes('Target closed.')){
-						this.logger.debug('ProtocolError (Due to domain unreachable): CDP (Fetch.continueRequest) failed for URL: ' + this.curURL);
-					}else if (e.message.includes('Invalid InterceptionId.')){
-						this.logger.debug('ProtocolError failed (Invalid InterceptionId.): ' + this.curURL);
-					}else{
-						this.logger.error(e);
-					}
-				}
-
-			}catch(e){
-				this.logger.error(`Error fetching ${request.url} {request id: ${requestId}} with resource type: ${resourceType}, `, e.message);
-				// this.logger.error(`responseErrorReason: ${responseErrorReason}, responseStatusCode: ${responseStatusCode}, responseStatusText: ${responseStatusText}`)
-				try{
-					await CDPsession.send('Fetch.continueRequest', { requestId });
-				}catch(e){
-					if (e.message.includes('Session closed. ') || e.message.includes('Target closed.')){
-						this.logger.debug('ProtocolError (Due to domain unreachable): CDP (Fetch.continueRequest) failed for URL: ' + this.curURL);
-					}else if (e.message.includes('Invalid InterceptionId.')){
-						this.logger.debug('ProtocolError failed (Invalid InterceptionId.): ' + this.curURL);
-					}else{
-						this.logger.error(e);
-					}
+			} catch (e) {
+				this.logger.error(`Error handling response for ${url}: ${e.message}`);
+				try {
+						await route.abort();
+				} catch (abortError) {
+						if (!abortError.message.includes('Route is already handled')) {
+								this.logger.error(`Failed to abort route for ${url}: ${abortError.message}`);
+						}
 				}
 			}
-		});
-	}catch(e){
-		if (e.message.includes('Protocol error (Runtime.enable)')){
-			this.logger.debug('ProtocolError (Due to domain unreachable): CDP (Runtime.enable) failed for URL: ' + this.curURL);
-		}else{
-			this.logger.error(e);
-			this.logger.error('Setting up CDP failed for URL: ' + this.curURL);
-		}
-	}
+	});
+};
 
-	return CDPsession;
-}
 
 Visitor.prototype.collectConsoleLogs = async function(page){
 	page.on('console', consoleObj => {
@@ -435,41 +406,40 @@ Visitor.prototype.collectConsoleLogs = async function(page){
 
 }
 
-Visitor.prototype.collectBrowserStdout = async function(){
-	this.browser.process().stdout.on('data', (data) => {
-		this.collected.curURLHash.browserStdout.push(data.toString());	
+Visitor.prototype.collectBrowserErrors = function(page) {
+	page.on('pageerror', error => {
+			this.collected.curURLHash.browserStderr.push(error.message);
 	});
-}
+};
 
-Visitor.prototype.collectBrowserStderr = async function(){
-	this.browser.process().stderr.on('data', (data) => {
-		this.collected.curURLHash.browserStderr.push(data.toString());	
-	})
-}
+// Visitor.prototype.collectBrowserStdout = async function(){
+// 	this.browser.process().stdout.on('data', (data) => {
+// 		this.collected.curURLHash.browserStdout.push(data.toString());	
+// 	});
+// }
+
+// Visitor.prototype.collectBrowserStderr = async function(){
+// 	this.browser.process().stderr.on('data', (data) => {
+// 		this.collected.curURLHash.browserStderr.push(data.toString());	
+// 	})
+// }
 
 Visitor.prototype.collectWebStorageData = async function(page){
-	await page.evaluate( () => {
-			
-		function getWebStorageData() {
-			let storage = {};
-			let keys = Object.keys(window.localStorage);
-			let i = keys.length;
-			while ( i-- ) {
-				storage[keys[i]] = window.localStorage.getItem(keys[i]);
+	const webStorageData = await page.evaluate(() => {
+			const storage = {};
+			const keys = Object.keys(localStorage);
+			for (let key of keys) {
+					storage[key] = localStorage.getItem(key);
 			}
 			return storage;
-		}
-
-		let webStorageData = getWebStorageData();
-		this.collected.curURLHash.webStorageData = webStorageData;
 	});
+	this.collected.curURLHash.webStorageData = webStorageData;
 }
 
 Visitor.prototype.collectCookie = async function(page){
-	let colletedCookies = await page.cookies();
-	this.collected.curURLHash.cookies = colletedCookies;
+	let collectedCookies = await page.context().cookies();
+	this.collected.curURLHash.cookies = collectedCookies;
 }
-
 Visitor.prototype.collectAltURLs = async function(page){
 	let hrefs = await page.$$eval('a', as => as.map(a => a.href));
 	for(let href of hrefs){
@@ -496,9 +466,8 @@ Visitor.prototype.saveWebPageData = async function(){
 
 			fs.mkdirSync(path.dirname(savePath), { recursive: true });
 		
-			const stream = fs.createWriteStream(savePath);
-			await stream.write(Buffer.from(html.source, 'base64').toString('utf-8'));
-			stream.end();
+			// Write the raw response text directly
+			fs.writeFileSync(savePath, html.source, 'utf-8');
 
 			fileMap[html.url] = savePath;
 		}
@@ -515,9 +484,8 @@ Visitor.prototype.saveWebPageData = async function(){
 
 			fs.mkdirSync(path.dirname(savePath), { recursive: true });
 
-			const stream = fs.createWriteStream(savePath);
-			await stream.write(Buffer.from(css.source, 'base64').toString('utf-8'));
-			stream.end();
+			// Write the raw response text directly
+			fs.writeFileSync(savePath, css.source, 'utf-8');
 
 			fileMap[css.url] = savePath;
 		}
@@ -534,9 +502,8 @@ Visitor.prototype.saveWebPageData = async function(){
 			
 			fs.mkdirSync(path.dirname(savePath), { recursive: true });
 
-			const stream = fs.createWriteStream(savePath);
-			await stream.write(Buffer.from(script.source, 'base64').toString('utf-8'));
-			stream.end();
+			// Write the raw response text directly
+			fs.writeFileSync(savePath, script.source, 'utf-8');
 
 			fileMap[script.url] = savePath;
 		}
@@ -579,11 +546,11 @@ Visitor.prototype.saveCrawlerData = async function(){
 		}
 
 		if (this.config.collector.COLLECT_BROWSER_STDERR){
-			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "browser-stderr.json"), JSON.stringify(this.collected.curURLHash.browserStderr, null, 4));
+			// fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "browser-stderr.json"), JSON.stringify(this.collected.curURLHash.browserStderr, null, 4));
 		}
 
 		if (this.config.collector.COLLECT_BROWSER_STDOUT){
-			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "browser-stdout.json"), JSON.stringify(this.collected.curURLHash.browserStdout, null, 4));
+			// fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "browser-stdout.json"), JSON.stringify(this.collected.curURLHash.browserStdout, null, 4));
 		}
 
 		if (this.config.collector.COLLECT_CONSOLE_LOGS){
@@ -596,6 +563,10 @@ Visitor.prototype.saveCrawlerData = async function(){
 
 		if (this.config.collector.EXTRACT_UNDEF_LOOKUPS && this.collected.curURLHash.undefinedLookups){
 			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "undefined-lookups.json"), JSON.stringify(this.collected.curURLHash.undefinedLookups, null, 4));
+		}
+
+		if (this.config.collector.COLLECT_TAINTING_FLOWS && this.collected.curURLHash.taintflows){
+			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "taintflows.json"), JSON.stringify(this.collected.curURLHash.taintflows, null, 4));
 		}
 
 		if (this.config.collector.COLLECT_ERRORS){
@@ -625,29 +596,24 @@ Visitor.prototype.updateLogger = function(){
 	this.logger = new Logger('debug', 'Visitor', pathModule.join(this.webpageCrawlerFolder, 'crawler.log'));
 }
 
-Visitor.prototype.launch_puppeteer = async function(){
-	var browser = await puppeteer.launch({
-		executablePath: this.chromeExecutablePath,
-		headless: this.config.chrome.HEADLESS,
-		devtools: this.config.chrome.DEVTOOLS,
-		args: this.chromeFlags,
-		'ignoreHTTPSErrors': true,
+
+Visitor.prototype.launch_browser = async function(){
+	var browser = await this.browserType.launch({
+			// proxy: {
+			// 	server: 'localhost:8081'
+			// },
+			executablePath: this.browserExecutablePath,
+			headless: this.browserHeadless,
+			devtools: this.browserDevtools,
+			args: this.browserFlags,
+			ignoreHTTPSErrors: true,
 	});
 
-
 	browser.on('disconnected', async () => {
-		this.logger.warn('Browser disconnected.');
+			this.logger.warn('Browser disconnected.');
 	})
 
-	// var browser = await puppeteer.launch({
-	// 	executablePath: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.blocker/chrome",
-	// 	headless: true,
-	// 	// defaultViewport: null,
-	// 	args: ["--disable-setuid-sandbox", '--no-sandbox', '--disable-gpu', '--single-process'],
-	// 	'ignoreHTTPSErrors': true
-	// });
-
-	return browser;	
+	return browser;    
 }
 
 module.exports = Visitor;
