@@ -127,11 +127,15 @@ if (typeof J$$ === 'undefined') {
 //   }
     
     function callAsNativeConstructorWithoutEval(Constructor, args) {
+        // Ensure args is an array-like object and convert it to an array
+        const argsArray = Array.prototype.slice.call(args);
+        
         // Create a function that will call the constructor with the provided arguments
         const func = new Function('Constructor', 'args', 
-            `return new Constructor(${args.map((_, i) => 'args[' + i + ']').join(', ')});`);
+            `return new Constructor(${argsArray.map((_, i) => 'args[' + i + ']').join(', ')});`);
+        
         // Call the function with the constructor and the arguments
-        return func(Constructor, args);
+        return func(Constructor, argsArray);
     }
 
   function callAsNativeConstructor(Constructor, args) {
@@ -172,7 +176,9 @@ if (typeof J$$ === 'undefined') {
   }
 
   function invokeEval(base, f, args, iid) {
-      return f(sandbox.instrumentEvalCode(args[0], iid, false));
+    return f(args[0]); // eval(script);
+    // TODO: We currently don't instrument eval code
+    // return f(sandbox.instrumentEvalCode(args[0], iid, false));
   }
 
   function invokeFunctionDecl(base, f, args, iid) {

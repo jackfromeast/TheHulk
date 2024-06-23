@@ -15,7 +15,7 @@
 const fs = require('fs');
 const pathModule = require('path');
 const yaml = require('js-yaml');
-const Visitor = require('../../crawler/src/visitor.js');
+const Visitor = require('../../crawler/src/visitor-playwright.js');
 const Logger = require('../../crawler/src/logger.js');
 const utils = require('../../crawler/src/utils.js');
 const { program } = require('commander');
@@ -46,9 +46,9 @@ const options = program.opts();
   }
 
   // Add the proxy server for config
-  if (configs.navigator.PROXY_SERVER) {
-    configs.chrome.CHROME_FLAGS.push(`--proxy-server=${configs.navigator.PROXY_SERVER}:${configs.navigator.PROXY_PORT}`);
-  }
+  // if (configs.navigator.PROXY_SERVER) {
+  //   configs.chrome.CHROME_FLAGS.push(`--proxy-server=${configs.navigator.PROXY_SERVER}:${configs.navigator.PROXY_PORT}`);
+  // }
 
   let visitor = await new Visitor(configs, url, domain, basedir, 1, userCallbacks.before, userCallbacks.action, userCallbacks.after, userCallbacks.post);
 

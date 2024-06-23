@@ -7,7 +7,6 @@ module.exports = {
     path: path.resolve('dist'), // Output directory
   },
   target: 'web',
-  devtool: "inline-source-map",
   mode: 'development' // Set the mode to 'development' or 'production'
 };
 

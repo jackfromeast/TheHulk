@@ -36,26 +36,18 @@ collector:
 navigator:
   BROWSER: "chrome"
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "https://x.com/"
+  INITIAL_URL: "http://localhost:8001/"
   NAVIGATION_TIMEOUT: 0
 
 
-proxy:
-  PROXY_SERVER: "localhost"
-  PROXY_PORT: 8899
+# proxy:
+#   PROXY_SERVER: "localhost"
+#   PROXY_PORT: 8080
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "./callbacks/disable-csp-callbacks.js"
-      function_name: "disableCSPCb"
-    
-    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
       function_name: "installJalangi2AndAnalysisCb"
-    # - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-scripts-callbacks.js"
-    #   function_name: "installJalangi2RuntimeScriptsCb"
-    
-    # - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-analysis-scripts-callbacks.js"
-    #   function_name: "installAnalysisScriptsCb"
   
   PAGE_ACTIONS_CBS:
     - file: "./callbacks/wait-forever-callbacks.js"
