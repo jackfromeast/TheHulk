@@ -13,3 +13,9 @@
 [submodule "dataset/dom-clobbering-collection"]
 	path = dataset/dom-clobbering-collection
 	url = https://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@github.com/jackfromeast/dom-clobbering-collection
+[submodule "proxy-server/proxy-server/mitmproxy"]
+	path = proxy-server/proxy-server/mitmproxy
+	url = https://github.com/mitmproxy/mitmproxy.git
+[submodule "proxy-server/mitmproxy"]
+	path = proxy-server/mitmproxy
+	url = https://github.com/mitmproxy/mitmproxy.git

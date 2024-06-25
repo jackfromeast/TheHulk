@@ -42,8 +42,7 @@ class JalangiResponseHandler:
     self.ignore = self.instrument_config['IGNORE_URLS']
 
     self.cache = Cache(self.cache_config['CACHE_PATH'])
-    self.instrumentor = Instrumentor(self.instrument_config['INST_SCRIPT'],
-                                     self.instrument_config['JALANGI_ARGS'],
+    self.instrumentor = Instrumentor(self.instrument_config,
                                      self.cache)
 
   def filter(self, url):
@@ -81,12 +80,21 @@ class JalangiResponseHandler:
     This function is used to intercept the response from the server and instrument the javascript code using jalangi2.
 
     """
+    
     if self.instrument_config['IGNORE_ENABLE'] == 'all':
       return
     elif self.instrument_config['IGNORE_ENABLE'] == 'true':
       if self.filter(flow.request.url):
         logger.info("Ignoring URL: %s", flow.request.url)
         return
+
+    # Measurement
+    response_arrive_time = time.time()
+    response_decoded_time = 0
+    cache_start_time = 0
+    instrument_start_time = 0
+    instrument_end_time = 0
+    response_leave_time = 0
 
     try:
       try:
@@ -95,22 +103,35 @@ class JalangiResponseHandler:
         logger.warning("Failed to decode response: %s", flow.request.url)
         return
 
+      response_decoded_time = time.time() # Measurement
+
       content_type = self.get_header_field(flow.response.headers, "content-type")
       short_url = len(flow.request.url) > 128 and flow.request.url[:128] + '...' or flow.request.url
       
       if content_type:
         if content_type.find('javascript') >= 0:
+          # If URL ends with .json, we will not instrument it
+          if flow.request.url.endswith('.json'):
+            return
+
           logger.info("Response intercepted {JS}: %s", short_url)
           
           response_text = self.safe_get_response_text(flow)
           if response_text is None:
             return
 
+          cache_start_time = time.time() # Measurement
           if self.cache_config['CACHE_ENABLE']:
             self.cache.save_cache_file(flow.request.url, response_text, 'js', 'raw')
+          instrument_start_time = time.time() # Measurement
           flow.response.text = self.instrumentor.instrument(flow.request.url, response_text, 'js')
+          instrument_end_time = time.time() # Measurement
 
         if content_type.find('html') >= 0:
+          # If URL ends with .json, we will not instrument it
+          if flow.request.url.endswith('.json'):
+            return
+
           logger.info("Response intercepted {HTML}: %s", short_url)
           
           response_text = self.safe_get_response_text(flow)
@@ -126,12 +147,20 @@ class JalangiResponseHandler:
       
       # return
       raise e
-
-      
-
+    
+    response_leave_time = time.time()
+    
+    # Log the request process times
+    logger.info(
+    "Request URL: %s | Response decoded time duration: %.4f ms | Cache save time duration: %.4f ms | \
+Instrumentation time duration: %.4f ms | Total processing time: %.4f ms",
+    flow.request.url,
+    (response_decoded_time - response_arrive_time) * 1000 if response_decoded_time > response_arrive_time else 0,
+    (instrument_start_time - cache_start_time) * 1000 if instrument_start_time > cache_start_time else 0,
+    (instrument_end_time - instrument_start_time) * 1000 if instrument_end_time > instrument_start_time else 0,
+    (response_leave_time - response_arrive_time) * 1000
+    )
 
 addons = [
     JalangiResponseHandler(load_config('config.yaml'))
 ]
-
-

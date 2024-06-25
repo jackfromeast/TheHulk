@@ -71,6 +71,7 @@ def resolve_url_to_path(c_url, c_type, c_content):
 
     if '%' in filepath:
         try:
+            ## TODO: decodeURIComponent is not in python
             filepath = decodeURIComponent(filepath)
             filename = decodeURIComponent(filename)
         except Exception as err:

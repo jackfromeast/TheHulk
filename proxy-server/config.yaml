@@ -2,15 +2,23 @@ instrumentation:
   INST_SCRIPT: "/home/jackfromeast/Desktop/TheHulk/jalangi2/src/js/commands/esnstrument_cli.js"
 
   # Options: "all", "true", "false"
-  IGNORE_ENABLE: false
-  IGNORE_URLS: []
+  IGNORE_ENABLE: 'true'
+  IGNORE_URLS: [
+    "https://www.youtube.com/sw.js"
+  ]
 
   JALANGI_ARGS: []
 
+  SAVE_FAILED_INSTRUMENTATION: true
+  FAIL_INSTRUMENTATION_PATH: "/home/jackfromeast/Desktop/TheHulk/tests/jalangi2-instrumentation-test/jalangi2-failed-js"
+
+
 cache: 
   CACHE_ENABLE: true
+  USE_CACHE: true
   CACHE_PATH: "/home/jackfromeast/Desktop/TheHulk/proxy-server/cache"
 
 # To change the port of the server, modify the code at setup.sh
 # server:
 #   PORT: 3000
+

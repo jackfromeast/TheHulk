@@ -36,7 +36,7 @@ class Cache:
     if not os.path.exists(self.cache_dir):
       os.makedirs(self.cache_dir)
     
-    self.clean_cache()
+    # self.clean_cache()
     self.load_cache_map()
 
   def clean_cache(self):
