@@ -18,8 +18,8 @@ foxhound:
     '--disable-setuid-sandbox',
     '--disable-gpu'
   ]
-  FOXHOUND_HEADLESS: false
-  FOXHOUND_DEVTOOLS: false
+  HEADLESS: false
+  DEVTOOLS: false
 
 collector:
   # Collectors configuration
@@ -36,12 +36,12 @@ collector:
   COLLECT_XHR_REQUESTS: true
   COLLECT_FETCH_REQUESTS: true
   EXTRACT_DOM_LOOKUPS: true
-  COLLECT_TAINTING_FLOWS: false
+  COLLECT_TAINTING_FLOWS: true
   COLLECT_ALT_URLS: false
 
 
 navigator:
-  BROWSER: "chrome" # or "foxhound"
+  BROWSER: "foxhound" # or "chrome"
   WAIT_BEFORE_NEXT_URL: 1000
 
   # For puppeteer, options:
@@ -59,21 +59,23 @@ callbacks:
     - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/bind-taint-handler-foxhound-callbacks.js"
       function_name: "setupFoxhoundTaintHandlerCb"
   
-  PAGE_ACTIONS_CBS: []
-    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/manually-actions-callbacks.js"
-    #   function_name: "manuallyInteractCb"
+  PAGE_ACTIONS_CBS:
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/manually-actions-callbacks.js"
+      function_name: "manuallyInteractCb"
 
   AFTER_LOAD_CBS: []
 
   POST_VISIT_CBS:
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
-      function_name: "extractDOMCLookupsCb"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-dom-related-taint-flows.js"
+      function_name: "extractDOMRelatedTaintFlowsCb"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
+    #   function_name: "extractDOMCLookupsCb"
       
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/compile-ql-query-callbacks.js"
-      function_name: "compileQLQueryCb"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/compile-ql-query-callbacks.js"
+    #   function_name: "compileQLQueryCb"
     
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/create-ql-db-callbacks.js"
-      function_name: "createCodeQLDatabaseCb"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/create-ql-db-callbacks.js"
+    #   function_name: "createCodeQLDatabaseCb"
 
 others:
   FOXHOUND_TAINT_HANDLER_PATH: "/home/jackfromeast/Desktop/TheHulk/crawler/src/scripts/flow-handler-foxhound.js"

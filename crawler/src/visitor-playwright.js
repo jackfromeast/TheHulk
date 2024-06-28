@@ -9,7 +9,7 @@ const elapsed = require("elapsed-time-logger");
 const utils = require('./utils.js');
 const Logger = require('./logger');
 const path = require('path');
-const { warn } = require('console');
+const { warn, log } = require('console');
 
 /**
  * 
@@ -324,79 +324,86 @@ Visitor.prototype.refreshCollectData = function() {
 }
 
 
+/**
+ * Here we setup the interception for the page on the network level
+ * So that we can collect all the resources have been loaded on the page
+ */
 Visitor.prototype.setupInterception = function(page) {
-	page.route('**/*', async (route) => {
-			const request = route.request();
-			const url = request.url();
-			const resourceType = request.resourceType();
-			const method = request.method();
-			const headers = request.headers();
+  page.route('**/*', async (route) => {
+    const request = route.request();
+    const url = request.url();
+    const resourceType = request.resourceType();
+    const method = request.method();
+    const headers = request.headers();
 
-			// Log the request
-			// this.logger.debug(`Request intercepted: ${method} ${url} [${resourceType}]`);
+		// this.logger.debug(`Intercepted: ${url} (${resourceType})`);
+		// this.logger.debug(request.isNavigationRequest());
 
-			try {
-					if (request.redirectedFrom()) {
-							// Handle redirects
-							this.logger.debug(`Handling redirect for: ${url}`);
-							await route.continue();
-					} else {
-							await route.continue();
-					}
+    try {
+      if (request.redirectedFrom()) {
+        // Handle redirects
+        this.logger.debug(`Handling redirect for: ${url}`);
+        await route.continue();
+      } else {
+        await route.continue();
+      }
 
-					try {
-							const response = await page.waitForResponse(response => response.url() === url && response.request().resourceType() === resourceType);
-							const responseStatus = response.status();
+      try {
+        const response = await page.waitForResponse(response => response.url() === url && response.request().resourceType() === resourceType);
+        const responseStatus = response.status();
 
-							if (responseStatus >= 300 && responseStatus < 400) {
-									this.collected.curURLHash.redirects = this.collected.curURLHash.redirects || [];
-									this.collected.curURLHash.redirects.push({ url: url, status: responseStatus });
-							} else if (resourceType === 'document' || resourceType === 'stylesheet' || resourceType === 'script' || resourceType === 'Other') {
-									if (request.url().endsWith('.ico')){ return; }
+        if (responseStatus >= 300 && responseStatus < 400) {
+          this.collected.curURLHash.redirects = this.collected.curURLHash.redirects || [];
+          this.collected.curURLHash.redirects.push({ url: url, status: responseStatus });
+        } else if (resourceType === 'document' || resourceType === 'stylesheet' || resourceType === 'script' || resourceType === 'Other') {
+          if (request.url().endsWith('.ico')){ return; }
+					
+					const body = await response.text();
 
-									const body = await response.text();
+          // The main page sometimes will has resourceType as 'Other'
+          if (this.config.collector.COLLECT_HTML &&
+              (resourceType === 'document' || resourceType === 'Other')) {	
+            this.collected.curURLHash.htmls.push({ url: url, source: body });
+          } else if (this.config.collector.COLLECT_CSS &&
+                     resourceType === 'stylesheet') {
+            this.collected.curURLHash.css.push({ url: url, source: body });
+          } else if (this.config.collector.COLLECT_SCRIPTS &&
+                     resourceType === 'script') {
+            this.collected.curURLHash.scripts.push({ url: url, source: body });
+          }
+        }
 
-									// The main page sometimes will has resourceType as 'Other'
-									if (this.config.collector.COLLECT_HTML &&
-										 (resourceType === 'document' || resourceType === 'Other')) {
-											this.collected.curURLHash.htmls.push({ url: url, source: body });
-									} else if (this.config.collector.COLLECT_CSS &&
-														 resourceType === 'stylesheet') {
-											this.collected.curURLHash.css.push({ url: url, source: body });
-									} else if (this.config.collector.COLLECT_SCRIPTS &&
-														 resourceType === 'script') {
-											this.collected.curURLHash.scripts.push({ url: url, source: body });
-									}
-							}
+        if (this.config.collector.COLLECT_XHR_REQUESTS &&
+            resourceType === 'xhr') {
+          this.collected.curURLHash.XHRRequests.push({ url: url, method: method, headers: headers });
+        }
 
-							if (this.config.collector.COLLECT_XHR_REQUESTS &&
-								  resourceType === 'xhr') {
-									this.collected.curURLHash.XHRRequests.push({ url: url, method: method, headers: headers });
-							}
+        if (this.config.collector.COLLECT_FETCH_REQUESTS &&
+            resourceType === 'fetch') {
+          this.collected.curURLHash.FetchRequests.push({ url: url, method: method, headers: headers });
+        }
 
-							if (this.config.collector.COLLECT_FETCH_REQUESTS &&
-								  resourceType === 'fetch') {
-									this.collected.curURLHash.FetchRequests.push({ url: url, method: method, headers: headers });
-							}
-					} catch (responseError) {
-							if (responseError.message.includes('Target page, context or browser has been closed')) {
-									this.logger.warn(`Response handling skipped for ${url} as the target page, context, or browser has been closed`);
-							} else {
-									throw responseError;
-							}
-					}
-			} catch (e) {
-				this.logger.error(`Error handling response for ${url}: ${e.message}`);
-				try {
-						await route.abort();
-				} catch (abortError) {
-						if (!abortError.message.includes('Route is already handled')) {
-								this.logger.error(`Failed to abort route for ${url}: ${abortError.message}`);
-						}
-				}
-			}
-	});
+      } catch (responseError) {
+        if (responseError.message.includes('Target page, context or browser has been closed')) {
+          this.logger.warn(`Response handling skipped for ${url} as the target page, context, or browser has been closed`);
+        } else {
+          throw responseError;
+        }
+      }
+    } catch (e) {
+      this.logger.error(`Error handling response for ${url}: ${e.message}`);
+			// throw e;
+      try {
+        await route.abort();
+      } catch (abortError) {
+        if (!abortError.message.includes('Route is already handled')) {
+          this.logger.error(`Failed to abort route for ${url}: ${abortError.message}`);
+        }
+      }
+    }
+  });
 };
+
 
 
 Visitor.prototype.collectConsoleLogs = async function(page){
@@ -598,16 +605,21 @@ Visitor.prototype.updateLogger = function(){
 
 
 Visitor.prototype.launch_browser = async function(){
-	var browser = await this.browserType.launch({
-			// proxy: {
-			// 	server: 'localhost:8081'
-			// },
-			executablePath: this.browserExecutablePath,
-			headless: this.browserHeadless,
-			devtools: this.browserDevtools,
-			args: this.browserFlags,
-			ignoreHTTPSErrors: true,
-	});
+	let browserLanuchFlags = {
+		executablePath: this.browserExecutablePath,
+		headless: this.browserHeadless,
+		devtools: this.browserDevtools,
+		args: this.browserFlags,
+		ignoreHTTPSErrors: true,
+	};
+
+	if (this.config.proxy && this.config.proxy.PROXY_SERVER){
+		browserLanuchFlags['proxy'] = {
+			server: `${this.config.proxy.PROXY_SERVER}:${this.config.proxy.PROXY_PORT}`
+		}
+	}
+
+	var browser = await this.browserType.launch(browserLanuchFlags);
 
 	browser.on('disconnected', async () => {
 			this.logger.warn('Browser disconnected.');

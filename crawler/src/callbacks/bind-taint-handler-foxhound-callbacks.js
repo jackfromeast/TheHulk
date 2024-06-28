@@ -13,6 +13,7 @@ async function setupFoxhoundTaintHandlerCb(visitor, page) {
 
 async function exposeHandlerToPageCb(visitor, page) {
   visitor.context.exposeBinding("__playwright_taint_report", async function (source, value) {
+    console.log("Taint report received: ", source, value);
     if (visitor.config.collector.COLLECT_TAINTING_FLOWS){
       visitor.collected.curURLHash.taintflows.push(value)
     };

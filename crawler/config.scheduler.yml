@@ -1,14 +1,14 @@
 scheduler:
-  TEST_NAME: "playwright-test"
+  TEST_NAME: "FOXHOUND-DOM-TAINTFLOWS-ROUND1-TOP500"
   # Path to workspace (base directory for storing results)
   WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/"
 
   # Option: "seed" or "list"
   MODE: "list"
-  SEED_URL: "https://cocalc.com/818375c4-7b25-4e42-b5f4-31c9bc744be8/raw/2024-05-05-file-1.html"
+  SEED_URL: "https://google.com"
   URL_LIST: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
-  URL_LIST_TO: 5
+  URL_LIST_TO: 500
 
   # Format of the urls.csv file:
   #   1,google.com
@@ -23,9 +23,9 @@ scheduler:
   #   10,twitter.com  
 
   # Maximum number of workers to run in parallel
-  MAX_WORKER: 1
+  MAX_WORKER: 16
   # Maximum number of urls to visit
-  MAX_URL: 1
+  MAX_URL: 20
   # Time budget for each worker to visit a single domain
   TIMEOUT_PER_DOMAIN: 5400000
 
