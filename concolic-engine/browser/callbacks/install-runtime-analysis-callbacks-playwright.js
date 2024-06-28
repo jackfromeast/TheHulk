@@ -31,7 +31,7 @@ async function installJalangi2AndAnalysisCb(visitor, page) {
   const jalangi2RuntimePath = path.resolve(visitor.config.others.JALANGI2_RUNTIME_PATH);
   
   visitor.context.addInitScript({ path: jalangi2RuntimePath });
-  // visitor.context.addInitScript({ path: analysisScriptPath });
+  visitor.context.addInitScript({ path: analysisScriptPath });
 
   await ensureServiceWorkerScripts(visitor, page);
 }
@@ -50,7 +50,7 @@ async function ensureServiceWorkerScripts(visitor, page) {
   page.on('worker', async worker => {
     try {
       await worker.evaluate(runtimeContent);
-      // await worker.evaluate(scriptContent);
+      await worker.evaluate(scriptContent);
       console.log('Scripts injected into worker: ' + worker.url());
     } catch (e) {
       console.error('Failed to inject script into worker:', e);
