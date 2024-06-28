@@ -220,10 +220,10 @@ export class TaintTracking {
    * treated as the static identifier of the function <tt>f</tt>.  Note that a given function code block can
    * create several function objects, but each such object has a common <tt>functionIid</tt>, which is the iid
    * that is passed to {@link MyAnalysis#functionEnter} when the function executes.
-   * @returns {{f: function, base: Object, args: Array, skip: boolean}|undefined} - If an object is returned and
+   * @returns {{f: function, base: Object, args: Arguments, skip: boolean}|undefined} - If an object is returned and
    * the <tt>skip</tt> property of the object is true, then the invocation operation is skipped.
    * Original <tt>f</tt>, <tt>base</tt>, and <tt>args</tt> are replaced with that from the returned object if
-   * an object is returned.
+   * an object is returned. The args should has Arguments type as it will passed to the InvokeFun operation.
    */
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
     let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
@@ -265,8 +265,9 @@ export class TaintTracking {
         // f is a built-in function but no rule found
         // We concretize the taint value and apply the original function
         // TODO: We might need recursive concretization
+        TaintHelper.reportUnsupportedBuiltin(f.name, iid);
         args = Array.from(args).map(arg => arg instanceof TaintValue ? arg.getConcrete() : arg);
-
+        
         return {f: f_c, base: base_c, args: args, skip: false};
       }
     }
