@@ -12,7 +12,6 @@
 
 import { TaintTracking } from './taint-tracking.js'
 
-
 if (J$$) {
   J$$.analysis = new TaintTracking(J$$);
 } else{
@@ -20,3 +19,4 @@ if (J$$) {
 }
 
 
+import './taint-expose.js'
