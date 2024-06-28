@@ -29,6 +29,12 @@ export class TaintHelper {
     });
   }
 
+  static reportUnsupportedBuiltin(builtinName, ) {
+    console.log("%c[TheHulk] Unsupported builtin %s!",
+                'background: white; color: brown',            
+                builtinName);
+  }
+
   static isNativeFunction(f) {
     const toString = Object.prototype.toString;
     const fnToString = Function.prototype.toString;
