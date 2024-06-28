@@ -15,6 +15,9 @@
  * 1/ Built-in function or Operator, 
  * 2/ Condition check function (verifies context conditions),
  * 3/ Modeling function
+ * 
+ * All the rules should be built from the RuleBuilder class, while the modeling function
+ * are coming from the corresponding rule classes.
  *
  */
 
@@ -22,6 +25,19 @@ import { TaintHelper } from '../taint-helper.js';
 import { WrappedValue, _, TaintValue } from '../values/wrapped-values.js';
 import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
 import { BinaryOpsTaintPropRules } from './operations/binary-ops.js';
+
+/**
+ * @description
+ * --------------------------------
+ * The RuleFunctionPrototype constructor.
+ * 
+ * All the rule functions should inherit this prototype for type checking.
+ * That said, all the rule function's prototype should be the prototype of 
+ * RuleFunctionPrototype function.
+ */
+function RuleFunctionPrototype() {
+  this.type = 'RuleFunction';
+}
 
 export class RuleBuilder {
 
@@ -176,7 +192,7 @@ export class RuleBuilder {
    * @returns {Object} The rule object.
    */
   static makeRule(f, condition, modelF, concretize = true, featureDisabled = false) {
-    return (base, args, iid) => {
+    let newRule = (base, args, iid) => {
       let [result, thrown] = this.runOriginFunc(f, base, args, concretize);
 
       if (!featureDisabled && condition(base, args)) {
@@ -189,6 +205,8 @@ export class RuleBuilder {
 
       return result;
     };
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
   }
 
   /**
@@ -198,21 +216,24 @@ export class RuleBuilder {
    * 
    * @param {Function} f - The function to execute.
    * @param {Object} base - The base object for the function call.
-   * @param {Array} args - The arguments for the function call.
+   * @param {Arguments} args - The arguments for the function call.
    * @param {boolean} [concretize=true] - Whether to concretize the base and arguments.
    * @returns {Array} An array containing the result of the function and any thrown error.
    */
-    static runOriginFunc(f, base, args, concretize = true) {
-      let result, thrown;
-  
-      try {
-        const c_base = concretize ? base.getConcrete() : base;
-        const c_args = concretize ? args.map(arg => arg.getConcrete()) : args;
-        result = f.apply(c_base, c_args);
-      } catch (e) {
-          thrown = e;
-      }
-  
-      return [result, thrown];
+  static runOriginFunc(f, base, args, concretize = true) {
+    let result, thrown;
+
+    try {
+      const c_base = concretize && base !== null ? TaintHelper.concrete(base) : base;
+      const c_args = Array.from(args).map(arg => TaintHelper.concrete(arg));
+
+      // result = f.apply(c_base, c_args);
+      result = Function.prototype.apply.call(f, c_base, c_args);
+    } catch (e) {
+      thrown = e;
     }
+
+    return [result, thrown];
+  }
+
 }
