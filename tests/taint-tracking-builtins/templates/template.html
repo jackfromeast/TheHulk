@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Taint Tracking Test Websites - Micro Benchmarks - {{Id}}</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test the taint engine's ability on different builtins.
+    </p>
+</section>
+
+<section class="section">
+    <div class="column_double">
+        <p><span class="label">Source:</span><br><br>
+            <span class="indent">Type: {{SourceType}}</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">{{SourceCode}}</pre>
+        </p>
+    </div>
+    <div class="column_double">
+        <p><span class="label">Sink:</span><br><br>
+            <span class="indent">Type: {{SinkType}}</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">{{SinkCode}}</pre>
+        </p>
+    </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+{{TestCode}}
+</pre>
+</div>
+</section>
+
+<script src={{TestCodePath}}></script>
+
+</body>
+</html>
