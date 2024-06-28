@@ -207,7 +207,22 @@ if (typeof J$$ === 'undefined') {
           } else if (isConstructor) {
               result = callAsConstructor(f, args);
           } else {
-              result = Function.prototype.apply.call(f, base, args);
+              /**
+               * Here the args has Arguments type, e.g. Arguments(2) ['arg1', 'arg2']
+               * 
+               * For the unmodeled functions funcA(param1, param2), the following line will passed
+               * the args[0] -> param1, and args[1] -> param2
+               * 
+               * However, for the modeled function, it takes in XXXModel(base, args, iid) where args
+               * is assumed the same as args here without unwrapping. 
+               * That said, args (in callFun) -> args (in XXXModel).
+               */
+              if (f.type && f.type === "RuleFunction") {
+                result = f(base, args, iid);
+              }else {
+                result = Function.prototype.apply.call(f, base, args);
+              }
+        
           }
           return result;
       } finally {
