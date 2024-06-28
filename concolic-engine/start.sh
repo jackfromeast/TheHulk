@@ -61,7 +61,7 @@ done
 if [ "$RUN_TEST" = true ]; then
   check_and_kill_port 8001
   echo "[+] Starting the local test server for hosting the test pages..."
-  cd $CONCOLIC_PATH/../tests/domc-microbench && http-server test-pages -p 8001 -d false > /dev/null 2>&1 &
+  cd $CONCOLIC_PATH/../tests/domc-microbench && http-server test-pages -p 8001 -d false -c-1 > /dev/null 2>&1 &
   TEST_SERVER_PID=$!
   sleep 2
   echo "[+] Test Server started with PID $TEST_SERVER_PID, at http://localhost:8001"
