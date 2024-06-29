@@ -58,7 +58,7 @@ export class RuleBuilder {
    * @returns {Function} The rule function.
    */
   static makeRuleUnary(operator, condition, concretize = true, featureDisabled = false) {
-    return (left, iid) => {
+    let newRule = (left, iid) => {
       let result = UnaryJumpTable[operator](TaintHelper.concrete(left));
 
       if (!featureDisabled && condition(left)) {
@@ -70,6 +70,9 @@ export class RuleBuilder {
 
       return result;
     };
+
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
   }
 
   /**
@@ -89,7 +92,7 @@ export class RuleBuilder {
    * @returns {Function} The rule function.
    */
   static makeRuleBinary(operator, condition, concretize = true, featureDisabled = false) {
-    return (left, right, iid) => {
+    let newRule = (left, right, iid) => {
       let leftValue = TaintHelper.concrete(left);
       let rightValue = TaintHelper.concrete(right);
       let result = BinaryOpsTaintPropRules.BinaryJumpTable[operator](leftValue, rightValue);
@@ -114,6 +117,10 @@ export class RuleBuilder {
 
       return result;
     };
+
+
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
   }
 
   /**
@@ -131,7 +138,7 @@ export class RuleBuilder {
    * @returns {Object} The rule object.
    */
     static makeRuleGetField(condition, concretize = true, featureDisabled = false) {
-      return (base, offset, iid) => {
+      let newRule = (base, offset, iid) => {
         let base_c = TaintHelper.concrete(base);
         let offset_c = TaintHelper.concrete(offset);
         let result = base_c[offset_c];
@@ -147,6 +154,9 @@ export class RuleBuilder {
   
         return result;
       };
+
+      Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+      return newRule;
   }
 
   /**
@@ -165,7 +175,7 @@ export class RuleBuilder {
    * @returns {Object} The rule object.
    */
     static makeRulePutField(condition, modelF, concretize = true, featureDisabled = false) {
-      return (base, offset, val, iid) => {
+      let newRule = (base, offset, val, iid) => {
 
         if (!featureDisabled && condition(val)) {
           val = modelF(base, offset, val);
@@ -173,6 +183,9 @@ export class RuleBuilder {
 
         return val;
       };
+
+      Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+      return newRule;
   }
 
 
@@ -186,14 +199,19 @@ export class RuleBuilder {
    * makeRule returns a function (rule) that intake the base object and arguments of the function call,
    * and applies the rule to the function call.
    * 
+   * For the invokeFun rule, it has additional parameter `reflected` which indicates whether the function is reflected.
+   * This is because during the makeRule stage, we pass `f` as the real function, e.g. `String.fromCharCode`.
+   * However, in the program, when the rule has been called, it might used the reflected function, e.g. `String.fromCharCode.call`.
+   * The arguments of the reflected function are different from the real function, that the first argument is the base object.
+   * 
    * @param {Function} f - The function to apply the rule to.
    * @param {Function} condition - The condition check function.
    * @param {Function} model - The modeling function.
    * @returns {Object} The rule object.
    */
   static makeRule(f, condition, modelF, concretize = true, featureDisabled = false) {
-    let newRule = (base, args, iid) => {
-      let [result, thrown] = this.runOriginFunc(f, base, args, concretize);
+    let newRule = (base, args, iid, reflected) => {
+      let [result, thrown] = this.runOriginFunc(f, base, args, concretize, reflected);
 
       if (!featureDisabled && condition(base, args)) {
           result = modelF(base, args, result, iid);
@@ -220,15 +238,20 @@ export class RuleBuilder {
    * @param {boolean} [concretize=true] - Whether to concretize the base and arguments.
    * @returns {Array} An array containing the result of the function and any thrown error.
    */
-  static runOriginFunc(f, base, args, concretize = true) {
+  static runOriginFunc(f, base, args, concretize = true, reflected) {
     let result, thrown;
 
     try {
       const c_base = concretize && base !== null ? TaintHelper.concrete(base) : base;
       const c_args = Array.from(args).map(arg => TaintHelper.concrete(arg));
 
-      // result = f.apply(c_base, c_args);
-      result = Function.prototype.apply.call(f, c_base, c_args);
+      if (reflected === "apply") {
+        result = Function.prototype.apply.call(f.apply, c_base, c_args);
+      }else if (reflected === "call") {
+        result = Function.prototype.apply.call(f.call, c_base, c_args);
+      }else {
+        result = Function.prototype.apply.call(f, c_base, c_args);
+      }
     } catch (e) {
       thrown = e;
     }
