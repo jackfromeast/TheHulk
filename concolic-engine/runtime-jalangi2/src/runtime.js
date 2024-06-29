@@ -196,7 +196,7 @@ if (typeof J$$ === 'undefined') {
       return out;
   }
 
-  function callFun(f, base, args, isConstructor, iid) {
+  function callFun(f, base, args, isConstructor, iid, reflected) {
       var result;
       pushSwitchKey();
       try {
@@ -218,7 +218,7 @@ if (typeof J$$ === 'undefined') {
                * That said, args (in callFun) -> args (in XXXModel).
                */
               if (f.type && f.type === "RuleFunction") {
-                result = f(base, args, iid);
+                result = f(base, args, iid, reflected);
               }else {
                 result = Function.prototype.apply.call(f, base, args);
               }
@@ -240,10 +240,11 @@ if (typeof J$$ === 'undefined') {
               base = aret.base;
               args = aret.args;
               skip = aret.skip;
+              reflected = aret.reflected || "";
           }
       }
       if (!skip) {
-          result = callFun(f, base, args, isConstructor, iid);
+          result = callFun(f, base, args, isConstructor, iid, reflected);
       }
       if (sandbox.analysis && sandbox.analysis.invokeFun) {
           aret = sandbox.analysis.invokeFun(iid, f, base, args, result, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));

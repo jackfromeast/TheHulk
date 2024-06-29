@@ -122,6 +122,9 @@ export class StringBuiltinsTaintPropRules {
   }
 
   ifAnyArgTainted(args) {
+    if (args.toString === "[Object Arguments]"){
+      args = Array.from(args);
+    }
     return args.some(arg => arg instanceof TaintValue);
   }
 
@@ -156,7 +159,7 @@ export class StringBuiltinsTaintPropRules {
    */
   fromCodePointStringModel(base, args, result, iid) {
     let taintInfo;
-    for (let arg of args) {
+    for (let arg of Array.from(args)) {
       if (arg instanceof TaintValue) {
         taintInfo = arg.getTaintInfo();
         break;
@@ -267,7 +270,7 @@ export class StringBuiltinsTaintPropRules {
    */
   fromCodePointStringModel(base, args, result, iid) {
     let taintInfo;
-    for (let arg of args) {
+    for (let arg of Array.from(args)) {
       if (arg instanceof TaintValue) {
         taintInfo = arg.getTaintInfo();
         break;
@@ -379,7 +382,7 @@ export class StringBuiltinsTaintPropRules {
   concatStringModel(base, args, result, iid) {
     let taintInfo = base instanceof TaintValue ? base.getTaintInfo() : null;
     if (!taintInfo) {
-      for (let arg of args) {
+      for (let arg of Array.from(args)) {
         if (arg instanceof TaintValue) {
           taintInfo = arg.getTaintInfo();
           break;
@@ -634,7 +637,7 @@ export class StringBuiltinsTaintPropRules {
   replaceStringModel(base, args, result, iid) {
     let taintInfo = base instanceof TaintValue ? base.getTaintInfo() : null;
     if (!taintInfo) {
-      for (let arg of args) {
+      for (let arg of Array.from(args)) {
         if (arg instanceof TaintValue) {
           taintInfo = arg.getTaintInfo();
           break;

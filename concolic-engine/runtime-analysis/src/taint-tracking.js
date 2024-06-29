@@ -255,11 +255,21 @@ export class TaintTracking {
     }
 
     // Check if the function is a built-in function
-    if (TaintHelper.isNativeFunction(f)) {
-      // f is a built-in function and found the appropriate rule
-      let rule = this.taintPropRules.invokeFunRules.getRule(base_c, f);
+    // Functions can be called in different ways, 
+    // e.g. y.f(arg1, arg2, ...), y.f.call(this, arg1, arg2), y.f.apply(this, args)
+    // - y.f(arg1, arg2, ...) => base = y, f = y.f, args = [arg1, arg2, ...]
+    // - y.f.call(this, arg1, arg2) => base = f, f = f.apply, args = [this, arg1, arg2]
+    // - y.f.apply(this, args) => base = f, f = f.apply, args = [this, ...args]
+    let fTobeCheck = f;
+    let reflected = "";
+    if (typeof(base) === "function" && (f === Function.prototype.apply || f === Function.prototype.call)) {
+      fTobeCheck = base;
+      reflected = f === Function.prototype.apply ? "apply" : "call";
+    }
+    if (TaintHelper.isNativeFunction(fTobeCheck)) {
+      let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
       if (rule) {
-        return {f: rule, base: base_c, args: args, skip: false};
+        return {f: rule, base: base_c, args: args, skip: false, reflected: reflected};
       }
       else {
         // f is a built-in function but no rule found
@@ -268,12 +278,12 @@ export class TaintTracking {
         TaintHelper.reportUnsupportedBuiltin(f.name, iid);
         args = Array.from(args).map(arg => arg instanceof TaintValue ? arg.getConcrete() : arg);
         
-        return {f: f_c, base: base_c, args: args, skip: false};
+        return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
       }
     }
   
     // f is not a built-in function
-    return {f: f_c, base: base_c, args: args, skip: false};
+    return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
   };
 
   /**
