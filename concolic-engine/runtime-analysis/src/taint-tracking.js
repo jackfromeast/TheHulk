@@ -239,8 +239,20 @@ export class TaintTracking {
       )
     }
 
-    // Check if any of the arguments are tainted
-    let taintedArgs = args.length && Array.from(args).filter(arg => arg instanceof TaintValue);
+    // Check if the function is a built-in function
+    // Functions can be called in different ways, 
+    // e.g. y.f(arg1, arg2, ...), y.f.call(this, arg1, arg2), y.f.apply(this, args)
+    // - y.f(arg1, arg2, ...) => base = y, f = y.f, args = [arg1, arg2, ...]
+    // - y.f.call(this, arg1, arg2) => base = f, f = f.apply, args = [this, arg1, arg2]
+    // - y.f.apply(this, args) => base = f, f = f.apply, args = [this, ...args]
+    // This will affect how we check the taint args and the base object
+    let fTobeCheck = f;
+    let reflected = "";
+    if (typeof(base) === "function" && (f === Function.prototype.apply || f === Function.prototype.call)) {
+      fTobeCheck = base;
+      reflected = f === Function.prototype.apply ? "apply" : "call";
+    }
+
     let base_c = TaintHelper.concrete(base);
     let f_c = TaintHelper.concrete(f);
 
@@ -250,26 +262,14 @@ export class TaintTracking {
     }
 
     // If none of the arguments are tainted, we skip to the use any rules
-    if (!taintedArgs.length && !(base instanceof TaintValue)) {
+    if (!TaintHelper.isAnyArgumentsTainted(args, reflected) && !(base instanceof TaintValue)) {
       return {f: f_c, base: base_c, args: args, skip: false};
     }
 
-    // Check if the function is a built-in function
-    // Functions can be called in different ways, 
-    // e.g. y.f(arg1, arg2, ...), y.f.call(this, arg1, arg2), y.f.apply(this, args)
-    // - y.f(arg1, arg2, ...) => base = y, f = y.f, args = [arg1, arg2, ...]
-    // - y.f.call(this, arg1, arg2) => base = f, f = f.apply, args = [this, arg1, arg2]
-    // - y.f.apply(this, args) => base = f, f = f.apply, args = [this, ...args]
-    let fTobeCheck = f;
-    let reflected = "";
-    if (typeof(base) === "function" && (f === Function.prototype.apply || f === Function.prototype.call)) {
-      fTobeCheck = base;
-      reflected = f === Function.prototype.apply ? "apply" : "call";
-    }
     if (TaintHelper.isNativeFunction(fTobeCheck)) {
       let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
       if (rule) {
-        return {f: rule, base: base_c, args: args, skip: false, reflected: reflected};
+        return {f: rule, base: base, args: args, skip: false, reflected: reflected};
       }
       else {
         // f is a built-in function but no rule found

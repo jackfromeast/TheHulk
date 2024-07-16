@@ -213,8 +213,8 @@ export class RuleBuilder {
     let newRule = (base, args, iid, reflected) => {
       let [result, thrown] = this.runOriginFunc(f, base, args, concretize, reflected);
 
-      if (!featureDisabled && condition(base, args)) {
-          result = modelF(base, args, result, iid);
+      if (!featureDisabled && condition(base, args, reflected)) {
+          result = modelF(base, args, reflected, result, iid);
       }
 
       if (thrown) {
