@@ -9,7 +9,7 @@ const elapsed = require("elapsed-time-logger");
 const utils = require('./utils.js');
 const Logger = require('./logger');
 const path = require('path');
-const { warn, log } = require('console');
+const { warn, log, timeStamp } = require('console');
 
 /**
  * 
@@ -98,6 +98,7 @@ Visitor.prototype.visit = async function(){
 		// pick a URL from unvisited list
 		this.curURL = this.unvisited[0];
 		this.curURLHash = utils.hashURL(this.curURL);
+		this.visited.push(this.curURL); // add the current URL to the visited list
 
 		this.collected.curURLHash = this.emptyCollectData();
 
@@ -111,12 +112,6 @@ Visitor.prototype.visit = async function(){
 		await this.saveWebPageData();
 		await this.saveCrawlerData();
 
-		// Run the post visit callbacks
-		for (let cb of this.postVisitCbs){
-			await cb(this);
-		}
-
-		this.visited.push(this.curURL); // add the current URL to the visited list
 		this.unvisited.shift(); // remove the current URL from the unvisited list
 
 		// termination criteria
@@ -126,9 +121,14 @@ Visitor.prototype.visit = async function(){
 		}
 
 		if(this.unvisited.length === 0){
-			this.logger.debug(' No unvisited URL, exiting.');
+			this.logger.debug('No unvisited URL, exiting.');
 			break;
 		}
+	}
+
+	// Run the post visit callbacks
+	for (let cb of this.postVisitCbs){
+		await cb(this);
 	}
 
 	try{
@@ -218,7 +218,7 @@ Visitor.prototype.visitPage = async function(){
 		*  [Next] Collect the Alternative URLs
 		*  ----------------------------------------------
 		*/
-		if  (this.config.collector.COLLECT_ALT_URLS){ await this.collectAltURLs(page); }
+		if  (this.config.collector.COLLECT_ALT_URLS || this.maxURLNum){ await this.collectAltURLs(page); }
 		
 		// If the page is still alive:
 		try{
@@ -447,6 +447,7 @@ Visitor.prototype.collectCookie = async function(page){
 	let collectedCookies = await page.context().cookies();
 	this.collected.curURLHash.cookies = collectedCookies;
 }
+
 Visitor.prototype.collectAltURLs = async function(page){
 	let hrefs = await page.$$eval('a', as => as.map(a => a.href));
 	for(let href of hrefs){
