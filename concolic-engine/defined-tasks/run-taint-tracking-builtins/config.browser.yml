@@ -1,0 +1,77 @@
+### Description:
+### --------------------------------
+### This file holds the configuration to start the browser 
+### and perform concolic execution analysis.
+
+WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/output"
+
+chrome:
+  CHROME_EXECUTABLE_PATH: "/usr/bin/google-chrome"
+  CHROME_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  HEADLESS: true
+  DEVTOOLS: true
+
+collector:
+  # Collectors configuration
+  COLLECT_ALT_URLS: true
+  COLLECT_AND_CREATE_PAGE: false
+  COLLECT_CONSOLE_LOGS: true
+  COLLECT_REQUESTS: false
+  COLLECT_WEB_STORAGE: false
+  COLLECT_COOKIES: false
+  COLLECT_HTML: false
+  COLLECT_CSS: false
+  COLLECT_SCRIPTS: false
+  COLLECT_BROWSER_STDERR: false
+  COLLECT_BROWSER_STDOUT: false
+  COLLECT_XHR_REQUESTS: false
+  COLLECT_FETCH_REQUESTS: false
+  EXTRACT_DOM_LOOKUPS: false
+  
+
+navigator:
+  BROWSER: "chrome"
+  WAIT_BEFORE_NEXT_URL: 1000
+  INITIAL_URL: "http://10.161.159.131:8001/index.html"
+  NAVIGATION_TIMEOUT: 0
+  # For puppeteer, options:
+  # ['load', 'domcontentloaded']
+  # ['networkidle0']
+  # For playwright:
+  # load|domcontentloaded|networkidle|commit
+  NAVIGATION_WAIT_UNTIL: 'domcontentloaded'
+  MAX_URL: 100
+
+proxy:
+  PROXY_SERVER: "localhost"
+  PROXY_PORT: 8899
+
+callbacks:
+  BEFORE_LOAD_CBS:
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
+      function_name: "installJalangi2AndAnalysisCb"
+  
+  PAGE_ACTIONS_CBS:
+      - file: /home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
+        function_name: "waitForFiveSecCb"
+
+      - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/collect-results-callback.js"
+        function_name: "collectResultPerPageCallbacks"
+
+  AFTER_LOAD_CBS: []
+    # - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/collect-results-callback.js"
+    #   function_name: "collectResultPerPageCallbacks"
+
+  POST_VISIT_CBS: 
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/collect-results-all-callbacks.js"
+      function_name: "collectResultsPerTaskCallbacks"    
+
+others:
+  ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
+  ANALYSIS_NAME: "TaintTracking"
+  ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
+  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
