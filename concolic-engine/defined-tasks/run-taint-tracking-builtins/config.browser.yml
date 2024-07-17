@@ -3,8 +3,6 @@
 ### This file holds the configuration to start the browser 
 ### and perform concolic execution analysis.
 
-WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/output"
-
 chrome:
   CHROME_EXECUTABLE_PATH: "/usr/bin/google-chrome"
   CHROME_FLAGS: [
@@ -13,12 +11,23 @@ chrome:
     '--disable-gpu'
   ]
   HEADLESS: true
-  DEVTOOLS: true
+  DEVTOOLS: false
+
+foxhound:
+  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  HEADLESS: false
+  DEVTOOLS: false
+
 
 collector:
   # Collectors configuration
   COLLECT_ALT_URLS: true
-  COLLECT_AND_CREATE_PAGE: false
+  COLLECT_AND_CREATE_PAGE: true
   COLLECT_CONSOLE_LOGS: true
   COLLECT_REQUESTS: false
   COLLECT_WEB_STORAGE: false
@@ -31,12 +40,11 @@ collector:
   COLLECT_XHR_REQUESTS: false
   COLLECT_FETCH_REQUESTS: false
   EXTRACT_DOM_LOOKUPS: false
-  
+  COLLECT_TAINTING_FLOWS: false
 
 navigator:
   BROWSER: "chrome"
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "http://10.161.159.131:8001/index.html"
   NAVIGATION_TIMEOUT: 0
   # For puppeteer, options:
   # ['load', 'domcontentloaded']
@@ -44,7 +52,6 @@ navigator:
   # For playwright:
   # load|domcontentloaded|networkidle|commit
   NAVIGATION_WAIT_UNTIL: 'domcontentloaded'
-  MAX_URL: 100
 
 proxy:
   PROXY_SERVER: "localhost"

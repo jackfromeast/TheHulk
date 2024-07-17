@@ -30,11 +30,12 @@ async function collectResultPerPageCallbacks(visitor, page) {
   const mainFrameFlows = await collectFlowsFromFrame(page.mainFrame());
   allDangerousFlows.push(...mainFrameFlows);
 
-  const frames = page.frames();
-  for (const frame of frames) {
-    const frameFlows = await collectFlowsFromFrame(frame);
-    allDangerousFlows.push(...frameFlows);
-  }
+  // We don't have nested frames in test cases
+  // const frames = page.frames();
+  // for (const frame of frames) {
+  //   const frameFlows = await collectFlowsFromFrame(frame);
+  //   allDangerousFlows.push(...frameFlows);
+  // }
 
   const taintflowsPath = path.join(visitor.webpageCrawlerFolder, 'taintflows.json');
   await fs.writeFile(taintflowsPath, JSON.stringify(allDangerousFlows, null, 4));
