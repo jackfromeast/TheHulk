@@ -411,6 +411,9 @@ Visitor.prototype.collectConsoleLogs = async function(page){
 		this.collected.curURLHash.consoleLogs.push(consoleObj.text());
 	})
 
+	page.on("pageerror", (err) => {
+		this.collected.curURLHash.consoleLogs.push("[!] ERROR: " + err.message);
+  })
 }
 
 Visitor.prototype.collectBrowserErrors = function(page) {
