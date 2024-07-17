@@ -4,7 +4,11 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate mitmproxy_env
 
-# Export PYTHONPATH with the relative path
-export PYTHONPATH=$(dirname "$0")/../libs/mitmproxy:$PYTHONPATH
+ENV_PATH=$(conda info --base)/envs/mitmproxy_env
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
-mitmdump --set stream_large_bodies=500m --anticache --quiet -p 8899 -s "proxy.py"
+# Export PYTHONPATH with the absolute path
+export PYTHONPATH=$SCRIPT_DIR/../libs/mitmproxy:$PYTHONPATH
+
+$ENV_PATH/bin/mitmdump --set stream_large_bodies=500m --anticache --quiet -p 8899 -s "$SCRIPT_DIR/proxy.py"
