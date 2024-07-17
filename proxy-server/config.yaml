@@ -1,5 +1,5 @@
 instrumentation:
-  INST_SCRIPT: "/home/jackfromeast/Desktop/TheHulk/jalangi2/src/js/commands/esnstrument_cli.js"
+  INST_SCRIPT: "/home/jackfromeast/Desktop/TheHulk/libs/jalangi2/src/js/commands/esnstrument_cli.js"
 
   # Options: "all", "true", "false"
   IGNORE_ENABLE: 'true'
@@ -15,7 +15,7 @@ instrumentation:
 
 cache: 
   CACHE_ENABLE: true
-  USE_CACHE: true
+  USE_CACHE: false
   CACHE_PATH: "/home/jackfromeast/Desktop/TheHulk/proxy-server/cache"
 
 # To change the port of the server, modify the code at setup.sh
