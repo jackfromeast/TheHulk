@@ -3,6 +3,21 @@ import { TaintInfo } from './values/taint-info.js';
 
 
 export class TaintHelper {
+  
+  static rconcrete(value) {
+    if (value instanceof WrappedValue) {
+      return this.concrete(value.getConcrete());
+    } else if (Array.isArray(value)) {
+      return value.map(item => this.concrete(item));
+    } else if (value && typeof value === 'object' && value.constructor === Object) {
+      return Object.keys(value).reduce((acc, key) => {
+        acc[key] = this.concrete(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
   static concrete(value) {
     if (value instanceof WrappedValue){
       return value.getConcrete();
