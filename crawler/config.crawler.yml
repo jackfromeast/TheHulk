@@ -53,18 +53,25 @@ navigator:
   NAVIGATION_WAIT_UNTIL: 'domcontentloaded'
   NAVIGATION_TIMEOUT: 0
 
+proxy:
+  PROXY_SERVER: false
+  PROXY_PORT: false
 
 callbacks:
+  # Callbacks that will be invoked before going to every pages
   BEFORE_LOAD_CBS:
     - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/bind-taint-handler-foxhound-callbacks.js"
       function_name: "setupFoxhoundTaintHandlerCb"
   
+  # Callbacks that will be invoked after the loading of the pages
   PAGE_ACTIONS_CBS:
     - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/manually-actions-callbacks.js"
       function_name: "manuallyInteractCb"
 
+  # Callbacks that will be invoked before the leaving the current visiting page
   AFTER_LOAD_CBS: []
 
+  # Callbacks that will be invoked after done visiting all pages in the current domain
   POST_VISIT_CBS:
     - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-dom-related-taint-flows.js"
       function_name: "extractDOMRelatedTaintFlowsCb"
