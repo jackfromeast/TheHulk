@@ -24,6 +24,7 @@ import { TaintSourceRules } from './taint-sources.js';
 import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
 import { TaintHelper } from './taint-helper.js';
+import { Utils } from './utils/util.js';
 
 export class TaintTracking {
   constructor(sandbox) {
@@ -229,7 +230,7 @@ export class TaintTracking {
     let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
     if (reason) {
       // TODO: Handle multiple tainted arguments here
-      TaintHelper.reportDangerousFlow(
+      Utils.reportDangerousFlow(
         taintedArg.getTaintInfo().getTaintSource().reason,
         taintedArg.getTaintInfo().getTaintSource().location,
         reason,
@@ -262,11 +263,11 @@ export class TaintTracking {
     }
 
     // If none of the arguments are tainted, we skip to the use any rules
-    if (!TaintHelper.isAnyArgumentsTainted(args, reflected) && !(base instanceof TaintValue)) {
+    if (!TaintHelper.isAnyArgumentsTainted(args, reflected) && !TaintHelper.isTainted(base)) {
       return {f: f_c, base: base_c, args: args, skip: false};
     }
 
-    if (TaintHelper.isNativeFunction(fTobeCheck)) {
+    if (Utils.isNativeFunction(fTobeCheck)) {
       let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
       if (rule) {
         return {f: rule, base: base, args: args, skip: false, reflected: reflected};
@@ -275,8 +276,8 @@ export class TaintTracking {
         // f is a built-in function but no rule found
         // We concretize the taint value and apply the original function
         // TODO: We might need recursive concretization
-        TaintHelper.reportUnsupportedBuiltin(f.name, iid);
-        args = Array.from(args).map(arg => arg instanceof TaintValue ? arg.getConcrete() : arg);
+        Utils.reportUnsupportedBuiltin(f.name, iid);
+        args = TaintHelper.rconcrete(args);
         
         return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
       }
@@ -338,7 +339,7 @@ export class TaintTracking {
     if (reason) {
       // TODO: We need to clone the variable or only save the taint information and not the value
       let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result]));
-      result = new TaintValue(result, taintInfo);
+      result = TaintValue.createTaintValue(result, taintInfo);
     }
     return {result: result};
   };
@@ -473,7 +474,7 @@ export class TaintTracking {
         val = val.getConcrete();
       }
       let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", [base, offset]));
-      val = new TaintValue(val, taintInfo);
+      val = TaintHelper.createTaintValue(val, taintInfo);
     }
 
     return {result: val};
@@ -524,7 +525,7 @@ export class TaintTracking {
   putField (iid, base, offset, val, isComputed, isOpAssign) {
     let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
     if (reason) {
-      TaintHelper.reportDangerousFlow(
+      Utils.reportDangerousFlow(
         val.taintInfo.getTaintSourceReason(),
         val.taintInfo.getTaintSourceLocation(),
         reason,
