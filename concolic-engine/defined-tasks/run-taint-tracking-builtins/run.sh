@@ -13,8 +13,9 @@ check_and_kill_port() {
 
 # Ensure the script is run under the concolic-engine path
 SCRIPT_PATH=$(realpath "$0")
-SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-CONCOLIC_PATH=$(realpath $SCRIPT_DIR/../../)
+TASK_PATH=$(dirname "$SCRIPT_PATH")
+CONCOLIC_PATH=$(realpath $TASK_PATH/../../)
+THEHULK_PATH=$(realpath $CONCOLIC_PATH/../)
 if [ "$(basename $CONCOLIC_PATH)" != "concolic-engine" ]; then
   echo "[!] Please run this script from the concolic-engine directory."
   exit 1
@@ -28,7 +29,7 @@ RUN_ANALYSIS=true
 # We currently don't use this 
 if [ "$RUN_TEST" = true ]; then
   check_and_kill_port 8001
-  pushd $CONCOLIC_PATH/../tests/taint-tracking-builtins > /dev/null 2>&1
+  pushd $THEHULK_PATH/tests/taint-tracking-builtins > /dev/null 2>&1
   http-server test-pages -p 8001 -d false -c-1 > /dev/null 2>&1 &
   curl -s http://localhost:8001
   TEST_SERVER_PID=$!
@@ -43,7 +44,7 @@ if [ "$RUN_PROXY" = true ]; then
   echo "[+] Starting the Proxy Server for instrumenting the JS & HTML on-the-fly..."
 
   ### Setup the python env first
-  pushd $CONCOLIC_PATH/../proxy-server > /dev/null 2>&1
+  pushd $THEHULK_PATH/proxy-server > /dev/null 2>&1
   ./setup.sh > /dev/null 2>&1 &
   PROXY_SERVER_PID=$!
   sleep 1
@@ -61,12 +62,33 @@ if [ "$RUN_ANALYSIS" = true ]; then
 fi
 
 ## Step 4: Get back and run the task
-pushd $CONCOLIC_PATH/defined-tasks/run-taint-tracking-builtins > /dev/null 2>&1
-node ./task.js --conf=./config.browser.yml &
+pushd $THEHULK_PATH/crawler/src/ > /dev/null 2>&1
+node ./scheduler.js --scheduler-config $TASK_PATH/config.scheduler.yml --crawler-config $TASK_PATH/config.browser.yml &
 popd > /dev/null 2>&1
 BROWSER_PID=$!
 echo "[+] Browser started with PID $BROWSER_PID"
 
 echo "========================== Start task running =========================="
 
-wait $TEST_SERVER_PID $PROXY_SERVER_PID $BROWSER_PID
+cleanup() {
+  echo "[+] Cleaning up..."
+  if [ -n "$TEST_SERVER_PID" ]; then
+    kill $TEST_SERVER_PID
+    echo "[+] Killed TEST_SERVER_PID $TEST_SERVER_PID"
+  fi
+  if [ -n "$PROXY_SERVER_PID" ]; then
+    kill $PROXY_SERVER_PID
+    echo "[+] Killed PROXY_SERVER_PID $PROXY_SERVER_PID"
+  fi
+  if [ -n "$BROWSER_PID" ]; then
+    kill $BROWSER_PID
+    echo "[+] Killed BROWSER_PID $BROWSER_PID"
+  fi
+}
+
+trap cleanup EXIT
+
+wait $BROWSER_PID
+echo "[+] Browser process $BROWSER_PID has finished"
+
+echo "========================== Task End Running =========================="
