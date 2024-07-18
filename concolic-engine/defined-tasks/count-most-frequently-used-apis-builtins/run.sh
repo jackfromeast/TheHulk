@@ -48,7 +48,6 @@ if [ "$RUN_PROXY" = true ]; then
   PROXY_SERVER_PID=$!
   sleep 1
   echo "[+] Proxy Server started with PID $PROXY_SERVER_PID"
-
 fi
 
 # Step 3: Refresh the latest analysis bundle
@@ -67,9 +66,28 @@ popd > /dev/null 2>&1
 BROWSER_PID=$!
 echo "[+] Browser started with PID $BROWSER_PID"
 
-echo "========================== Task Start Running =========================="
+echo "========================== Start task running =========================="
 
-wait $TEST_SERVER_PID $PROXY_SERVER_PID $BROWSER_PID
+cleanup() {
+  echo "[+] Cleaning up..."
+  if [ -n "$TEST_SERVER_PID" ]; then
+    kill $TEST_SERVER_PID
+    echo "[+] Killed TEST_SERVER_PID $TEST_SERVER_PID"
+  fi
+  if [ -n "$PROXY_SERVER_PID" ]; then
+    kill $PROXY_SERVER_PID
+    echo "[+] Killed PROXY_SERVER_PID $PROXY_SERVER_PID"
+  fi
+  if [ -n "$BROWSER_PID" ]; then
+    kill $BROWSER_PID
+    echo "[+] Killed BROWSER_PID $BROWSER_PID"
+  fi
+}
+
+trap cleanup EXIT
+
+wait $BROWSER_PID
+echo "[+] Browser process $BROWSER_PID has finished"
 
 echo "========================== Task End Running =========================="
 

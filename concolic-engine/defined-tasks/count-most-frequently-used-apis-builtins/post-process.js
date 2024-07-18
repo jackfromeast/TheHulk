@@ -10,7 +10,13 @@ function aggregateBuiltinsAPI(outputFolder) {
       if (fs.statSync(filePath).isDirectory()) {
         walkSync(filePath);
       } else if (file === 'builtins-api.json') {
-        const apiData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        let apiData = {};
+        try{
+          apiData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+        catch(e){
+          console.log('Error parsing file: ' + filePath);
+        }
         for (const [api, count] of Object.entries(apiData)) {
           if (apiCount[api]) {
             apiCount[api] += count;
@@ -39,7 +45,7 @@ function postSummary(outputFolder, workspaceFolder) {
 }
 
 // Define the paths
-const outputFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output/MOST-FREQUENTLY-USED-APIS-BUILTINS-07-17-14-41'; // Replace with actual path
+const outputFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output/MOST-FREQUENTLY-USED-APIS-BUILTINS-07-18-00-10'; // Replace with actual path
 const workspaceFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins'; // Replace with actual path
 
 // Run the script
