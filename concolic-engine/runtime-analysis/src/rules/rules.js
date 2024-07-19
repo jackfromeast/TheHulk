@@ -4,6 +4,7 @@ import { UnaryOpsTaintPropRules } from './operations/unary-ops.js'
 import { GetFieldTaintPropRules } from './operations/get-field.js'
 import { PutFieldTaintPropRules } from './operations/put-field.js';
 import { StringBuiltinsTaintPropRules } from './js-builtins/string-builtins.js'
+import { ArrayBuiltinsTaintPropRules } from './js-builtins/array-builtins.js';
 
 export class TaintPropRules {
   constructor() {
@@ -12,7 +13,32 @@ export class TaintPropRules {
     this.binaryRules = new BinaryOpsTaintPropRules();
     this.unaryRules = new UnaryOpsTaintPropRules();
 
-    this.invokeFunRules = new StringBuiltinsTaintPropRules();
+    this.stringBuiltinsRules = new StringBuiltinsTaintPropRules();
+    this.arrayBuiltinsRules = new ArrayBuiltinsTaintPropRules();
+
+
+    this.invokeFunRules = this.aggregateRules([
+      this.stringBuiltinsRules.ruleDict,
+      this.arrayBuiltinsRules.ruleDict
+    ]);
+  }
+
+   /**
+   * Aggregates rules from the provided rule dictionaries.
+   * 
+   * @param {Array} ruleDicts - An array of rule dictionaries to aggregate.
+   * @returns {Array} - The aggregated array of rules.
+   */
+   aggregateRules(ruleDicts) {
+    const rules = ruleDicts.flat();
+    
+    return {
+      rules,
+      getRule(fn) {
+        const found = rules.find(x => x.func === fn);
+        return found ? found.rule : null;
+      }
+    };
   }
 
   /**

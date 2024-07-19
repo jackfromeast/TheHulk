@@ -59,7 +59,7 @@ export class RuleBuilder {
    */
   static makeRuleUnary(operator, condition, concretize = true, featureDisabled = false) {
     let newRule = (left, iid) => {
-      let result = UnaryJumpTable[operator](TaintHelper.concrete(left));
+      let result = UnaryJumpTable[operator](TaintHelper.rconcrete(left));
 
       if (!featureDisabled && condition(left)) {
         let taintInfo;
@@ -93,8 +93,8 @@ export class RuleBuilder {
    */
   static makeRuleBinary(operator, condition, concretize = true, featureDisabled = false) {
     let newRule = (left, right, iid) => {
-      let leftValue = TaintHelper.concrete(left);
-      let rightValue = TaintHelper.concrete(right);
+      let leftValue = TaintHelper.rconcrete(left);
+      let rightValue = TaintHelper.rconcrete(right);
       let result = BinaryOpsTaintPropRules.BinaryJumpTable[operator](leftValue, rightValue);
 
       if (!featureDisabled && condition(left, right)) {
@@ -128,35 +128,45 @@ export class RuleBuilder {
    * --------------------------------
    * Creates a new rule.
    * 
-   * Given the （base object, offset name), condition check function,
-   * makeRule returns a function (rule) that intake the base object and arguments of the function call,
-   * and applies the rule to the function call.
+   * GetField operation is handle based on the base object type.
+   * 
+   * The offset should always get concretized.
+   * Regarding the base object,
+   * 1/ If the base object is tainted and is primitive type (wrapped), 
+   *    we concretize the base object and do the taint propagation.
+   * 2/ If the base object is tainted and is not primitive type (object, array, etc.),
+   *    we don't need to concretize the base object,
+   *    but it is also fine to concretize it in one layer.
+   * 
+   * @TODO
+   * --------------------------------
+   * Currently, we don't do the taint propagation. No model function will be applied here
    * 
    * @param {Function} f - The function to apply the rule to.
    * @param {Function} condition - The condition check function.
    * @param {Function} model - The modeling function.
    * @returns {Object} The rule object.
    */
-    static makeRuleGetField(condition, concretize = true, featureDisabled = false) {
-      let newRule = (base, offset, iid) => {
-        let base_c = TaintHelper.concrete(base);
-        let offset_c = TaintHelper.concrete(offset);
-        let result = base_c[offset_c];
-        
-        // We don't taint function
-        if (!featureDisabled && condition(base) &&
-            !(result instanceof Function)) {
-          let taintInfo;
-          taintInfo = new TaintInfo(iid, base.taintInfo.taintSource.reason);
-          taintInfo.addTaintPropOperation('getField', [base, offset], iid);
-          result = new TaintValue(result, taintInfo);
-        }
-  
-        return result;
-      };
+  static makeRuleGetField(condition, concretize = true, featureDisabled = false) {
+    let newRule = (base, offset, iid) => {
+      let base_c = TaintHelper.concrete(base);
+      let offset_c = TaintHelper.rconcrete(offset);
+      let result = base_c[offset_c];
+      
+      // We don't taint function
+      // if (!featureDisabled && condition(base) &&
+      //     !(result instanceof Function)) {
+      //   let taintInfo;
+      //   taintInfo = new TaintInfo(iid, base.taintInfo.taintSource.reason);
+      //   taintInfo.addTaintPropOperation('getField', [base, offset_c], iid);
+      //   result = new TaintValue(result, taintInfo);
+      // }
 
-      Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
-      return newRule;
+      return result;
+    };
+
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
   }
 
   /**
@@ -230,7 +240,46 @@ export class RuleBuilder {
   /**
    * @description
    * --------------------------------
+   * Creates a new none-affect rule.
+   * 
+   * The none-affect rule is rule that will not do anything but run the original function.
+   * This means, even the arguments are tainted or the return value is tainted,
+   * we don't do anything but call the original function without even concretization.
+   * 
+   * There are builtins that you want to use this rule, e.g. `Array.prototype.push`. As you
+   * don't want to propagate the taint to the return array while you also don't want to lose the
+   * taint information of its elements.
+   * 
+   * @param {Function} f - The function to apply the rule to.
+   */
+  static makeNoneRule(f) {
+    let newrule = (base, args, iid, reflected) => {
+      let [result, thrown] =  this.runOriginFunc(f, base, args, false, reflected);
+
+      if (thrown) {
+        throw thrown;
+      }
+
+      return result;
+    };
+    Object.setPrototypeOf(newrule, new RuleFunctionPrototype());
+    return newrule;
+  }
+
+
+  /**
+   * @description
+   * --------------------------------
    * Executes a function with the provided base and arguments, optionally concretizing them.
+   * 
+   * @notes
+   * --------------------------------
+   * We should be careful when using recursive concrete (rconcrete) function. It will make us lose
+   * the taint unintentionally. 
+   * 
+   * For example, for `Array.from([TAINTED("a")]`, we will lose the taint information of the element if 
+   * we use rconcrete. But we can pass the taint (make the taint alive) by using concrete + noneAffect model function.
+   * 
    * 
    * @param {Function} f - The function to execute.
    * @param {Object} base - The base object for the function call.
@@ -238,13 +287,19 @@ export class RuleBuilder {
    * @param {boolean} [concretize=true] - Whether to concretize the base and arguments.
    * @returns {Array} An array containing the result of the function and any thrown error.
    */
-  static runOriginFunc(f, base, args, concretize = true, reflected) {
+  static runOriginFunc(f, base, args, concretize=true, reflected) {
     let result, thrown;
 
     try {
-      const c_base = concretize && base !== null ? TaintHelper.concrete(base) : base;
-      const c_args = Array.from(args).map(arg => TaintHelper.concrete(arg));
-
+      let c_base, c_args;
+      if (concretize==true) {
+        c_base = base !== null ? TaintHelper.concrete(base) : base;
+        c_args = Array.from(args).map(item => TaintHelper.concrete(item)); 
+      } else {
+        c_base = base;
+        c_args = Array.from(args);
+      }
+      
       if (reflected === "apply") {
         result = Function.prototype.apply.call(f.apply, c_base, c_args);
       }else if (reflected === "call") {
@@ -258,5 +313,4 @@ export class RuleBuilder {
 
     return [result, thrown];
   }
-
 }

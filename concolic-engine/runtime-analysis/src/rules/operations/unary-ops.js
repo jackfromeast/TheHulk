@@ -64,4 +64,7 @@ export class UnaryOpsTaintPropRules {
     "void": function(v) { return void v; },
   };
 
+  // TODO: need to handle typeof and void separately
+  // typeof and void that has been applied on a tainted value should return a normal value
+
 }
