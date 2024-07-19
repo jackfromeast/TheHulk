@@ -115,3 +115,5 @@ export class TaintPropOperation {
   }
 
 }
+
+export const TaintPropName = "__TAINT__";
