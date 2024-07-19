@@ -65,7 +65,11 @@ function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActio
 	this.visited = [];
 	this.curURL = url;
 	this.curURLHash = utils.hashURL(url);
-	// this.curCDPsession = undefined;
+
+	// Allow visitor to retest the current URL
+	// This is useful when the page is not loaded correctly
+	this.retestCurURL = false;
+	this.retestMaxTimes = 1;
 
 	// collected data
 	this.collected = {}
@@ -105,8 +109,19 @@ Visitor.prototype.visit = async function(){
 		this.updateFileDirectory();
 		this.updateLogger();
 
-		// visit the URL
+		// Visit the URL
 		await this.visitPage();
+
+		// Retest the current URL if needed
+		while (this.retestCurURL && this.retestMaxTimes > 0){
+			this.retestMaxTimes -= 1;
+			this.logger.warn(`Retest the current URL: ${this.curURL} (${this.retestMaxTimes-1} times left)`);
+			this.collected.curURLHash = this.emptyCollectData();
+			await this.visitPage();
+		}
+
+		// Reset the retest flag
+		this.clearRetestFlag();
 
 		// save the collected data to the disk
 		await this.saveWebPageData();
@@ -607,6 +622,14 @@ Visitor.prototype.updateLogger = function(){
 	this.logger = new Logger('debug', 'Visitor', pathModule.join(this.webpageCrawlerFolder, 'crawler.log'));
 }
 
+Visitor.prototype.clearRetestFlag = function(){
+	this.retestCurURL = false;
+	this.retestMaxTimes = 1;
+}
+
+Visitor.prototype.setRetestFlag = function(){
+	this.retestCurURL = true;
+}
 
 Visitor.prototype.launch_browser = async function(){
 	let browserLanuchFlags = {
