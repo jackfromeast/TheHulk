@@ -263,7 +263,7 @@ export class TaintTracking {
     }
 
     // If none of the arguments are tainted, we skip to the use any rules
-    if (!TaintHelper.isAnyArgumentsTainted(args, reflected) && !TaintHelper.isTainted(base)) {
+    if (!TaintHelper.isAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
       return {f: f_c, base: base_c, args: args, skip: false};
     }
 

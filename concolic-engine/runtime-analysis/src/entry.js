@@ -11,9 +11,11 @@
  */
 
 import { TaintTracking } from './taint-tracking.js'
+// import { CountMostFrequentlyUsedBuiltinsAnalysis } from './others/most-frequently-used-api.js'
 
 if (J$$) {
   J$$.analysis = new TaintTracking(J$$);
+  // J$$.analysis = new CountMostFrequentlyUsedBuiltinsAnalysis(J$$);
 } else{
   throw "[TheHulk] Analysis module cannot be installed. J$$ not found."
 }
