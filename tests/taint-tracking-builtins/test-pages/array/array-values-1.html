@@ -48,6 +48,7 @@
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
     let taintedValue = J$$.wrapTaint('tainted');
     let arr = [taintedValue];
+    // let arr = ["ABCD"]
     let iterator = arr.values();
     let taintedResult = iterator.next().value;
 
