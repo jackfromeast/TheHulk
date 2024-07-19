@@ -48,10 +48,12 @@ async function collectResultPerPageCallbacks(visitor, page) {
   }
 
   if (allDangerousFlows.length > 0) {
-    visitor.logger.debug("Taint flows detected in the url: " + visitor.curURL); 
+    visitor.logger.debug(`Taint flows detected in the URL: ${visitor.curURL}`);
+    // Remove URL from failed list if retesting the page
+    visitor.recordTaintFlowsAcrossTask.failed = visitor.recordTaintFlowsAcrossTask.failed.filter(url => url !== visitor.curURL);
     visitor.recordTaintFlowsAcrossTask.success.push(visitor.curURL);
   } else {
-    visitor.logger.warn("No taint flows detected in the url: " + visitor.curURL);
+    visitor.logger.warn(`No taint flows detected in the URL: ${visitor.curURL}`);
     visitor.recordTaintFlowsAcrossTask.failed.push(visitor.curURL);
   }
 

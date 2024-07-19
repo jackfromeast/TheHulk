@@ -69,9 +69,9 @@ callbacks:
       - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/collect-results-callback.js"
         function_name: "collectResultPerPageCallbacks"
 
-  AFTER_LOAD_CBS: []
-    # - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/collect-results-callback.js"
-    #   function_name: "collectResultPerPageCallbacks"
+  AFTER_LOAD_CBS:
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/retest-if-jalangi2-not-found.js"
+      function_name: "retestIfJalangi2NotFound"
 
   POST_VISIT_CBS: 
     - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/collect-results-all-callbacks.js"
