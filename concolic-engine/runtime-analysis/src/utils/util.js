@@ -36,7 +36,7 @@ export class Utils {
    * @param {String} reflected 
    * @returns 
    */
-  static getArrayLikeArguements(args, reflected) {
+  static getArrayLikeArguments(args, reflected) {
     if (args.length === 0) { return []; }
       
     let argsArray = args;
@@ -110,7 +110,7 @@ export class Utils {
    */
   static realTypeOf(value) {
     if (TaintHelper.isTainted(value)) {
-      return typeof value.getConcrete();
+      return typeof TaintHelper.concrete(value);
     }
     return typeof value;
   }
@@ -125,11 +125,16 @@ export class Utils {
   }
 
   /**
-   * Check if the value is an RegExpStringIterator no matter if it is tainted
+   * Check if the value is an iterator from String.prototype.matchAll
    * @param {*} value 
-   * @returns 
+   * @returns {boolean}
    */
   static isRegExpStringIterator(value) {
-    return TaintHelper.concrete(value) instanceof RegExpStringIterator;
+    const matchAllIteratorPrototype = Object.getPrototypeOf(''.matchAll(''));
+    return Object.getPrototypeOf(value) === matchAllIteratorPrototype;
+  }
+
+  static isArray(value) { 
+    return Array.isArray(value);
   }
 }
