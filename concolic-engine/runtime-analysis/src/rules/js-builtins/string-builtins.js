@@ -1,6 +1,7 @@
 import { WrappedValue, _, TaintValue } from '../../values/wrapped-values.js'
 import { TaintInfo, TaintPropOperation } from '../../values/taint-info.js'
 import { RuleBuilder } from '../rule-builder.js'
+import { ConditionBuilder } from '../rule-condition.js'
 import { TaintPropRules } from '../rules.js'
 import { TaintHelper } from '../../taint-helper.js'
 import { Utils } from '../../utils/util.js'
@@ -9,45 +10,56 @@ export class StringBuiltinsTaintPropRules {
   constructor() {
     this.ruleDict = [];
     this.buildRules();
+
+    if (!Utils) {
+      console.log('Utils is not defined');
+    }
   }
 
   supportedStringBuiltins = {
-    'fromCharCode': [String.fromCharCode, this.fromCharCodeStringModel],
-    'at': [String.prototype.at, this.atStringModel],
-    'fromCodePoint': [String.fromCodePoint, this.fromCodePointStringModel],
-    'raw': [String.raw, this.rawStringModel],
-    'charAt': [String.prototype.charAt, this.charAtStringModel],
-    'charCodeAt': [String.prototype.charCodeAt, this.charCodeAtStringModel],
-    'codePointAt': [String.prototype.codePointAt, this.codePointAtStringModel],
-    'concat': [String.prototype.concat, this.concatStringModel],
-    'endsWith': [String.prototype.endsWith, this.endsWithStringModel],
-    'includes': [String.prototype.includes, this.includesStringModel],
-    'indexOf': [String.prototype.indexOf, this.indexOfStringModel],
-    'isWellFormed': [String.prototype.isWellFormed, this.isWellFormedStringModel],
-    'lastIndexOf': [String.prototype.lastIndexOf, this.lastIndexOfStringModel],
-    'localeCompare': [String.prototype.localeCompare, this.localeCompareStringModel],
-    'match': [String.prototype.match, this.matchStringModel],
-    'matchAll': [String.prototype.matchAll, this.matchAllStringModel],
-    'normalize': [String.prototype.normalize, this.normalizeStringModel],
-    'padEnd': [String.prototype.padEnd, this.padEndStringModel],
-    'padStart': [String.prototype.padStart, this.padStartStringModel],
-    'repeat': [String.prototype.repeat, this.repeatStringModel],
-    'replace': [String.prototype.replace, this.replaceStringModel],
-    'replaceAll': [String.prototype.replaceAll, this.replaceAllStringModel],
-    'search': [String.prototype.search, this.searchStringModel],
-    'slice': [String.prototype.slice, this.sliceStringModel],
-    'split': [String.prototype.split, this.splitStringModel],
-    'startsWith': [String.prototype.startsWith, this.startsWithStringModel],
-    'toLocaleLowerCase': [String.prototype.toLocaleLowerCase, this.toLocaleLowerCaseStringModel],
-    'toLocaleUpperCase': [String.prototype.toLocaleUpperCase, this.toLocaleUpperCaseStringModel],
-    'toLowerCase': [String.prototype.toLowerCase, this.toLowerCaseStringModel],
-    'toString': [String.prototype.toString, this.toStringStringModel],
-    'toUpperCase': [String.prototype.toUpperCase, this.toUpperCaseStringModel],
-    'toWellFormed': [String.prototype.toWellFormed, this.toWellFormedStringModel],
-    'trim': [String.prototype.trim, this.trimStringModel],
-    'trimEnd': [String.prototype.trimEnd, this.trimEndStringModel],
-    'trimStart': [String.prototype.trimStart, this.trimStartStringModel],
-    'valueOf': [String.prototype.valueOf, this.valueOfStringModel]
+    // Base or any argument is tainted
+    'at': [String.prototype.at, this.atStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
+    'charAt': [String.prototype.charAt, this.charAtStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
+    'replace': [String.prototype.replace, this.replaceStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
+    'replaceAll': [String.prototype.replaceAll, this.replaceAllStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
+    'concat': [String.prototype.concat, this.concatStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
+
+    // Only base must be tainted
+    'charCodeAt': [String.prototype.charCodeAt, this.charCodeAtStringModel, 'BASE_TAINTED'],
+    'codePointAt': [String.prototype.codePointAt, this.codePointAtStringModel, 'BASE_TAINTED'],
+    'localeCompare': [String.prototype.localeCompare, this.localeCompareStringModel, 'BASE_TAINTED'],
+    'match': [String.prototype.match, this.matchStringModel, 'BASE_TAINTED'],
+    'matchAll': [String.prototype.matchAll, this.matchAllStringModel, 'BASE_TAINTED'],
+    'replace': [String.prototype.replace, this.replaceStringModel, 'BASE_TAINTED'],
+    'replaceAll': [String.prototype.replaceAll, this.replaceAllStringModel, 'BASE_TAINTED'],
+    'search': [String.prototype.search, this.searchStringModel, 'BASE_TAINTED'],
+    'slice': [String.prototype.slice, this.sliceStringModel, 'BASE_TAINTED'],
+    'split': [String.prototype.split, this.splitStringModel, 'BASE_TAINTED'],
+    'startsWith': [String.prototype.startsWith, this.startsWithStringModel, 'BASE_TAINTED'],
+    'toLocaleLowerCase': [String.prototype.toLocaleLowerCase, this.toLocaleLowerCaseStringModel, 'BASE_TAINTED'],
+    'toLocaleUpperCase': [String.prototype.toLocaleUpperCase, this.toLocaleUpperCaseStringModel, 'BASE_TAINTED'],
+    'toLowerCase': [String.prototype.toLowerCase, this.toLowerCaseStringModel, 'BASE_TAINTED'],
+    'toString': [String.prototype.toString, this.toStringStringModel, 'BASE_TAINTED'],
+    'toUpperCase': [String.prototype.toUpperCase, this.toUpperCaseStringModel, 'BASE_TAINTED'],
+    'toWellFormed': [String.prototype.toWellFormed, this.toWellFormedStringModel, 'BASE_TAINTED'],
+    'endsWith': [String.prototype.endsWith, this.endsWithStringModel, 'BASE_TAINTED'],
+    'includes': [String.prototype.includes, this.includesStringModel, 'BASE_TAINTED'],
+    'indexOf': [String.prototype.indexOf, this.indexOfStringModel, 'BASE_TAINTED'],
+    'isWellFormed': [String.prototype.isWellFormed, this.isWellFormedStringModel, 'BASE_TAINTED'],
+    'lastIndexOf': [String.prototype.lastIndexOf, this.lastIndexOfStringModel, 'BASE_TAINTED'],
+    'trim': [String.prototype.trim, this.trimStringModel, 'BASE_TAINTED'],
+    'trimEnd': [String.prototype.trimEnd, this.trimEndStringModel, 'BASE_TAINTED'],
+    'trimStart': [String.prototype.trimStart, this.trimStartStringModel, 'BASE_TAINTED'],
+    'valueOf': [String.prototype.valueOf, this.valueOfStringModel, 'BASE_TAINTED'],
+    'normalize': [String.prototype.normalize, this.normalizeStringModel, 'BASE_TAINTED'],
+    'padEnd': [String.prototype.padEnd, this.padEndStringModel, 'BASE_TAINTED'],
+    'padStart': [String.prototype.padStart, this.padStartStringModel, 'BASE_TAINTED'],
+    'repeat': [String.prototype.repeat, this.repeatStringModel, 'BASE_TAINTED'],
+
+    // Arguments only
+    'raw': [String.raw, this.rawStringModel, 'ANY_ARGS_TAINTED'],
+    'fromCharCode': [String.fromCharCode, this.fromCharCodeStringModel, 'ANY_ARGS_TAINTED'],
+    'fromCodePoint': [String.fromCodePoint, this.fromCodePointStringModel, 'ANY_ARGS_TAINTED'],
   };
 
   /**
@@ -58,14 +70,12 @@ export class StringBuiltinsTaintPropRules {
    */
   buildRules() {
     for (const [fName, fGroup] of Object.entries(this.supportedStringBuiltins)) {
-      // TODO: Some of builtins need to check the arguments while others need to check the base
-      // Condition check function: ANY_ARGS_TAINTED OR BASE_TAINTED
-      const condition = (base, args, reflected) => {
-        return TaintHelper.isAnyArgumentsTainted(args, reflected) || base instanceof TaintValue };
+      const condition = ConditionBuilder.makeCondition(fGroup[2]);
       const rule = RuleBuilder.makeRule(fGroup[0], condition, fGroup[1]);
       this.addRule(fGroup[0], rule);
     }
   }
+
 
   /**
    * @description
@@ -78,6 +88,7 @@ export class StringBuiltinsTaintPropRules {
   addRule(func, rule) {
     this.ruleDict.push({func, rule});
   }
+
 
   /**
    * @description
@@ -97,8 +108,23 @@ export class StringBuiltinsTaintPropRules {
 
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the fromCharCode function.
-   * At least one of the arguments must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * String.fromCharCode(num1, num2, ..., numN)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * String.fromCharCode(TAINTED(65), 66)
+   * -> TAINTED("AB")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -108,29 +134,39 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   fromCharCodeStringModel(base, args, reflected, result, iid) {
-    let taintInfo;
-
-    let argsArray = Utils.getArrayLikeArguements(args, reflected);
-
-    for (let arg of argsArray) {
-      if (arg instanceof TaintValue) {
-        taintInfo = arg.getTaintInfo();
-        break;
-      }
-    }
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('fromCharCode', args, iid);
-      return new TaintValue(result, taintInfo);
-    } else {
-      return result;
+      taintInfo.addTaintPropOperation('fromCharCode', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
+    return result;
   }
 
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the at function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.at(index)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abcdef").at(2)
+   * -> TAINTED("c")
+   * 
+   * TYPE-2:
+   * "abcdef".at(TAINTED(2))
+   * -> TAINTED("c")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -140,18 +176,34 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   atStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('at', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('at', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the fromCodePoint function.
-   * At least one of the arguments must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * String.fromCodePoint(num1, num2, ..., numN)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * String.fromCodePoint(TAINTED(65), 66)
+   * -> TAINTED("AB")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -161,25 +213,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   fromCodePointStringModel(base, args, reflected, result, iid) {
-    let taintInfo;
-    let argsArray = Utils.getArrayLikeArguements(args, reflected);
-    for (let arg of argsArray) {
-      if (arg instanceof TaintValue) {
-        taintInfo = arg.getTaintInfo();
-        break;
-      }
-    }
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
+
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('fromCodePoint', argsArray, iid);
-      return new TaintValue(result, taintInfo);
-    } else {
-      return result;
+      taintInfo.addTaintPropOperation('fromCodePoint', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
+    return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the raw function.
-   * At least one of the arguments must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * String.raw(template, ...substitutions)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED(String.raw`Hello ${'world'}`)
+   * -> TAINTED("Hello world")
+   * 
+   * TYPE-2:
+   * String.raw`Hello ${TAINTED('world')}`
+   * -> TAINTED("Hello world")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -189,25 +254,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   rawStringModel(base, args, reflected, result, iid) {
-    let taintInfo;
-    let argsArray = Utils.getArrayLikeArguements(args, reflected);
-    for (let arg of argsArray) {
-      if (arg instanceof TaintValue) {
-        taintInfo = arg.getTaintInfo();
-        break;
-      }
-    }
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
+
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('raw', argsArray, iid);
-      return new TaintValue(result, taintInfo);
-    } else {
-      return result;
+      taintInfo.addTaintPropOperation('raw', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
+    return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the charAt function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.charAt(index)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abcdef").charAt(2)
+   * -> TAINTED("c")
+   * 
+   * TYPE-2:
+   * "abcdef".charAt(TAINTED(2))
+   * -> TAINTED("c")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -217,18 +295,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   charAtStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('charAt', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('charAt', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the charCodeAt function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.charCodeAt(index)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abcdef").charCodeAt(2)
+   * -> TAINTED(99)
+   * 
+   * TYPE-2:
+   * "abcdef".charCodeAt(2)
+   * -> 99
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -238,18 +336,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   charCodeAtStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('charCodeAt', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('charCodeAt', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the codePointAt function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.codePointAt(pos)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abc").codePointAt(1)
+   * -> TAINTED(98)
+   * 
+   * TYPE-2:
+   * "abc".codePointAt(1)
+   * -> 98
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -259,18 +377,39 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   codePointAtStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('codePointAt', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('codePointAt', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the concat function.
-   * The base or at least one of the arguments must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * concat(str1, str2, ..., strN)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("a").concat("b", "c")
+   * -> TAINTED("a,b,c")
+   * 
+   * TYPE-2:
+   * "a".concat(TAINTED("b"), "c")
+   * -> TAINTED("a,b,c")
+   * 
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -280,26 +419,42 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   concatStringModel(base, args, reflected, result, iid) {
-    let taintInfo = base instanceof TaintValue ? base.getTaintInfo() : null;
-    let argsArray = Utils.getArrayLikeArguements(args, reflected);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
     if (!taintInfo) {
-      for (let arg of argsArray) {
-        if (arg instanceof TaintValue) {
-          taintInfo = arg.getTaintInfo();
-          break;
-        }
-      }
+      taintInfo = TaintHelper.rgetTaintInfo(argsArray);
     }
+
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('concat', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+      taintInfo.addTaintPropOperation('concat', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the endsWith function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.endsWith(searchString, [position])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").endsWith("world")
+   * -> TAINTED(true)
+   * 
+   * TYPE-2:
+   * "Hello world".endsWith(TAINTED("world"))
+   * -> true
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -309,18 +464,37 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   endsWithStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('endsWith', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    if (TaintHelper.rgetTaintInfo(base)) {
+      const taintInfo = TaintHelper.rgetTaintInfo(base);
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('endsWith', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the includes function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.includes(searchString, [position])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").includes("world")
+   * -> TAINTED(true)
+   * 
+   * TYPE-2:
+   * "Hello world".includes(TAINTED("world"))
+   * -> true
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -330,18 +504,37 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   includesStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('includes', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    if (TaintHelper.rgetTaintInfo(base)) {
+      const taintInfo = TaintHelper.rgetTaintInfo(base);
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('includes', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the indexOf function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.indexOf(searchValue, [fromIndex])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").indexOf("world")
+   * -> TAINTED(6)
+   * 
+   * TYPE-2:
+   * "Hello world".indexOf(TAINTED("world"))
+   * -> 6
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -351,18 +544,33 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   indexOfStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('indexOf', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    if (TaintHelper.rgetTaintInfo(base)) {
+      const taintInfo = TaintHelper.rgetTaintInfo(base);
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('indexOf', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the isWellFormed function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.isWellFormed()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").isWellFormed()
+   * -> TAINTED(true)
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -372,18 +580,37 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   isWellFormedStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('isWellFormed', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    if (TaintHelper.rgetTaintInfo(base)) {
+      const taintInfo = TaintHelper.rgetTaintInfo(base);
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('isWellFormed', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the lastIndexOf function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.lastIndexOf(searchValue, [fromIndex])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").lastIndexOf("world")
+   * -> TAINTED(6)
+   * 
+   * TYPE-2:
+   * "Hello world".lastIndexOf(TAINTED("world"))
+   * -> 6
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -393,18 +620,37 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   lastIndexOfStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('lastIndexOf', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    if (TaintHelper.rgetTaintInfo(base)) {
+      const taintInfo = TaintHelper.rgetTaintInfo(base);
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('lastIndexOf', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the localeCompare function.
-   * The base or the first argument must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or FIRST_ARG_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.localeCompare(compareString, locales, options)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("a").localeCompare("b")
+   * -> TAINTED(-1)
+   * 
+   * TYPE-2:
+   * "a".localeCompare(TAINTED("b"))
+   * -> TAINTED(-1)
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -414,18 +660,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   localeCompareStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue || args[0] instanceof TaintValue) {
-      const taintInfo = base instanceof TaintValue ? base.getTaintInfo() : args[0].getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('localeCompare', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('localeCompare', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the match function.
-   * The base or the first argument must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or FIRST_ARG_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.match(regexp)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("hello world").match(/world/)
+   * -> TAINTED(["world"])
+   * 
+   * TYPE-2:
+   * "hello world".match(TAINTED(/world/))
+   * -> TAINTED(["world"])
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -435,18 +701,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   matchStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue || args[0] instanceof TaintValue) {
-      const taintInfo = base instanceof TaintValue ? base.getTaintInfo() : args[0].getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('match', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('match', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the matchAll function.
-   * The base or the first argument must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or FIRST_ARG_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.matchAll(regexp)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("hello world").matchAll(/world/)
+   * -> TAINTED(["world"])
+   * 
+   * TYPE-2:
+   * "hello world".matchAll(TAINTED(/world/))
+   * -> TAINTED(["world"])
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -456,18 +742,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   matchAllStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue || args[0] instanceof TaintValue) {
-      const taintInfo = base instanceof TaintValue ? base.getTaintInfo() : args[0].getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('matchAll', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('matchAll', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the normalize function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.normalize([form])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").normalize()
+   * -> TAINTED("Hello world")
+   * 
+   * TYPE-2:
+   * "Hello world".normalize()
+   * -> "Hello world"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -477,18 +783,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   normalizeStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('normalize', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('normalize', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the padEnd function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.padEnd(targetLength, [padString])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abc").padEnd(6)
+   * -> TAINTED("abc   ")
+   * 
+   * TYPE-2:
+   * "abc".padEnd(6, TAINTED(" "))
+   * -> "abc   "
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -498,18 +824,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   padEndStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('padEnd', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('padEnd', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the padStart function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.padStart(targetLength, [padString])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abc").padStart(6)
+   * -> TAINTED("   abc")
+   * 
+   * TYPE-2:
+   * "abc".padStart(6, TAINTED(" "))
+   * -> "   abc"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -519,18 +865,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   padStartStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('padStart', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('padStart', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the repeat function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.repeat(count)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("abc").repeat(2)
+   * -> TAINTED("abcabc")
+   * 
+   * TYPE-2:
+   * "abc".repeat(TAINTED(2))
+   * -> "abcabc"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -540,18 +906,42 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   repeatStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('repeat', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('repeat', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the replace function.
-   * The base or at least one of the arguments must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.replace(regexp|substr, newSubstr|function)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").replace("world", "universe")
+   * -> TAINTED("Hello universe")
+   * 
+   * TYPE-2:
+   * "Hello world".replace(TAINTED("world"), "universe")
+   * -> TAINTED("Hello universe")
+   * 
+   * TYPE-3:
+   * "Hello world".replace("world", TAINTED("universe"))
+   * -> TAINTED("Hello universe")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -561,26 +951,42 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   replaceStringModel(base, args, reflected, result, iid) {
-    let taintInfo = base instanceof TaintValue ? base.getTaintInfo() : null;
-    let argsArray = Utils.getArrayLikeArguements(args, reflected);
-    if (!taintInfo) {
-      for (let arg of argsArray) {
-        if (arg instanceof TaintValue) {
-          taintInfo = arg.getTaintInfo();
-          break;
-        }
-      }
-    }
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('replace', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+      taintInfo.addTaintPropOperation('replace', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the replaceAll function.
-   * The base or at least one of the arguments must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED or ANY_ARGS_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.replaceAll(regexp|substr, newSubstr|function)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world world").replaceAll("world", "universe")
+   * -> TAINTED("Hello universe universe")
+   * 
+   * TYPE-2:
+   * "Hello world world".replaceAll(TAINTED("world"), "universe")
+   * -> TAINTED("Hello universe universe")
+   * 
+   * TYPE-3:
+   * "Hello world world".replaceAll("world", TAINTED("universe"))
+   * -> TAINTED("Hello universe universe")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -590,26 +996,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   replaceAllStringModel(base, args, reflected, result, iid) {
-    let taintInfo = base instanceof TaintValue ? base.getTaintInfo() : null;
-    let argsArray = Utils.getArrayLikeArguements(args, reflected);
-    if (!taintInfo) {
-      for (let arg of argsArray) {
-        if (arg instanceof TaintValue) {
-          taintInfo = arg.getTaintInfo();
-          break;
-        }
-      }
-    }
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('replaceAll', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+      taintInfo.addTaintPropOperation('replaceAll', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the search function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.search(regexp)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").search(/world/)
+   * -> TAINTED(6)
+   * 
+   * TYPE-2:
+   * "Hello world".search(TAINTED(/world/))
+   * -> 6
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -619,18 +1037,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   searchStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('search', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('search', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the slice function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.slice(beginIndex, [endIndex])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").slice(0, 5)
+   * -> TAINTED("Hello")
+   * 
+   * TYPE-2:
+   * "Hello world".slice(TAINTED(0), 5)
+   * -> "Hello"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -640,18 +1078,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   sliceStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('slice', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('slice', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the split function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.split([separator], [limit])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").split(" ")
+   * -> TAINTED(["Hello", "world"])
+   * 
+   * TYPE-2:
+   * "Hello world".split(TAINTED(" "), 1)
+   * -> ["Hello"]
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -661,18 +1119,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   splitStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('split', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('split', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the startsWith function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.startsWith(searchString, [position])
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").startsWith("Hello")
+   * -> TAINTED(true)
+   * 
+   * TYPE-2:
+   * "Hello world".startsWith(TAINTED("Hello"))
+   * -> true
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -682,18 +1160,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   startsWithStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('startsWith', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('startsWith', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the toLocaleLowerCase function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.toLocaleLowerCase()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello World").toLocaleLowerCase()
+   * -> TAINTED("hello world")
+   * 
+   * TYPE-2:
+   * "Hello World".toLocaleLowerCase()
+   * -> "hello world"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -703,18 +1201,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLocaleLowerCaseStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('toLocaleLowerCase', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('toLocaleLowerCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the toLocaleUpperCase function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.toLocaleUpperCase()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello World").toLocaleUpperCase()
+   * -> TAINTED("HELLO WORLD")
+   * 
+   * TYPE-2:
+   * "Hello World".toLocaleUpperCase()
+   * -> "HELLO WORLD"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -724,18 +1242,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLocaleUpperCaseStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('toLocaleUpperCase', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('toLocaleUpperCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the toLowerCase function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.toLowerCase()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello World").toLowerCase()
+   * -> TAINTED("hello world")
+   * 
+   * TYPE-2:
+   * "Hello World".toLowerCase()
+   * -> "hello world"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -745,18 +1283,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLowerCaseStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('toLowerCase', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('toLowerCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the toString function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.toString()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello World").toString()
+   * -> TAINTED("Hello World")
+   * 
+   * TYPE-2:
+   * "Hello World".toString()
+   * -> "Hello World"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -766,18 +1324,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toStringStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('toString', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('toString', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the toUpperCase function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.toUpperCase()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello World").toUpperCase()
+   * -> TAINTED("HELLO WORLD")
+   * 
+   * TYPE-2:
+   * "Hello World".toUpperCase()
+   * -> "HELLO WORLD"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -787,18 +1365,38 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toUpperCaseStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('toUpperCase', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      taintInfo.addTaintPropOperation('toUpperCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the toWellFormed function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.toWellFormed()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello World").toWellFormed()
+   * -> TAINTED("Hello World")
+   * 
+   * TYPE-2:
+   * "Hello World".toWellFormed()
+   * -> "Hello World"
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -808,18 +1406,34 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toWellFormedStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('toWellFormed', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('toWellFormed', [base], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the trim function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.trim()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("  Hello world  ").trim()
+   * -> TAINTED("Hello world")
+   * 
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -829,18 +1443,33 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   trimStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('trim', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('trim', [base], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the trimEnd function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.trimEnd()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("  Hello world  ").trimEnd()
+   * -> TAINTED("  Hello world")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -850,18 +1479,33 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   trimEndStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('trimEnd', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('trimEnd', [base], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the trimStart function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.trimStart()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("  Hello world  ").trimStart()
+   * -> TAINTED("Hello world  ")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -871,18 +1515,33 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   trimStartStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('trimStart', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('trimStart', [base], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
 
   /**
+   * @description
+   * --------------------------------
    * Apply the taint propagation rule for the valueOf function.
-   * The base must be tainted for the result to be tainted.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * str.valueOf()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED("Hello world").valueOf()
+   * -> TAINTED("Hello world")
    * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
@@ -892,11 +1551,11 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   valueOfStringModel(base, args, reflected, result, iid) {
-    if (base instanceof TaintValue) {
-      const taintInfo = base.getTaintInfo();
-      let argsArray = Utils.getArrayLikeArguements(args, reflected);
-      taintInfo.addTaintPropOperation('valueOf', argsArray, iid);
-      return new TaintValue(result, taintInfo);
+    let taintInfo = TaintHelper.rgetTaintInfo(base);
+
+    if (taintInfo) {
+      taintInfo.addTaintPropOperation('valueOf', [base], iid);
+      return TaintHelper.createTaintValue(result, taintInfo);
     }
     return result;
   }
