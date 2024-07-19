@@ -34,9 +34,11 @@ export class TaintHelper {
           writable: true,
           configurable: true
         });
+        return value;
       }
       catch (e) {
         console.log(`Error in adding taint to ${value}: ${e}`);
+        return value;
       }
     }
   }
@@ -68,11 +70,16 @@ export class TaintHelper {
    */
   static rconcrete(value) {
 
+    if (!TaintHelper.risTainted(value)) {
+      return value;
+    }
+
     if (TaintHelper.isTainted(value)) {
-      return TaintHelper.concrete(value.getConcrete());
+      return TaintHelper.concrete(value);
     } else if (Array.isArray(value)) {
       return value.map(item => TaintHelper.rconcrete(item));
     } else if (value && typeof value === 'object' && value.constructor === Object) {
+      // This operation might be dangerous, because we will lose the keys that cannot be looped out
       return Object.keys(value).reduce((acc, key) => {
         acc[key] = TaintHelper.rconcrete(value[key]);
         return acc;
@@ -89,7 +96,13 @@ export class TaintHelper {
    */
   static concrete(value) {
     if (TaintHelper.isTainted(value)) {
-      return value.getConcrete();
+      if (value instanceof TaintValue) {
+        return value.getConcrete();
+      } else {
+        // If the value is not wrapped in TaintValue, but has taint info
+        // We return the value itself without getting rid of the taint info
+        return value;
+      }
     }
     return value;
   }
@@ -102,6 +115,38 @@ export class TaintHelper {
         return value[TaintPropName];
       }
     }
+    return null;
+  }
+
+  /**
+   * @description
+   * --------------------------------
+   * Recursively check and get nested arrays and objects for taint information.
+   * 
+   * @TODO
+   * --------------------------------
+   * Now, we don't merge the taint information from different elements in the array.
+   * Or we should return multiple taint info if there are multiple taints and let the caller 
+   * to merge them
+   * 
+   * Now, we only support array and primitive types
+   * 
+   * @param {Array|Object} value - The item to check for taint.
+   * @returns {TaintInfo|null} - The taint information if found, otherwise null.
+   */
+  static rgetTaintInfo(value) {
+    
+    if (TaintHelper.isTainted(value)) {
+      return TaintHelper.getTaintInfo(value);
+    }
+
+    if (Array.isArray(value)) {
+      for (let element of value) {
+        let taintInfo = TaintHelper.rgetTaintInfo(element);
+        if (taintInfo) return taintInfo;
+      }
+    }
+
     return null;
   }
     
@@ -127,12 +172,12 @@ export class TaintHelper {
       // If there is only one argument, it is the arg itself
       // If there is more than one argument, it is [arg1, arg2, ...]
       if (argsArray[1] instanceof Array) {
-        return argsArray[1].some(arg => TaintHelper.isTainted(arg));
+        return argsArray[1].some(arg => TaintHelper.risTainted(arg));
       } else {
-        return TaintHelper.isTainted(argsArray[1]);
+        return TaintHelper.risTainted(argsArray[1]);
       }
     }
 
-    return argsArray.some(arg => TaintHelper.isTainted(arg));
+    return argsArray.some(arg => TaintHelper.risTainted(arg));
   }
 }
