@@ -55,13 +55,11 @@
     let scriptEle = document.createElement('script');
 
     // Use fromCharCode to convert tainted values to a string
-    let taintedSrc = String.fromCharCode.apply(null, taintedValue_1, taintedValue_2, taintedValue_3);
+    let taintedSrc = String.fromCharCode.apply(null, [taintedValue_1, taintedValue_2, taintedValue_3]);
 
     // Set the src of the new script element
-    scriptEle.src = taintedSrc;
+    scriptEle.src = `https://example.com/${taintedSrc}`;;
 
-    // Append the new script element to the body (optional, if needed for testing the sink)
-    document.body.appendChild(scriptEle);
   } else {
     console.error("J$$ is not defined or does not have wrapTaint method.");
   }
@@ -73,7 +71,7 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    
+    <li><a href="at-1.html">Next Test: at-1</a></li>
   </ul>
 </section>
 

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+
+<h1>Taint Tracking Test Websites - Micro Benchmarks - lastIndexOf-1</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test the taint engine's ability on different builtins.
+    </p>
+</section>
+
+<section class="section">
+    <div class="column_double">
+        <p><span class="label">Source:</span><br><br>
+            <span class="indent">Type: ManuallyAdded</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">J$$.wrapTaint()</pre>
+        </p>
+    </div>
+    <div class="column_double">
+        <p><span class="label">Sink:</span><br><br>
+            <span class="indent">Type: XSS</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">document.createElement('script').src</pre>
+        </p>
+    </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+* @Name: lastIndexOf-1
+ * @SourceType: ManuallyAdded
+ * @SourceCode: J$$.wrapTaint()
+ * @SinkType: XSS
+ * @SinkCode: document.createElement('script').src
+ */
+(function() {
+  // Check if J$$ exists
+  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
+    let taintedString = J$$.wrapTaint('exampleJ$1example');
+    let taintedLastIndex = taintedString.lastIndexOf('example');
+
+    // Create a new script element
+    let scriptEle = document.createElement('script');
+    scriptEle.src = `https://example.com/${taintedLastIndex}`;
+  } else {
+    console.error("J$$ is not defined or does not have wrapTaint method.");
+  }
+})();
+</pre>
+</div>
+</section>
+
+<section>
+  <h2>Next Test</h2>
+  <ul>
+    <li><a href="localeCompare-1.html">Next Test: localeCompare-1</a></li>
+  </ul>
+</section>
+
+<script src="scripts/lastIndexOf-1.js"></script>
+
+</body>
+</html>
