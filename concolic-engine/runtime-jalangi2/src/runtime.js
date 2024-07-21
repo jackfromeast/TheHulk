@@ -284,17 +284,20 @@ if (typeof J$$ === 'undefined') {
       associateSidWithFunction(val, internalIid);
       if (hasGetterSetter) {
           for (var offset in val) {
-              if (hasGetOwnPropertyDescriptor && val.hasOwnProperty(offset)) {
-                  var desc = Object.getOwnPropertyDescriptor(val, offset);
-                  if (desc !== undefined) {
-                      if (typeof desc.get === 'function') {
-                          T(iid, desc.get, 12, false, internalIid);
-                      }
-                      if (typeof desc.set === 'function') {
-                          T(iid, desc.set, 12, false, internalIid);
-                      }
-                  }
-              }
+            // Here, we need to handle the case where val.__proto__ = null, so it
+            // doesn't have the hasOwnProperty method
+            // While, we also need to avoid looping over the prototype chain
+            if (hasGetOwnPropertyDescriptor && Object.prototype.hasOwnProperty.call(val, offset)) {
+                var desc = Object.getOwnPropertyDescriptor(val, offset);
+                if (desc !== undefined) {
+                    if (typeof desc.get === 'function') {
+                        T(iid, desc.get, 12, false, internalIid);
+                    }
+                    if (typeof desc.set === 'function') {
+                        T(iid, desc.set, 12, false, internalIid);
+                    }
+                }
+            }
           }
       }
       if (sandbox.analysis && sandbox.analysis.literal) {
