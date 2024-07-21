@@ -28,7 +28,7 @@ if (typeof J$$ === 'undefined') {
 
 const acorn = require('acorn');
 const esotope = require('esotope');
-const babel = require('@babel/core');
+const babel = require('@babel/standalone');
 
 // import * as babel from '@babel/core';
 // import * as esotope from 'esotope';
@@ -44,7 +44,7 @@ const babel = require('@babel/core');
         var res = babel.transform(code, {
           retainLines: true,
           sourceType: 'script',
-          presets: ['../node_modules/@babel/preset-env']
+          presets: ["env"]
         }).code; 
     
         if (res && res.indexOf('use strict') != -1) {

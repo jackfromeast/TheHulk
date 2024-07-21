@@ -1,4 +1,6 @@
 const path = require('path');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+
 
 module.exports = {
   entry: './src/entry.js', // Ensure the correct path to your entry file
@@ -7,7 +9,10 @@ module.exports = {
     path: path.resolve('dist'), // Output directory
   },
   target: 'web',
-  mode: 'development' // Set the mode to 'development' or 'production'
+  mode: 'development', // Set the mode to 'development' or 'production'
+  plugins: [
+		new NodePolyfillPlugin({additionalAliases: ['process'],}),
+	],
 };
 
 /**

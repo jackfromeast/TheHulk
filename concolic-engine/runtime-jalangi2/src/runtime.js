@@ -176,9 +176,7 @@ if (typeof J$$ === 'undefined') {
   }
 
   function invokeEval(base, f, args, iid) {
-    return f(args[0]); // eval(script);
-    // TODO: We currently don't instrument eval code
-    // return f(sandbox.instrumentEvalCode(args[0], iid, false));
+    return f(sandbox.instrumentEvalCode(args[0], iid, false));
   }
 
   function invokeFunctionDecl(base, f, args, iid) {
@@ -232,6 +230,7 @@ if (typeof J$$ === 'undefined') {
 
   function invokeFun(iid, base, f, args, isConstructor, isMethod) {
       var aret, skip = false, result;
+      var reflected = ""; // even if there is no analysis, callFun line won't throw error
 
       if (sandbox.analysis && sandbox.analysis.invokeFunPre) {
           aret = sandbox.analysis.invokeFunPre(iid, f, base, args, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));
