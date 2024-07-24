@@ -12,10 +12,11 @@ chrome:
     # "-js-flags=--trace-document-lookup",
     "--no-sandbox",
     '--disable-setuid-sandbox',
-    '--disable-gpu',
+    '--disable-gpu'
     # --disable-http2
   ]
   HEADLESS: false
+  DEVTOOLS: true
 
 collector:
   # Collectors configuration
@@ -37,7 +38,7 @@ collector:
 navigator:
   BROWSER: "chrome"
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "http://10.161.159.131:8002/index.html"
+  INITIAL_URL: "http://10.161.159.131:8001/array/array-values-1.html"
   NAVIGATION_TIMEOUT: 0
   # For puppeteer, options:
   # ['load', 'domcontentloaded']

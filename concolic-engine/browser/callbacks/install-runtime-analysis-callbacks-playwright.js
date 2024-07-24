@@ -30,9 +30,19 @@ async function installJalangi2AndAnalysisCb(visitor, page) {
   const analysisScriptPath = path.resolve(visitor.config.others.ANALYSIS_SCRIPT_PATH);
   const jalangi2RuntimePath = path.resolve(visitor.config.others.JALANGI2_RUNTIME_PATH);
   
-  visitor.context.addInitScript({ path: jalangi2RuntimePath });
-  visitor.context.addInitScript({ path: analysisScriptPath });
+  // The following way cannot make sure that jalangi2RuntimePath will be fully loaded before analysisScriptPath
+  // visitor.context.addInitScript({ path: jalangi2RuntimePath });
+  // visitor.context.addInitScript({ path: analysisScriptPath });
 
+  const jalangi2RuntimeContent = await fs.readFile(jalangi2RuntimePath, 'utf8');
+  const analysisScriptContent = await fs.readFile(analysisScriptPath, 'utf8');
+  
+  // Combine the scripts ensuring the correct order
+  const combinedScriptContent = `${jalangi2RuntimeContent}\n${analysisScriptContent}`;
+
+
+  await visitor.context.addInitScript({ content: combinedScriptContent });
+  
   await ensureServiceWorkerScripts(visitor, page);
 }
 
