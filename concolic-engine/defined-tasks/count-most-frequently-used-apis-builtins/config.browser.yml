@@ -10,7 +10,7 @@ chrome:
     '--disable-setuid-sandbox',
     '--disable-gpu'
   ]
-  HEADLESS: true
+  HEADLESS: false
   DEVTOOLS: false
 
 foxhound:

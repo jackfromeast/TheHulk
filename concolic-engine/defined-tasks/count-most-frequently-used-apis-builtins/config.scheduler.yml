@@ -8,13 +8,13 @@ scheduler:
   SEED_URL: "https://google.com"
   URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
-  URL_LIST_TO: 5000
+  URL_LIST_TO: 500
 
   # MODE: "seed"
-  # SEED_URL: "https://facebook.com"
+  # SEED_URL: "https://twitter.com/"
   # URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   # URL_LIST_FROM: 0
-  # URL_LIST_TO: 5
+  # URL_LIST_TO: 500
 
   # Format of the urls.csv file:
   #   1,google.com
@@ -33,6 +33,6 @@ scheduler:
   # Maximum number of urls to visit
   MAX_URL: 1
   # Time budget for each worker to visit a single domain
-  TIMEOUT_PER_DOMAIN: 5400000
+  TIMEOUT_PER_DOMAIN: 300000
 
 

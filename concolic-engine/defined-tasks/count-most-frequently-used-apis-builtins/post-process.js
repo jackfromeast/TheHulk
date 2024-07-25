@@ -33,20 +33,49 @@ function aggregateBuiltinsAPI(outputFolder) {
   return apiCount;
 }
 
-function postSummary(outputFolder, workspaceFolder) {
+function collectRawData(outputFolder) {
   const apiCount = aggregateBuiltinsAPI(outputFolder);
 
   const apiCountArray = Object.entries(apiCount);
   apiCountArray.sort((a, b) => b[1] - a[1]);
   const sortedApiCount = Object.fromEntries(apiCountArray);
 
-  const outputPath = path.join(workspaceFolder, 'builtin-api-ranking.json');
-  fs.writeFileSync(outputPath, JSON.stringify(sortedApiCount, null, 2));
+  return sortedApiCount
 }
 
-// Define the paths
-const outputFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output/MOST-FREQUENTLY-USED-APIS-BUILTINS-07-18-00-10'; // Replace with actual path
-const workspaceFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins'; // Replace with actual path
+function summary(outputFolder) {
+  const rawBuiltins = collectRawData(outputFolder);
+  const groupedBuiltins = {};
 
-// Run the script
-postSummary(outputFolder, workspaceFolder);
+  for (const [key, value] of Object.entries(rawBuiltins)) {
+    // Barrier-1: We only consider the apis that have been called more than 100 times in Top 500
+    if (value < 100) { continue; }
+
+    // Barrier-2: No bound function
+    if (key.includes('bound')) { continue; }
+
+    const [baseObject, method] = key.split('.');
+    if (!groupedBuiltins[baseObject]) {
+      groupedBuiltins[baseObject] = {};
+    }
+    groupedBuiltins[baseObject][method] = value;
+  }
+
+  return { rawBuiltins, groupedBuiltins };
+}
+
+function save(workspaceFolder, rawBuiltins, groupedBuiltins) {
+  const rawOutputPath = path.join(workspaceFolder, 'sorted-raw-api-count.json');
+  fs.writeFileSync(rawOutputPath, JSON.stringify(rawBuiltins, null, 2));
+
+  const groupedOutputPath = path.join(workspaceFolder, 'grouped-api-count.json');
+  fs.writeFileSync(groupedOutputPath, JSON.stringify(groupedBuiltins, null, 2));
+}
+
+(function main(){
+  const outputFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output/MOST-FREQUENTLY-USED-APIS-BUILTINS-07-24-21-14';
+  const workspaceFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/summarized-output'; // Replace with actual path
+
+  const { rawBuiltins, groupedBuiltins } = summary(outputFolder);
+  save(workspaceFolder, rawBuiltins, groupedBuiltins);
+})()
