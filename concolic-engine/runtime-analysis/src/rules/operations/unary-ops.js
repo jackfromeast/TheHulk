@@ -24,7 +24,7 @@ export class UnaryOpsTaintPropRules {
    */
   buildRules() {
     for (const operator in this.UnaryJumpTable) {
-      const condition = (left) => left instanceof TaintValue;
+      const condition = (left) => TaintHelper.isTainted(left);
       const rule = RuleBuilder.makeRuleUnary(operator, condition);
       this.addRule(operator, rule);
     }

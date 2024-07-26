@@ -25,8 +25,8 @@ export class GetFieldTaintPropRules {
    * However, we can overwrite the rules afterwards
    */
   buildRules() {
-    const condition = (base, offset) => base instanceof TaintValue;
-    const rule = RuleBuilder.makeRuleGetField(condition);
+    const condition = (base, offset) => TaintHelper.isTainted(base);
+    const rule = RuleBuilder.makeRuleGetField(condition, this.defaultGetFieldModel);
     this.addRule('default', 'default', rule);
   }
 
@@ -56,5 +56,40 @@ export class GetFieldTaintPropRules {
   getRule(base, offset) {
     const found = this.ruleDict.find(x => x.base === 'default');
     return found ? found.rule : null;
-  } 
+  }
+
+
+  /**
+   * @description
+   * --------------------------------
+   * Rule to propagate taint for property setting operations.
+   * 
+   * @param {*} base 
+   * @param {*} offset 
+   * @param {*} val 
+   */
+  defaultGetFieldModel(base, offset, val, iid) {
+    let offset_c = TaintHelper.concrete(offset);
+    if (TaintHelper.isTainted(base)) {
+      // TYPE-1
+      // If value itself is tainted, we don't need to create new taint value
+      if (TaintHelper.isTainted(val)) {
+        let taintInfo = TaintHelper.getTaintInfo(val);
+        taintInfo.addTaintPropOperation('getField', [base], iid);
+        // TODO: Not sure if the taintInfo will be updated through addTaintPropOperation
+      }
+
+      // TYPE-2
+      // If the base object itself is tainted while the val is not
+      else {
+        let taintInfo = TaintHelper.getTaintInfo(base);
+        taintInfo.addTaintPropOperation('getField', [base], iid);
+        TaintHelper.createTaintValue(val, taintInfo)
+      }
+    }else{
+      base[offset_c] = val;
+    }
+
+    return val;
+  }
 }

@@ -25,6 +25,7 @@ import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
 import { TaintHelper } from './taint-helper.js';
 import { Utils } from './utils/util.js';
+import { ConcretizedFunctions } from './rules/rule-concretized.js';
 
 export class TaintTracking {
   constructor(sandbox) {
@@ -38,6 +39,8 @@ export class TaintTracking {
     this.taintSinkRules = new TaintSinkRules();
 
     this.dangerousFlows = [];
+
+    this.debugPrint = true;
   }
 
   /**
@@ -275,10 +278,11 @@ export class TaintTracking {
       else {
         // f is a built-in function but no rule found
         // We concretize the taint value and apply the original function
-        // TODO: We might need recursive concretization
-        Utils.reportUnsupportedBuiltin(f.name, iid);
-        args = TaintHelper.rconcrete(args);
-        
+        if (!ConcretizedFunctions.isKnownConcretized(f)){
+          Utils.reportUnsupportedBuiltin(f.name, iid);
+        }
+        args = Array.from(args).map(item => TaintHelper.concrete(item)); 
+
         return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
       }
     }
@@ -338,8 +342,8 @@ export class TaintTracking {
     let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
     if (reason) {
       // TODO: We need to clone the variable or only save the taint information and not the value
-      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result]));
-      result = TaintValue.createTaintValue(result, taintInfo);
+      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result], iid));
+      result = TaintHelper.createTaintValue(result, taintInfo);
     }
     return {result: result};
   };
@@ -473,7 +477,7 @@ export class TaintTracking {
       if (val instanceof WrappedValue) {
         val = val.getConcrete();
       }
-      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", [base, offset]));
+      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", [base, offset], iid));
       val = TaintHelper.createTaintValue(val, taintInfo);
     }
 

@@ -19,7 +19,7 @@
 // do not remove the following comment
 // JALANGI DO NOT INSTRUMENT
 
-import { TaintHelper } from '../taint-helper.js';
+// import { TaintHelper } from '../taint-helper.js';
 import { Utils } from '../utils/util.js';
 
 export class CountMostFrequentlyUsedBuiltinsAnalysis {
@@ -71,9 +71,16 @@ export class CountMostFrequentlyUsedBuiltinsAnalysis {
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
     if (f && Utils.isNativeFunction(f)) {
       let fullName = "unknown";
+      
 
+      // If base is a object, e.g. "hello"
       if (base && base.constructor && base.constructor.name) {
         fullName = `${base.constructor.name}.${f.name}`;
+      }
+
+      // If base is a function, e.g. String()
+      if (base && typeof base === "function") {
+        fullName = `${base.name}.${f.name}`;
       }
 
       if (this.collectBuiltins[fullName]) {
@@ -85,8 +92,8 @@ export class CountMostFrequentlyUsedBuiltinsAnalysis {
       console.log("Builtins has been called: ", fullName);
     }
 
-    base = TaintHelper.rconcrete(base);
-    args = TaintHelper.rconcrete(args);
+    // base = TaintHelper.rconcrete(base);
+    // args = TaintHelper.rconcrete(args);
 
     return {f: f, base: base, args: args, skip: false};
   };

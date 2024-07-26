@@ -38,7 +38,7 @@ export class TaintInfo {
    * @param {TaintPropOperation} operation: The operation that introduced the taint
    */
   constructor(iid, reason, operation) {
-    this.taintID = J$$.analysis.taintID+1 || 0;
+    this.taintID = J$$.analysis.taintID++ || 0;
     this.taintSource = {
       location: iid,
       sourceLocation: undefined, // J$$.iidToLocation(iid)

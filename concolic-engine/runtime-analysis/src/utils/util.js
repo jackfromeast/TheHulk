@@ -23,10 +23,24 @@ export class Utils {
     });
   }
 
-  static reportUnsupportedBuiltin(builtinName, ) {
-    console.log("%c[TheHulk] Unsupported builtin %s!",
+  static reportUnsupportedBuiltin(builtinName) {
+    if (!J$$.analysis.debugPrint) {
+      return;
+    }
+
+    console.log("%c[TheHulk] Debug: Unsupported builtin %s!",
                 'background: white; color: brown',            
                 builtinName);
+  }
+
+  static debugPrint(message) {
+    if (!J$$.analysis.debugPrint) {
+      return;
+    }
+
+    console.log("%c[TheHulk] Debug: %s!",
+      'background: white; color: brown',            
+      message);
   }
 
   /**
@@ -62,8 +76,11 @@ export class Utils {
     const toString = Object.prototype.toString;
     const fnToString = Function.prototype.toString;
     const reHostCtor = /^\[object .+?Constructor\]$/;
-    const reNative = RegExp("^" +
-        String(toString)
+    
+    // We need to make sure String() is not overwritten by developer
+    // If String() is instrumented, we will get recursive function call 
+    const staticPattern = "function toString() { [native code] }"
+    const reNative = RegExp("^" + staticPattern
             .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
             .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
     );

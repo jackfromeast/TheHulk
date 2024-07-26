@@ -25,22 +25,39 @@ export class TaintSourceRules {
    * - Value flows from the document object as taint sources
    * - E.g. document.cookie, document.domain, document.doctype, and etc.
    * 
+   * SOURCE-TYPE-3:
+   * - SOURCE-FROM-WINDOW
+   * - Value flows from the window object as taint sources
+   * - This is potentially clobberable if there is:
+   *   !window.MathJax && window.MathJax = ...
+   *   Tracing a defined value might be a good idea
+   * - E.g. window.MathJax
+   * 
    * @param {*} base - The base object of the getField operation. (which not be a WrappedValue)
    * @param {*} offset - The offset of the getField operation.
    * @param {*} val - The value of the getField operation.
    * @param {number} iid - The instruction id.
    */
   shouldTaintSourceAtGetField(base, offset, val, iid) {
+    // SOURCE-TYPE-1:
     // Check if the base is a DOM element
     if (this.isDOMElement(base) && 
         !this.isFunction(val)) {
       return "SOURCE-FROM-DOM-ELEMENT";
     }
 
+    // SOURCE-TYPE-2:
     // Check if the base is the document object
     if (this.isDocumentObject(base) &&
         !this.isFunction(val)) {
       return "SOURCE-FROM-DOCUMENT";
+    }
+
+    // SOURCE-TYPE-3:
+    // Check if the base is the window object
+    if (this.isWindowObject(base) &&
+        !this.isFunction(val)) {
+      return "SOURCE-FROM-WINDOW";
     }
 
     return false;
@@ -86,6 +103,10 @@ export class TaintSourceRules {
     return obj === document;
   }
 
+  isWindowObject(obj) {
+    return obj === window;
+  }
+
   isBuiltInFunction(f) {
     return typeof f === 'function' && (f === Object.prototype.toString.call(f).indexOf('[native code]') !== -1);
   }
@@ -95,6 +116,12 @@ export class TaintSourceRules {
   }
 
   blacklistForBrowserAPIs = [
-    'createElement'
+    'createElement',
+    'appendChild',
+    'insertBefore',
+    'insertAdjacentElement',
+    'insertAdjacentHTML',
+    'insertAdjacentText',
+    'insertAdjacentElement',
   ];
 }

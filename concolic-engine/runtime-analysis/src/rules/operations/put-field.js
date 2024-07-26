@@ -81,8 +81,8 @@ export class PutFieldTaintPropRules {
     val = TaintHelper.concrete(val);
 
     let offset_c = TaintHelper.concrete(offset);
-    if (base instanceof WrappedValue) {
-      base.concrete[offset_c] = val;
+    if (TaintHelper.isTainted(base)) {
+      TaintHelper.concrete(base)[offset_c] = val;
     }else{
       base[offset_c] = val;
     }
@@ -101,8 +101,8 @@ export class PutFieldTaintPropRules {
    */
   defaultPutFieldModel(base, offset, val, iid) {
     let offset_c = TaintHelper.concrete(offset);
-    if (base instanceof WrappedValue) {
-      base.concrete[offset_c] = val;
+    if (TaintHelper.isTainted(base)) {
+      TaintHelper.concrete(base)[offset_c] = val;
     }else{
       base[offset_c] = val;
     }

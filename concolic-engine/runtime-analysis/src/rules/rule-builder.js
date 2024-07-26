@@ -147,20 +147,15 @@ export class RuleBuilder {
    * @param {Function} model - The modeling function.
    * @returns {Object} The rule object.
    */
-  static makeRuleGetField(condition, concretize = true, featureDisabled = false) {
+  static makeRuleGetField(condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (base, offset, iid) => {
       let base_c = TaintHelper.concrete(base);
-      let offset_c = TaintHelper.rconcrete(offset);
+      let offset_c = TaintHelper.concrete(offset);
       let result = base_c[offset_c];
       
-      // We don't taint function
-      // if (!featureDisabled && condition(base) &&
-      //     !(result instanceof Function)) {
-      //   let taintInfo;
-      //   taintInfo = new TaintInfo(iid, base.taintInfo.taintSource.reason);
-      //   taintInfo.addTaintPropOperation('getField', [base, offset_c], iid);
-      //   result = new TaintValue(result, taintInfo);
-      // }
+      if (!featureDisabled && condition(base) && !(result instanceof Function)) {
+        result = modelF(base, offset, result, iid);
+      }
 
       return result;
     };
@@ -184,18 +179,18 @@ export class RuleBuilder {
    * @param {Function} model - The modeling function.
    * @returns {Object} The rule object.
    */
-    static makeRulePutField(condition, modelF, concretize = true, featureDisabled = false) {
-      let newRule = (base, offset, val, iid) => {
+  static makeRulePutField(condition, modelF, concretize = true, featureDisabled = false) {
+    let newRule = (base, offset, val, iid) => {
 
-        if (!featureDisabled && condition(val)) {
-          val = modelF(base, offset, val);
-        }
+      if (!featureDisabled && condition(val)) {
+        val = modelF(base, offset, val);
+      }
 
-        return val;
-      };
+      return val;
+    };
 
-      Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
-      return newRule;
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
   }
 
 

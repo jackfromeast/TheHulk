@@ -24,7 +24,7 @@ export class BinaryOpsTaintPropRules {
    */
   buildRules() {
     for (const operator in BinaryOpsTaintPropRules.BinaryJumpTable) {
-      const condition = (left, right) => left instanceof TaintValue || right instanceof TaintValue;
+      const condition = (left, right) => TaintHelper.isTainted(left) || TaintHelper.isTainted(right);
       const rule = RuleBuilder.makeRuleBinary(operator, condition);
       this.addRule(operator, rule);
     }
@@ -82,6 +82,7 @@ export class BinaryOpsTaintPropRules {
     "||": function(left, right) { return left || right; },
     "^": function(left, right) { return left ^ right; },
     "instanceof": function(left, right) { return left instanceof right; },
-    "in": function(left, right) { return left in right; }
+    "in": function(left, right) { return left in right; },
+    "delete": function(left, right) { return left[right] && delete left[right] }
   };
 }

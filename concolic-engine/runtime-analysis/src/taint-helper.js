@@ -16,6 +16,10 @@ export class TaintHelper {
    * @param {TaintInfo} taintInfo 
    */
   static createTaintValue(value, taintInfo) {
+    if (value === undefined || value === null) {
+      return value;
+    }
+
     // Check if value is tainted already
     if (TaintHelper.isTainted(value)) {
       // TODO: If it is already tainted, we need to merge the taint info
@@ -24,10 +28,16 @@ export class TaintHelper {
     }
 
     if (Utils.isPrimitive(value)) {
+      if (J$$.analysis.debugPrint) {
+        Utils.debugPrint ("Adding taint to " + value);
+      }
       return new TaintValue(value, taintInfo);
     }
     else {
       try {
+        if (J$$.analysis.debugPrint) {
+          Utils.debugPrint ("Adding taint to " + value);
+        }
         Object.defineProperty(value, TaintPropName, {
           value: taintInfo,
           enumerable: false,
@@ -65,6 +75,13 @@ export class TaintHelper {
 
   /**
    * Concrete the value if it is tainted recursively
+   * 
+   * Note that at most time, we don't need to concrete the value recursively
+   * 
+   * - For the primitive types, we can just concrete them in one level
+   * - For the object types, we doesn't need to strip the taint as it 
+   *   shouldn't affect the execution at most time
+   * 
    * @param {*} value 
    * @returns 
    */
