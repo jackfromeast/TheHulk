@@ -25,7 +25,7 @@ export class BinaryOpsTaintPropRules {
   buildRules() {
     for (const operator in BinaryOpsTaintPropRules.BinaryJumpTable) {
       const condition = (left, right) => TaintHelper.isTainted(left) || TaintHelper.isTainted(right);
-      const rule = RuleBuilder.makeRuleBinary(operator, condition);
+      const rule = RuleBuilder.makeRuleBinary(operator, condition, this.defaultBinaryModel);
       this.addRule(operator, rule);
     }
   }
@@ -85,4 +85,34 @@ export class BinaryOpsTaintPropRules {
     "in": function(left, right) { return left in right; },
     "delete": function(left, right) { return left[right] && delete left[right] }
   };
+
+
+  /**
+   * @description
+   * --------------------------------
+   * Rule to propagate taint for binary operations.
+   * 
+   * @TODO
+   * --------------------------------
+   * Need to handle the condition that both operands are taint value
+   * 
+   * @param {*} base 
+   * @param {*} offset 
+   * @param {*} val 
+   */
+  defaultBinaryModel(operator, left, right, result, iid) {
+    let taintInfo;
+
+    if (TaintHelper.isTainted(left) || TaintHelper.isTainted(right)) {
+      if (TaintHelper.isTainted(left)) taintInfo = TaintHelper.getTaintInfo(left);
+      if (TaintHelper.isTainted(right)) taintInfo = TaintHelper.getTaintInfo(right);
+    }
+    
+    if (taintInfo) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `BinaryOps: ${operator}`, [left, right], iid);
+      result = TaintHelper.createTaintValue(result, newTaintInfo);
+    }
+
+    return result;
+  }
 }

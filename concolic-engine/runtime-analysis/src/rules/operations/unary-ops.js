@@ -25,7 +25,7 @@ export class UnaryOpsTaintPropRules {
   buildRules() {
     for (const operator in this.UnaryJumpTable) {
       const condition = (left) => TaintHelper.isTainted(left);
-      const rule = RuleBuilder.makeRuleUnary(operator, condition);
+      const rule = RuleBuilder.makeRuleUnary(operator, condition, this.defaultUnaryModel);
       this.addRule(operator, rule);
     }
   }
@@ -67,4 +67,31 @@ export class UnaryOpsTaintPropRules {
   // TODO: need to handle typeof and void separately
   // typeof and void that has been applied on a tainted value should return a normal value
 
+  /**
+   * @description
+   * --------------------------------
+   * Rule to propagate taint for binary operations.
+   * 
+   * @TODO
+   * --------------------------------
+   * Need to handle the condition that both operands are taint value
+   * 
+   * @param {*} base 
+   * @param {*} offset 
+   * @param {*} val 
+   */
+  defaultUnaryModel(left, result, iid) {
+    let taintInfo;
+
+    if (TaintHelper.isTainted(left)) {
+      taintInfo = TaintHelper.getTaintInfo(left);
+    }
+    
+    if (taintInfo) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `UnaryOps: ${operator}`, [left], iid);
+      result = TaintHelper.createTaintValue(result, newTaintInfo);
+    }
+
+    return result;
+  }
 }

@@ -57,15 +57,12 @@ export class RuleBuilder {
    * @param {boolean} [featureDisabled=false] - Whether the feature is disabled.
    * @returns {Function} The rule function.
    */
-  static makeRuleUnary(operator, condition, concretize = true, featureDisabled = false) {
+  static makeRuleUnary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, iid) => {
-      let result = UnaryJumpTable[operator](TaintHelper.rconcrete(left));
+      let result = UnaryJumpTable[operator](TaintHelper.concrete(left));
 
       if (!featureDisabled && condition(left)) {
-        let taintInfo;
-        taintInfo = left.getTaintInfo();
-        taintInfo.addTaintPropOperation(`UnaryOps: ${ops}`, [left], iid);
-        result = new TaintValue(result, taintInfo);
+        result = modelF(operator, left, result, iid);
       }
 
       return result;
@@ -91,33 +88,18 @@ export class RuleBuilder {
    * @param {boolean} [featureDisabled=false] - Whether the feature is disabled.
    * @returns {Function} The rule function.
    */
-  static makeRuleBinary(operator, condition, concretize = true, featureDisabled = false) {
+  static makeRuleBinary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, right, iid) => {
-      let leftValue = TaintHelper.rconcrete(left);
-      let rightValue = TaintHelper.rconcrete(right);
+      let leftValue = TaintHelper.concrete(left);
+      let rightValue = TaintHelper.concrete(right);
       let result = BinaryOpsTaintPropRules.BinaryJumpTable[operator](leftValue, rightValue);
 
       if (!featureDisabled && condition(left, right)) {
-        let taintInfo;
-
-        if (left instanceof TaintValue || right instanceof TaintValue) {
-          taintInfo = new TaintInfo();
-          if (left instanceof TaintValue) taintInfo = left.getTaintInfo();
-          if (right instanceof TaintValue) taintInfo = right.getTaintInfo();
-
-          /**
-           * @TODO
-           * Need to handle the condition that both operands are taint value
-           */
-          
-          taintInfo.addTaintPropOperation(`BinaryOps: ${operator}`, [left, right], iid);
-          result = new TaintValue(result, taintInfo);
-        }
+        result = modelF(operator, left, right, result, iid);
       }
 
       return result;
     };
-
 
     Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
     return newRule;
@@ -219,7 +201,7 @@ export class RuleBuilder {
       let [result, thrown] = this.runOriginFunc(f, base, args, concretize, reflected);
 
       if (!featureDisabled && condition(base, args, reflected)) {
-          result = modelF(base, args, reflected, result, iid);
+        result = modelF(base, args, reflected, result, iid);
       }
 
       if (thrown) {

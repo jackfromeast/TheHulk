@@ -150,7 +150,7 @@ export class TaintHelper {
         return structuredClone(arg);
       }
       catch(e) {
-        Utils.debugPrint(`Cannot clone ${arg} because ${e}`);
+        // Utils.debugPrint(`Cannot clone ${arg} because ${e}`);
         return arg;
       }
     });

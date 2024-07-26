@@ -62,7 +62,7 @@ export class GetFieldTaintPropRules {
   /**
    * @description
    * --------------------------------
-   * Rule to propagate taint for property setting operations.
+   * Rule to propagate taint for property getting operations.
    * 
    * @param {*} base 
    * @param {*} offset 
