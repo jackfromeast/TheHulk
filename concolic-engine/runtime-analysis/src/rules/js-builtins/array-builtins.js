@@ -77,6 +77,14 @@ export class ArrayBuiltinsTaintPropRules {
     'splice': Array.prototype.splice,
     'values': Array.prototype.values,
     'includes': Array.prototype.includes,
+    'filter': Array.prototype.filter,
+    'reduce': Array.prototype.reduce,
+    'every': Array.prototype.every,
+    'flatMap': Array.prototype.flatMap,
+    'findIndex': Array.prototype.findIndex,
+    'reduceRight': Array.prototype.reduceRight,
+    'keys': Array.prototype.keys,
+    'fill': Array.prototype.fill
   }
 
   buildRules() {
@@ -158,7 +166,6 @@ export class ArrayBuiltinsTaintPropRules {
         result[i][0] = TaintHelper.createTaintValue(result[i][0], taintInfo);
       }
     }
-
 
     return result;
   }
