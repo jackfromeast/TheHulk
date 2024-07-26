@@ -124,6 +124,41 @@ export class TaintHelper {
     return value;
   }
 
+  /**
+   * Create a new taintInfo object
+   * Given the newly added taintPropOperation and existing taintInfo
+   * 
+   * This function can be seen a wrapper of taintInfo.addTaintPropOperation()
+   * which will handle the clone part automatically
+   * 
+   * @param {TaintInfo} oldTaintInfo
+   * @param {String} operationName
+   * @param {Array} args
+   * @param {Number} iid
+   */
+  static addTaintPropOperation(oldTaintInfo, operationName, args, iid) {
+    if (!structuredClone) {
+      throw new Error("structuredClone is not defined");
+    }
+    
+    // A workaround to clone the object with the same prototype
+    let newTaintInfo = Object.create(Object.getPrototypeOf(oldTaintInfo));
+    Object.assign(newTaintInfo, structuredClone(Object.assign({}, oldTaintInfo)));
+
+    let cloned_args = args.map(arg => {
+      try{
+        return structuredClone(arg);
+      }
+      catch(e) {
+        Utils.debugPrint(`Cannot clone ${arg} because ${e}`);
+        return arg;
+      }
+    });
+    newTaintInfo.addTaintPropOperation(operationName, cloned_args, iid);
+
+    return newTaintInfo;
+  }
+
   static getTaintInfo(value) {
     if (TaintHelper.isTainted(value)) {
       if (value instanceof TaintValue) {

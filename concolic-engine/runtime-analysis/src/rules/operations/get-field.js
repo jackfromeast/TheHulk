@@ -75,16 +75,15 @@ export class GetFieldTaintPropRules {
       // If value itself is tainted, we don't need to create new taint value
       if (TaintHelper.isTainted(val)) {
         let taintInfo = TaintHelper.getTaintInfo(val);
-        taintInfo.addTaintPropOperation('getField', [base], iid);
-        // TODO: Not sure if the taintInfo will be updated through addTaintPropOperation
+        // Don't add taint prop operation if the value is already tainted
       }
 
       // TYPE-2
       // If the base object itself is tainted while the val is not
       else {
         let taintInfo = TaintHelper.getTaintInfo(base);
-        taintInfo.addTaintPropOperation('getField', [base], iid);
-        TaintHelper.createTaintValue(val, taintInfo)
+        let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'getField', [base, offset], iid);
+        TaintHelper.createTaintValue(val, newTaintInfo)
       }
     }else{
       base[offset_c] = val;

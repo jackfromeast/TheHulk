@@ -138,8 +138,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('fromCharCode', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCharCode', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, taintInfo_clone);
     }
     return result;
   }
@@ -180,8 +180,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('at', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:at', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -217,8 +217,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('fromCodePoint', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCodePoint', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -258,8 +258,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('raw', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:raw', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -299,8 +299,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('charAt', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charAt', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -340,8 +340,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('charCodeAt', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charCodeAt', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -381,8 +381,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('codePointAt', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:codePointAt', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -427,8 +427,8 @@ export class StringBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('concat', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:concat', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -467,8 +467,8 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('endsWith', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:endsWith', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -507,8 +507,8 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('includes', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:includes', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -547,8 +547,8 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('indexOf', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:indexOf', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -583,8 +583,8 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('isWellFormed', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:isWellFormed', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -623,8 +623,8 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('lastIndexOf', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:lastIndexOf', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -664,8 +664,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('localeCompare', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:localeCompare', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -705,8 +705,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('match', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:match', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -746,8 +746,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('matchAll', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:matchAll', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -787,8 +787,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('normalize', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:normalize', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -828,8 +828,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('padEnd', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padEnd', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -869,8 +869,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('padStart', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padStart', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -910,8 +910,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('repeat', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:repeat', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -955,8 +955,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('replace', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replace', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1000,8 +1000,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('replaceAll', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replaceAll', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1041,8 +1041,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('search', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:search', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1082,8 +1082,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('slice', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:slice', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1123,8 +1123,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('split', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:split', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1164,8 +1164,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('startsWith', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:startsWith', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1205,8 +1205,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('toLocaleLowerCase', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleLowerCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1246,8 +1246,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('toLocaleUpperCase', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleUpperCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1287,8 +1287,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('toLowerCase', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLowerCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1328,8 +1328,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('toString', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toString', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1369,8 +1369,8 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      taintInfo.addTaintPropOperation('toUpperCase', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toUpperCase', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1409,8 +1409,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('toWellFormed', [base], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toWellFormed', [base], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1446,8 +1446,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('trim', [base], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trim', [base], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1482,8 +1482,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('trimEnd', [base], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimEnd', [base], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1518,8 +1518,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('trimStart', [base], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimStart', [base], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
@@ -1554,8 +1554,8 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      taintInfo.addTaintPropOperation('valueOf', [base], iid);
-      return TaintHelper.createTaintValue(result, taintInfo);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:valueOf', [base], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }

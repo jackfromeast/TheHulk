@@ -102,8 +102,26 @@ export class TaintPropOperation {
    */
   constructor(operation, argument, location) {
     this.operation = operation;
-    this.arguments = argument;
+    this.arguments = this.cloneable(argument);
     this.location = location;
+  }
+
+  /**
+   * Here we need to make sure that the arguments are cloneable through structuredClone
+   * 
+   * As far as I know, HTML elements are not cloneable
+   * Therefore, we store its string representation
+   * E.g. HTMLScriptElement is not cloneable and we store its HTMLScriptElement.toString()
+   */
+  cloneable(args) {
+    return args.map(arg => {
+      try {
+        structuredClone(arg);
+        return arg;
+      } catch (e) {
+        return arg.toString();
+      }
+    });
   }
 
   getOperation() {
