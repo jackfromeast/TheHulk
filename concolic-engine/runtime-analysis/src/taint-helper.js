@@ -183,7 +183,7 @@ export class TaintHelper {
    * 
    * Now, we only support array and primitive types
    * 
-   * @param {Array|Object} value - The item to check for taint.
+   * @param {Array|Object|*} value - The item to check for taint.
    * @returns {TaintInfo|null} - The taint information if found, otherwise null.
    */
   static rgetTaintInfo(value) {
@@ -196,6 +196,13 @@ export class TaintHelper {
       for (let element of value) {
         let taintInfo = TaintHelper.rgetTaintInfo(element);
         if (taintInfo) return taintInfo;
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      for (let key in value) {
+        if (value.hasOwnProperty(key)) {
+          let taintInfo = TaintHelper.rgetTaintInfo(value[key]);
+          if (taintInfo) return taintInfo;
+        }
       }
     }
 
@@ -211,7 +218,7 @@ export class TaintHelper {
    * @param {String} reflected 
    * @returns 
    */
-  static isAnyArgumentsTainted(args, reflected) {
+  static risAnyArgumentsTainted(args, reflected) {
     if (args.length === 0) { return false; }
 
     let argsArray = args;
@@ -231,5 +238,27 @@ export class TaintHelper {
     }
 
     return argsArray.some(arg => TaintHelper.risTainted(arg));
+  }
+
+  static isAnyArgumentsTainted(args, reflected) {
+    if (args.length === 0) { return false; }
+
+    let argsArray = args;
+    if (Utils.isArguments(args)) {
+      argsArray = Array.from(args);
+    }
+    
+    if (reflected === 'apply') {
+      // For f.apply(this, args)
+      // If there is only one argument, it is the arg itself
+      // If there is more than one argument, it is [arg1, arg2, ...]
+      if (argsArray[1] instanceof Array) {
+        return argsArray[1].some(arg => TaintHelper.isTainted(arg));
+      } else {
+        return TaintHelper.isTainted(argsArray[1]);
+      }
+    }
+
+    return argsArray.some(arg => TaintHelper.isTainted(arg));
   }
 }

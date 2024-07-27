@@ -140,7 +140,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCharCode', [base, argsArray], iid);
-      return TaintHelper.createTaintValue(result, taintInfo_clone);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
