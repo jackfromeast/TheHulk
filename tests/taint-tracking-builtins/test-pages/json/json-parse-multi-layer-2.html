@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Taint Tracking Test Websites - Micro Benchmarks - array-reverse-1</h1>
+<h1>Taint Tracking Test Websites - Micro Benchmarks - json-parse-multi-layer-2</h1>
 
 <section>
     <p>
@@ -38,7 +38,7 @@
 <div class="column">
 <p><span class="label">Testing Code:</span><br><br>
 <pre>
-* @Name: array-reverse-1
+* @Name: json-parse-multi-layer-2
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
@@ -46,10 +46,9 @@
  */
 (function() {
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    arr.reverse();
-    let taintedResult = arr[0];
+    let taintedJSON = J$$.wrapTaint('{"outer": {"inner": {"key": "<script>alert(\'XSS\')</script>"}}}');
+    let parsedObject = JSON.parse(taintedJSON);
+    let taintedResult = parsedObject.outer.inner.key;
 
     let scriptEle = document.createElement('script');
     scriptEle.src = `https://example.com/${taintedResult}`;
@@ -64,11 +63,11 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../json/json-parse-multi-layer-1.html">Next Test: json-parse-multi-layer-1</a></li>
+    <li><a href="../json/json-stringify-multi-layer-1.html">Next Test: json-stringify-multi-layer-1</a></li>
   </ul>
 </section>
 
-<script src="scripts/array-reverse-1.js"></script>
+<script src="scripts/json-parse-multi-layer-2.js"></script>
 
 </body>
 </html>

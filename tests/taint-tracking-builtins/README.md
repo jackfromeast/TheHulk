@@ -1,0 +1,1 @@
+This folder contains the micro-benchmark test suite for the taint tracking analysis on different JavaScript/Browser builtin APIs.
