@@ -38,7 +38,7 @@ collector:
 navigator:
   BROWSER: "chrome"
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "http://10.161.159.131:8001/array/array-values-1.html"
+  INITIAL_URL: "http://10.161.159.131:8001/index.html"
   NAVIGATION_TIMEOUT: 0
   # For puppeteer, options:
   # ['load', 'domcontentloaded']

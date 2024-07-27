@@ -359,8 +359,11 @@ if (typeof J$$ === 'undefined') {
       }
 
       if (!skip) {
-          val = base[offset];
+        val = base[offset];
       }
+
+    //   val = base[offset];
+
       if (sandbox.analysis && sandbox.analysis.getField) {
           aret = sandbox.analysis.getField(iid, base, offset, val, bFlags[0], bFlags[1], bFlags[2]);
           if (aret) {
@@ -752,7 +755,11 @@ if (typeof J$$ === 'undefined') {
 
   // Expression in conditional
   function C(iid, left) {
-      var aret;
+      // If left is wrapped value, we return the concrete value of the left
+      // while keeping the wrapped value in lastComputedValue
+      // This is used to handle || (logic or)
+      var aret, unstrippedLeft = left;
+
       if (sandbox.analysis && sandbox.analysis.conditional) {
           aret = sandbox.analysis.conditional(iid, left);
           if (aret) {
@@ -760,8 +767,9 @@ if (typeof J$$ === 'undefined') {
           }
       }
 
-      lastVal = left;
-      return (lastComputedValue = left);
+      lastVal = unstrippedLeft;
+      lastComputedValue = unstrippedLeft;
+      return left;
   }
 
   function S(iid, f) {

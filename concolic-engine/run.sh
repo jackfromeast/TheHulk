@@ -29,9 +29,9 @@ if [ "$(basename $(pwd))" != "concolic-engine" ]; then
   exit 1
 fi
 
-RUN_TEST=false
-RUN_PROXY=false
-RUN_ANALYSIS=false
+RUN_TEST=true
+RUN_PROXY=true
+RUN_ANALYSIS=true
 
 # Parse arguments
 for arg in "$@"; do
@@ -60,11 +60,13 @@ done
 # We currently don't use this 
 if [ "$RUN_TEST" = true ]; then
   check_and_kill_port 8001
-  echo "[+] Starting the local test server for hosting the test pages..."
-  cd $CONCOLIC_PATH/../tests/domc-microbench && http-server test-pages -p 8001 -d false -c-1 > /dev/null 2>&1 &
+  pushd $CONCOLIC_PATH/../tests/taint-tracking-builtins > /dev/null 2>&1
+  http-server test-pages -p 8001 -d false -c-1 > /dev/null 2>&1 &
+  curl -s http://localhost:8001
   TEST_SERVER_PID=$!
-  sleep 2
+  sleep 1
   echo "[+] Test Server started with PID $TEST_SERVER_PID, at http://localhost:8001"
+  popd > /dev/null 2>&1
 fi
 
 ## Step 2: Start the Proxy Server for instrumenting the JS & HTML on-the-fly
@@ -72,32 +74,49 @@ if [ "$RUN_PROXY" = true ]; then
   check_and_kill_port 8899
   echo "[+] Starting the Proxy Server for instrumenting the JS & HTML on-the-fly..."
 
-  ### Setup the python env first
-  source $(conda info --base)/etc/profile.d/conda.sh
-  conda activate TheThing
-
-  cd $CONCOLIC_PATH/../proxy-server && ./setup.sh > /dev/null 2>&1 &
+  ### Setup the python env firstcd 
+  pushd $CONCOLIC_PATH/../proxy-server > /dev/null 2>&1
+  ./setup.sh > /dev/null 2>&1 &
   PROXY_SERVER_PID=$!
   sleep 2
   echo "[+] Proxy Server started with PID $PROXY_SERVER_PID"
+  popd > /dev/null 2>&1
 fi
 
 # Step 3: Start the Local Server for hosting the analysis bundle
 if [ "$RUN_ANALYSIS" = true ]; then
+  pushd $CONCOLIC_PATH/runtime-analysis > /dev/null 2>&1
   # check_and_kill_port 8002
   echo "[+] Starting the local analysis server for hosting the analysis bundle..."
-  cd $CONCOLIC_PATH/runtime-analysis && npm run deploy > /dev/null 2>&1
-  # cd $CONCOLIC_PATH/http-server && http-server --port 8002 -o . > /dev/null 2>&1 &
-  # ANALYSIS_SERVER_PID=$!
-  sleep 2
-  # echo "[+] Local Analysis Server started with PID $ANALYSIS_SERVER_PID, at http://localhost:8002"
+  npm run deploy > /dev/null 2>&1
+  sleep 1
+  popd > /dev/null 2>&1
 fi
 
 
 ## Step 4: Get back and run the browser
 echo "[+] Running the browser..."
-cd $CONCOLIC_PATH/browser/ && node ./browser.js --conf=./config.browser.yml &
+pushd $CONCOLIC_PATH/browser > /dev/null 2>&1
+node ./browser.js --conf=./config.browser.yml &
+popd > /dev/null 2>&1
 BROWSER_PID=$!
 echo "[+] Browser started with PID $BROWSER_PID"
 
-wait $TEST_SERVER_PID $PROXY_SERVER_PID $BROWSER_PID
+echo "========================== Start Browser =========================="
+
+cleanup() {
+  echo "[+] Cleaning up..."
+  if [ -n "$TEST_SERVER_PID" ]; then
+    kill $TEST_SERVER_PID
+    echo "[+] Killed TEST_SERVER_PID $TEST_SERVER_PID"
+  fi
+  if [ -n "$PROXY_SERVER_PID" ]; then
+    kill $PROXY_SERVER_PID
+    echo "[+] Killed PROXY_SERVER_PID $PROXY_SERVER_PID"
+  fi
+}
+
+wait $BROWSER_PID
+echo "[+] Browser process $BROWSER_PID has finished"
+cleanup
+echo "========================== End Browser =========================="

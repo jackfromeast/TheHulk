@@ -11,7 +11,6 @@
  * node browser.js --conf=config.browser.yml
  */
 
-
 const fs = require('fs');
 const pathModule = require('path');
 const yaml = require('js-yaml');
