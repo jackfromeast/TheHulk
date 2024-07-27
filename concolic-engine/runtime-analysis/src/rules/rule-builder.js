@@ -273,6 +273,12 @@ export class RuleBuilder {
       if (concretize==true) {
         c_base = base !== null ? TaintHelper.concrete(base) : base;
         c_args = Array.from(args).map(item => TaintHelper.concrete(item)); 
+
+        // TODO:
+        // There are functions that we need to concretize the arguments recursively
+        if (f == JSON.stringify) {
+          c_args[0] = TaintHelper.rconcrete(c_args[0]);
+        }
       } else {
         c_base = base;
         c_args = Array.from(args);
