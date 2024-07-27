@@ -12,7 +12,7 @@ export class ArrayBuiltinsTaintPropRules {
     this.buildRules();
 
     if (!Utils) {
-      console.log('Utils is not defined');
+      J$$.analysis.logger.error('Utils is not defined');
     }
   }
 

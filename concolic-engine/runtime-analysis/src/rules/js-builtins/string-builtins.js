@@ -12,7 +12,7 @@ export class StringBuiltinsTaintPropRules {
     this.buildRules();
 
     if (!Utils) {
-      console.log('Utils is not defined');
+      J$$.analysis.logger.error('Utils is not defined');
     }
   }
 
@@ -34,6 +34,7 @@ export class StringBuiltinsTaintPropRules {
     'replaceAll': [String.prototype.replaceAll, this.replaceAllStringModel, 'BASE_TAINTED'],
     'search': [String.prototype.search, this.searchStringModel, 'BASE_TAINTED'],
     'slice': [String.prototype.slice, this.sliceStringModel, 'BASE_TAINTED'],
+    'substr':  [String.prototype.substr, this.substrStringModel, 'BASE_TAINTED'],
     'split': [String.prototype.split, this.splitStringModel, 'BASE_TAINTED'],
     'startsWith': [String.prototype.startsWith, this.startsWithStringModel, 'BASE_TAINTED'],
     'toLocaleLowerCase': [String.prototype.toLocaleLowerCase, this.toLocaleLowerCaseStringModel, 'BASE_TAINTED'],
@@ -1087,6 +1088,42 @@ export class StringBuiltinsTaintPropRules {
     }
     return result;
   }
+
+    /**
+   * @description
+   * --------------------------------
+   * Apply the taint propagation rule for the slice function.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * substr(start)
+   * substr(start, length)
+   * 
+   * @example
+   * --------------------------------
+   * 
+   * @param {Function} f - The string built-in function.
+   * @param {Array} args - The arguments to the function.
+   * @param {String} reflected - The reflected function name.
+   * @param {*} result - The result of the function.
+   * @param {number} iid - The instruction id.
+   * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
+   */
+  substrStringModel(base, args, reflected, result, iid) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+
+    if (taintInfo) {
+      let argsArray = Utils.getArrayLikeArguments(args, reflected);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:substr', [base, argsArray], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
+    }
+    return result;
+  }
+  
 
   /**
    * @description

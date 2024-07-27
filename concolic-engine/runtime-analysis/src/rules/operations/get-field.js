@@ -83,7 +83,7 @@ export class GetFieldTaintPropRules {
       else {
         let taintInfo = TaintHelper.getTaintInfo(base);
         let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'getField', [base, offset], iid);
-        TaintHelper.createTaintValue(val, newTaintInfo)
+        val = TaintHelper.createTaintValue(val, newTaintInfo)
       }
     }else{
       base[offset_c] = val;

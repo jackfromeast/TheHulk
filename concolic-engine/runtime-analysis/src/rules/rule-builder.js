@@ -25,6 +25,7 @@ import { TaintHelper } from '../taint-helper.js';
 import { WrappedValue, _, TaintValue } from '../values/wrapped-values.js';
 import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
 import { BinaryOpsTaintPropRules } from './operations/binary-ops.js';
+import { UnaryOpsTaintPropRules } from './operations/unary-ops.js';
 
 /**
  * @description
@@ -59,7 +60,7 @@ export class RuleBuilder {
    */
   static makeRuleUnary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, iid) => {
-      let result = UnaryJumpTable[operator](TaintHelper.concrete(left));
+      let result = UnaryOpsTaintPropRules.UnaryJumpTable[operator](TaintHelper.concrete(left));
 
       if (!featureDisabled && condition(left)) {
         result = modelF(operator, left, result, iid);

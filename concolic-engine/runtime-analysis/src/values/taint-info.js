@@ -1,3 +1,4 @@
+import { WrappedValue } from "./wrapped-values.js";
 /**
  * @description
  * --------------------------------
@@ -116,10 +117,18 @@ export class TaintPropOperation {
   cloneable(args) {
     return args.map(arg => {
       try {
+        // If the argument itself is a TaintValue
+        if (arg instanceof WrappedValue) {
+          return arg.toString();
+        }
         structuredClone(arg);
         return arg;
       } catch (e) {
-        return arg.toString();
+        if (arg.toString) {
+          return arg.toString();
+        }else {
+          return "[Unable to clone and convert to string (no toString method)]";
+        }
       }
     });
   }

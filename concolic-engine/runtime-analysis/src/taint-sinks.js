@@ -1,5 +1,6 @@
 import {WrappedValue, _, TaintValue} from './values/wrapped-values.js'
 import {TaintInfo, TaintPropOperation} from './values/taint-info.js'
+import { Utils } from './utils/util.js';
 
 
 export class TaintSinkRules {
@@ -142,6 +143,16 @@ export class TaintSinkRules {
       }
     }
 
+    if (f.name === 'Function') {
+      if (args.length && Array.from(args).some(arg => this.isTainted(arg))) {
+        for (let arg of Array.from(args)) {
+          if (this.isTainted(arg)) {
+            return ["SINK-TO-FUNCTION", arg];
+          }
+        }
+      }
+    }
+
     if (f.name === 'setTimeout' || f.name === 'setInterval') {
       if (args.length && this.isTainted(args[0])) {
         return [`SINK-TO-${f.name.toUpperCase()}`, args[0]];
@@ -174,7 +185,9 @@ export class TaintSinkRules {
       }
     }
 
-    if (base.toString() === '[object XMLHttpRequest]' && f.name === 'open') {
+    // Assume the base's toString shouldn't be overwritten
+    // If it is overwritten, we will get recursive function call
+    if (Utils.safeToString(base) === '[object XMLHttpRequest]' && f.name === 'open') {
       if (args.length && this.isTainted(args[1])) {
         return ["SINK-TO-XMLHTTPREQUEST-OPEN", args[1]];
       }

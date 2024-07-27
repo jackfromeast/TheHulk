@@ -23,7 +23,7 @@ export class UnaryOpsTaintPropRules {
    * Add the rule functions to the ruleDict.
    */
   buildRules() {
-    for (const operator in this.UnaryJumpTable) {
+    for (const operator in UnaryOpsTaintPropRules.UnaryJumpTable) {
       const condition = (left) => TaintHelper.isTainted(left);
       const rule = RuleBuilder.makeRuleUnary(operator, condition, this.defaultUnaryModel);
       this.addRule(operator, rule);
@@ -80,7 +80,7 @@ export class UnaryOpsTaintPropRules {
    * @param {*} offset 
    * @param {*} val 
    */
-  defaultUnaryModel(left, result, iid) {
+  defaultUnaryModel(operator, left, result, iid) {
     let taintInfo;
 
     if (TaintHelper.isTainted(left)) {

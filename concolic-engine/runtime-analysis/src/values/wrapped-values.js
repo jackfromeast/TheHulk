@@ -1,4 +1,5 @@
 // JALANGI DO NOT INSTRUMENT
+import { Utils } from '../utils/util.js';
 class WrappedValue {
   /**
    * 
@@ -21,7 +22,7 @@ class WrappedValue {
   }
 
   toString() {
-    return "Wrapped(" + this.concrete + ", " + (this.rider ? this.rider.toString() : "") + ")";
+    return "Wrapped(" + Utils.safeToString(this.concrete) + ", " + (this.rider ? this.rider.toString() : "") + ")";
   }
 
   valueOf() {
@@ -50,7 +51,7 @@ class ConcolicValue extends WrappedValue {
   }
 
   toString() {
-      return "Concolic(" + this.concrete + ", " + this.symbolic + ")";
+      return "Concolic(" + Utils.safeToString(this.concrete) + ", " + this.symbolic + ")";
   }
 
   clone() {
@@ -112,7 +113,7 @@ class TaintValue extends WrappedValue {
   }
 
   toString() {
-    return "TaintValue(" + this.concrete + ", " + this.taintInfo + ")";
+    return "TaintValue(" + Utils.safeToString(this.concrete) + ", " + this.taintInfo + ")";
   }
 
   clone() {

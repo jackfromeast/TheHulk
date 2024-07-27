@@ -11,8 +11,16 @@ export class ConcretizedFunctions {
     Array.prototype.includes,
     Array.prototype.find,
     Array.prototype.lastIndexOf,
-    Array.prototype.at
+    Array.prototype.at,
 
+    // Object Object
+    Object.hasOwnProperty,
+
+    // DOM APIs
+    document.appendChild,
+    document.createElement,
+    document.removeChild,
+    document.getElementsByTagName
   ];
 
   // Method to check if a given function is in the concretized list

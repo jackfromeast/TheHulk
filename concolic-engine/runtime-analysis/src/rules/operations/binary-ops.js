@@ -115,4 +115,5 @@ export class BinaryOpsTaintPropRules {
 
     return result;
   }
+
 }

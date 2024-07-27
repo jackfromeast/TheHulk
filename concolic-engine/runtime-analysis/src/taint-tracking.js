@@ -32,15 +32,18 @@ export class TaintTracking {
     this.taintID = 0;
     this.sandbox = sandbox;
     this.coverage = new Coverage(sandbox);
-    this.logger = new Logger('debug', 'TaintTracking');
+    this.logger = new Logger({
+      level: 'debug',
+      name: 'TheHulk',
+      logUnsupportBuiltin: true,
+      logTaintInstall: true
+    });
 
     this.taintPropRules = new TaintPropRules();
     this.taintSourceRules = new TaintSourceRules();
     this.taintSinkRules = new TaintSinkRules();
 
     this.dangerousFlows = [];
-
-    this.debugPrint = true;
   }
 
   /**
@@ -134,7 +137,7 @@ export class TaintTracking {
     if (rule) {
       result = rule(left, iid);
     } else {
-      result = this.taintPropRules.unaryRules.UnaryJumpTable[op](left);
+      result = this.taintPropRules.unaryRules.UnaryJumpTable[op](TaintHelper.concrete(left));
     }
 
     return {result: result};
@@ -145,13 +148,16 @@ export class TaintTracking {
    * This callback is called after a condition check before branching. Branching can happen in various statements
    * including if-then-else, switch-case, while, for, ||, &&, ?:.
    *
+   * @steps
+   * 1/ We always concretize the taint value before the conditional expression.
+   * 
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {*} result - The value of the conditional expression
    * @returns {{result: *}|undefined} - If an object is returned, the result of the conditional expression is
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   conditional (iid, result) {
-    return {result: result};
+    return {result: TaintHelper.concrete(result)};
   };
 
   /**
@@ -279,7 +285,7 @@ export class TaintTracking {
         // f is a built-in function but no rule found
         // We concretize the taint value and apply the original function
         if (!ConcretizedFunctions.isKnownConcretized(f)){
-          Utils.reportUnsupportedBuiltin(f.name, iid);
+          J$$.analysis.logger.reportUnsupportedBuiltin(f, base);
         }
         args = Array.from(args).map(item => TaintHelper.concrete(item)); 
 
@@ -340,7 +346,7 @@ export class TaintTracking {
    */
   invokeFun (iid, f, base, args, result, isConstructor, isMethod, functionIid, functionSid) {
     let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
-    if (reason) {
+    if (!TaintHelper.isTainted(result) && reason) {
       // TODO: We need to clone the variable or only save the taint information and not the value
       let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result], iid));
       result = TaintHelper.createTaintValue(result, taintInfo);
@@ -472,7 +478,7 @@ export class TaintTracking {
     val = this.taintPropRules.getFieldRules.getRule(base, offset)(base, offset, iid)
     
     let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
-    if (reason) {
+    if (!TaintHelper.isTainted(val) && reason) {
       // The taint introduced from taintSourceRules has more priority
       if (val instanceof WrappedValue) {
         val = val.getConcrete();

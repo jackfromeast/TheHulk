@@ -28,16 +28,12 @@ export class TaintHelper {
     }
 
     if (Utils.isPrimitive(value)) {
-      if (J$$.analysis.debugPrint) {
-        Utils.debugPrint ("Adding taint to " + value);
-      }
+      J$$.analysis.logger.reportTaintInstall(value);
       return new TaintValue(value, taintInfo);
     }
     else {
       try {
-        if (J$$.analysis.debugPrint) {
-          Utils.debugPrint ("Adding taint to " + value);
-        }
+        J$$.analysis.logger.reportTaintInstall(value);
         Object.defineProperty(value, TaintPropName, {
           value: taintInfo,
           enumerable: false,
@@ -47,7 +43,7 @@ export class TaintHelper {
         return value;
       }
       catch (e) {
-        console.log(`Error in adding taint to ${value}: ${e}`);
+        J$$.analysis.logger.debug("Failed to install taint to", value, " because ", e);
         return value;
       }
     }
@@ -147,10 +143,14 @@ export class TaintHelper {
 
     let cloned_args = args.map(arg => {
       try{
+        // If the argument itself is a TaintValue
+        if (arg instanceof WrappedValue) {
+          return arg.toString();
+        }
         return structuredClone(arg);
       }
       catch(e) {
-        // Utils.debugPrint(`Cannot clone ${arg} because ${e}`);
+        // J$$.analysis.logger.debug(`Cannot clone ${arg} because ${e}`);
         return arg;
       }
     });
