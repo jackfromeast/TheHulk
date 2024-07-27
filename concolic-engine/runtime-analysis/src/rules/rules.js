@@ -6,6 +6,7 @@ import { PutFieldTaintPropRules } from './operations/put-field.js';
 import { StringBuiltinsTaintPropRules } from './js-builtins/string-builtins.js'
 import { ArrayBuiltinsTaintPropRules } from './js-builtins/array-builtins.js';
 import { JSONBuiltinsRules } from './js-builtins/json-builtins.js'
+import { RegExpBuiltinsRules } from './js-builtins/regexp-builtins.js';
 
 export class TaintPropRules {
   constructor() {
@@ -17,12 +18,14 @@ export class TaintPropRules {
     this.stringBuiltinsRules = new StringBuiltinsTaintPropRules();
     this.arrayBuiltinsRules = new ArrayBuiltinsTaintPropRules();
     this.jsonBuiltinsRules = new JSONBuiltinsRules();
+    this.regexpBuiltinsRules = new RegExpBuiltinsRules();
 
 
     this.invokeFunRules = this.aggregateRules([
       this.stringBuiltinsRules.ruleDict,
       this.arrayBuiltinsRules.ruleDict,
-      this.jsonBuiltinsRules.ruleDict
+      this.jsonBuiltinsRules.ruleDict,
+      this.regexpBuiltinsRules.ruleDict
     ]);
   }
 

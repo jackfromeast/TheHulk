@@ -36,7 +36,7 @@ export class TaintTracking {
       level: 'debug',
       name: 'TheHulk',
       logUnsupportBuiltin: true,
-      logTaintInstall: true
+      logTaintInstall: false
     });
 
     this.taintPropRules = new TaintPropRules();
@@ -272,7 +272,7 @@ export class TaintTracking {
     }
 
     // If none of the arguments are tainted, we skip to the use any rules
-    if (!TaintHelper.isAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
+    if (!TaintHelper.risAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
       return {f: f_c, base: base_c, args: args, skip: false};
     }
 
