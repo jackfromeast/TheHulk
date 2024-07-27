@@ -20,24 +20,44 @@ import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
  * - LAST_ARG_TAINTED: The last argument is tainted.
  */
 export class ConditionBuilder {
-  static BASE_TAINTED(base, args, reflected) {
+  static BASE_TAINTED_RECURSIVE(base, args, reflected) {
     return TaintHelper.risTainted(base);
+  }
+
+  static BASE_TAINTED(base, args, reflected) {
+    return TaintHelper.isTainted(base);
   }
 
   static ANY_ARGS_TAINTED(base, args, reflected) {
     return TaintHelper.isAnyArgumentsTainted(args, reflected);
   }
 
+  static ANY_ARGS_TAINTED_RECURSIVE(base, args, reflected) {
+    return TaintHelper.rgetTaintInfoisAnyArgumentsTainted(args, reflected);
+  }
+
   static FIRST_ARG_TAINTED(base, args, reflected) {
+    return args.length > 0 && TaintHelper.isTainted(args[0]);
+  }
+
+  static FIRST_ARG_TAINTED_RECURSIVE(base, args, reflected) {
     return args.length > 0 && TaintHelper.risTainted(args[0]);
   }
 
   static SECOND_ARG_TAINTED(base, args, reflected) {
-    return args.length > 1 && TaintHelper.risTainted(args[0]);
+    return args.length > 1 && TaintHelper.isTainted(args[0]);
+  }
+
+  static SECOND_ARG_TAINTED_RECURSIVE(base, args, reflected) {
+    return args.length > 1 && TaintHelper.risTainted(args[1]);
   }
 
   static LAST_ARG_TAINTED(base, args, reflected) {
     return args.length > 0 && TaintHelper.risTainted(args[args.length - 1]);
+  }
+
+  static LAST_ARG_TAINTED_RECURSIVE(base, args, reflected) {
+    return args.length > 0 && TaintHelper.isTainted(args[args.length - 1]);
   }
 
   static NONE(base, args, reflected) {
@@ -49,7 +69,9 @@ export class ConditionBuilder {
   }
 
   static validateConditionString(conditionString) {
-    const validConditions = ['BASE_TAINTED', 'ANY_ARGS_TAINTED', 'FIRST_ARG_TAINTED', 'SECOND_ARG_TAINTED', 'LAST_ARG_TAINTED', 'NONE', 'ALL'];
+    const validConditions = ['BASE_TAINTED', 'ANY_ARGS_TAINTED', 'FIRST_ARG_TAINTED', 'SECOND_ARG_TAINTED', 'LAST_ARG_TAINTED',
+                             'BASE_TAINTED_RECURSIVE', 'ANY_ARGS_TAINTED_RECURSIVE', 'FIRST_ARG_TAINTED_RECURSIVE', 'SECOND_ARG_TAINTED_RECURSIVE',
+                             'LAST_ARG_TAINTED_RECURSIVE','NONE', 'ALL'];
     const conditionTokens = conditionString.split(/\s*(&&|\|\|)\s*/);
     for (const token of conditionTokens) {
       if (!validConditions.includes(token.trim()) && !['&&', '||'].includes(token.trim())) {
@@ -57,11 +79,16 @@ export class ConditionBuilder {
       }
     }
   }
-
+  
   static makeCondition(conditionString) {
     ConditionBuilder.validateConditionString(conditionString);
-
+  
     const conditions = {
+      'BASE_TAINTED_RECURSIVE': this.BASE_TAINTED_RECURSIVE,
+      'ANY_ARGS_TAINTED_RECURSIVE': this.ANY_ARGS_TAINTED_RECURSIVE,
+      'FIRST_ARG_TAINTED_RECURSIVE': this.FIRST_ARG_TAINTED_RECURSIVE,
+      'SECOND_ARG_TAINTED_RECURSIVE': this.SECOND_ARG_TAINTED_RECURSIVE,
+      'LAST_ARG_TAINTED_RECURSIVE': this.LAST_ARG_TAINTED_RECURSIVE,
       'BASE_TAINTED': this.BASE_TAINTED,
       'ANY_ARGS_TAINTED': this.ANY_ARGS_TAINTED,
       'FIRST_ARG_TAINTED': this.FIRST_ARG_TAINTED,
@@ -70,20 +97,18 @@ export class ConditionBuilder {
       'NONE': this.NONE,
       'ALL': this.ALL,
     };
-
+  
+    let modifiedConditionString = conditionString;
+  
+    Object.keys(conditions).forEach(key => {
+      const regex = new RegExp(`\\b${key}\\b`, 'g');
+      modifiedConditionString = modifiedConditionString.replace(regex, `conditions.${key}(base, args, reflected)`);
+    });
+  
     const conditionFunction = new Function('conditions', 'base', 'args', 'reflected', `
-      return ${conditionString
-        .replace(/BASE_TAINTED/g, 'conditions.BASE_TAINTED(base, args, reflected)')
-        .replace(/ANY_ARGS_TAINTED/g, 'conditions.ANY_ARGS_TAINTED(base, args, reflected)')
-        .replace(/FIRST_ARG_TAINTED/g, 'conditions.FIRST_ARG_TAINTED(base, args, reflected)')
-        .replace(/SECOND_ARG_TAINTED/g, 'conditions.SECOND_ARG_TAINTED(base, args, reflected)')
-        .replace(/LAST_ARG_TAINTED/g, 'conditions.LAST_ARG_TAINTED(base, args, reflected)')
-        .replace(/NONE/g, 'conditions.NONE(base, args, reflected)')
-        .replace(/ALL/g, 'conditions.ALL(base, args, reflected)')
-        .replace(/\|\|/g, '||')
-        .replace(/&&/g, '&&')};
+      return ${modifiedConditionString};
     `);
-
-    return (base, args, reflected) => conditionFunction(conditions, base, args, reflected);
+  
+    return conditionFunction.bind(null, conditions);
   }
 }
