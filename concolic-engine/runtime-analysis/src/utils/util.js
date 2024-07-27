@@ -7,9 +7,7 @@ import { TaintHelper } from "../taint-helper.js";
  */
 export class Utils {
   static reportDangerousFlow(sourceReason, sourceLoc, sinkReason, sinkLoc, taintedValue, iid) {
-    console.log("%c[TheHulk] Found a dangerous flow from %s to %s!",
-                'background: #222; color: #bada55',            
-                sourceReason, sinkReason);
+    J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
     
     const clonedTaintedValue = JSON.parse(JSON.stringify(taintedValue));
 
@@ -23,27 +21,26 @@ export class Utils {
     });
   }
 
-  static reportUnsupportedBuiltin(builtinName) {
-    if (!J$$.analysis.debugPrint) {
-      return;
+  /**
+   * @description
+   * --------------------------------
+   * Safe tostring function that handles exceptions
+   * The value might doesn't inherited from Object.prototype and don't have toString method
+   */
+  static safeToString(value) {
+    try {
+      // value.toString shouldn't be overwritten by developer
+      // If it is overwritten, we will get recursive function
+      if (!isNativeFunction(value.toString)) { throw new Error('toString is not native'); }
+      return value.toString();
+    } catch (e) {
+      return '[Unable to convert to string]';
     }
-
-    console.log("%c[TheHulk] Debug: Unsupported builtin %s!",
-                'background: white; color: brown',            
-                builtinName);
-  }
-
-  static debugPrint(message) {
-    if (!J$$.analysis.debugPrint) {
-      return;
-    }
-
-    console.log("%c[TheHulk] Debug: %s!",
-      'background: white; color: brown',            
-      message);
   }
 
   /**
+   * @description
+   * --------------------------------
    * Retrun the array like arguments
    * 
    * @param {Argruments} args 
@@ -72,6 +69,15 @@ export class Utils {
     return argsArray;
   }
 
+  /**
+   * isNativeFunction should free from any side effects
+   * 
+   * The f and value should be any type of value even without prototype
+   * We should swallow any exceptions
+   * 
+   * @param {*} f 
+   * @returns 
+   */
   static isNativeFunction(f) {
     const toString = Object.prototype.toString;
     const fnToString = Function.prototype.toString;
@@ -86,9 +92,10 @@ export class Utils {
     );
 
     function isNativeCore(value) {
-        if (value.hasOwnProperty('toString')) {
-            console.warn('WARNING: isNativeFunction will not work on custom toString methods. We assume nobody would overwrite core method toStrings');
-            return false;
+        if (!value.hasOwnProperty || value.hasOwnProperty('toString')) {
+          // isNativeFunction will not work on custom toString methods. 
+          // We assume nobody would overwrite core method toStrings
+          return false;
         }
 
         if (typeof(value) === "function") {
@@ -101,14 +108,14 @@ export class Utils {
     }
 
     if (f === null || f === undefined) {
-        console.warn('isNativeFunction called on null or undefined');
+        // isNativeFunction called on null or undefined;
         return false;
     }
 
     if (typeof(f) === "function" || typeof(f) === "object") {
         return isNativeCore(f);
     } else {
-        console.warn('isNativeFunction called on non-function/non-object');
+        // isNativeFunction called on non-function/non-object;
         return false;
     }
   }
