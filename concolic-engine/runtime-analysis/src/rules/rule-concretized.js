@@ -15,6 +15,17 @@ export class ConcretizedFunctions {
 
     // Object Object
     Object.hasOwnProperty,
+    Object.freeze,
+    Object.isFrozen,
+    Object.isSealed,
+    Object.isExtensible,
+    Object.getOwnPropertyNames,
+    Object.getOwnPropertySymbols,
+    Object.getPrototypeOf,
+    Object.is,
+    Object.hasOwn,
+    Object.create,
+    
 
     // DOM APIs
     document.appendChild,
