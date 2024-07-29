@@ -225,7 +225,7 @@ export class ArrayBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'join', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'join', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -271,7 +271,7 @@ export class ArrayBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'toString', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'toString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     
@@ -316,7 +316,7 @@ export class ArrayBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'toLocaleString', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'toLocaleString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     

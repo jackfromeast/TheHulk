@@ -88,7 +88,7 @@ export class ObjectBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:assign', [base, args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:assign', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -119,7 +119,7 @@ export class ObjectBuiltinsTaintPropRules {
   fromEntriesObjectModel(base, args, reflected, result, iid) {
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:fromEntries', [base, args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:fromEntries', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -150,7 +150,7 @@ export class ObjectBuiltinsTaintPropRules {
   entriesObjectModel(base, args, reflected, result, iid) {
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:entries', [base, args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:entries', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -181,7 +181,7 @@ export class ObjectBuiltinsTaintPropRules {
   valuesObjectModel(base, args, reflected, result, iid) {
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:values', [base, args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:values', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;

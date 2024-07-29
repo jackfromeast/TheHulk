@@ -66,7 +66,7 @@ export class TaintHelper {
     if (value === undefined || value === null) {
       return value;
     }
-    
+
     if (!taintInfo) {
       return value;
     }
@@ -95,13 +95,33 @@ export class TaintHelper {
     }
   }
 
-  static risTainted(value) {
+  static risTainted(value, depth = 0) {
+    if (depth > J$$.analysis.MAX_DEPTH_FOR_TAINT_CHECK) {
+      return false; // Do not trace beyond MAX_DEPTH_FOR_TAINT_CHECK layers
+    }
     if (TaintHelper.isTainted(value)) {
       return true;
     } else if (Array.isArray(value)) {
-      return value.some(item => TaintHelper.risTainted(item));
+      try{
+        return value.some(item => TaintHelper.risTainted(item, depth + 1));
+      } catch (DOMException) {
+        J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+        return false;
+      }
     } else if (value && typeof value === 'object' && value.constructor === Object) {
-      return Object.keys(value).some(key => TaintHelper.risTainted(value[key]));
+      return Object.keys(value).some(key => {
+        try{
+          // Check if the property has a getter or is a function
+          const descriptor = Object.getOwnPropertyDescriptor(value, key);
+          if (descriptor && (descriptor.get || typeof descriptor.value === 'function')) {
+            return false;
+          }
+          return TaintHelper.risTainted(value[key], depth + 1);
+        } catch (DOMException) {
+          J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+          return false;
+        }
+      });
     }
     return false;
   }
@@ -199,7 +219,7 @@ export class TaintHelper {
         return value;
       }
     }
-    return [value, null];
+    return value;
   }
   
     /**
@@ -247,10 +267,11 @@ export class TaintHelper {
    * 
    * @param {TaintInfo} oldTaintInfo
    * @param {String} operationName
-   * @param {Array} args
+   * @param {*} base
+   * @param {Array[*]|Argruments} args
    * @param {Number} iid
    */
-  static addTaintPropOperation(oldTaintInfo, operationName, args, iid) {
+  static addTaintPropOperation(oldTaintInfo, operationName, base, args, iid) {
     if (!structuredClone) {
       throw new Error("structuredClone is not defined");
     }
@@ -259,20 +280,30 @@ export class TaintHelper {
     let newTaintInfo = Object.create(Object.getPrototypeOf(oldTaintInfo));
     Object.assign(newTaintInfo, structuredClone(Object.assign({}, oldTaintInfo)));
 
-    let cloned_args = args.map(arg => {
-      try{
-        // If the argument itself is a TaintValue
+    let clonedBase;
+    try {
+      if (base instanceof WrappedValue) {
+        clonedBase = Utils.safeToString(base);
+      } else {
+        clonedBase = structuredClone(base);
+      }
+    } catch (e) {
+      clonedBase = base;
+    }
+    
+    if (Utils.isArguments(args)) { args = Array.from(args); }
+    let clonedArgs = args.map(arg => {
+      try {
         if (arg instanceof WrappedValue) {
           return arg.toString();
         }
         return structuredClone(arg);
-      }
-      catch(e) {
-        // J$$.analysis.logger.debug(`Cannot clone ${arg} because ${e}`);
+      } catch (e) {
         return arg;
       }
     });
-    newTaintInfo.addTaintPropOperation(operationName, cloned_args, iid);
+
+    newTaintInfo.addTaintPropOperation(operationName, clonedBase, clonedArgs, iid);
 
     return newTaintInfo;
   }
@@ -347,9 +378,17 @@ export class TaintHelper {
     if (reflected === 'apply') {
       // For f.apply(this, args)
       // If there is only one argument, it is the arg itself
-      // If there is more than one argument, it is [arg1, arg2, ...]
-      return TaintHelper.risTainted(argsArray[1]) ||
-             argsArray[1].some(arg => TaintHelper.risTainted(arg));
+      // If there is more than one argument, it is [arg1, arg2, ...] (in Array type)
+
+      // If argsArray[1] is not in type of array, we need to check if it is tainted
+      if (!Utils.isArray(argsArray[1])) {
+        return TaintHelper.risTainted(argsArray[1]);
+      }else{
+        // If argsArray[1] is in type of array, it can be [arg1, arg2, ...] or arg1 is an array
+        return TaintHelper.risTainted(argsArray[1]) ||
+               (argsArray[1].length > 0 &&
+               argsArray[1].some(arg => TaintHelper.risTainted(arg)));
+      }
     }
 
     return argsArray.some(arg => TaintHelper.risTainted(arg));
@@ -367,8 +406,16 @@ export class TaintHelper {
       // For f.apply(this, args)
       // If there is only one argument, it is the arg itself
       // If there is more than one argument, it is [arg1, arg2, ...]
-      return TaintHelper.isTainted(argsArray[1]) ||
-             argsArray[1].some(arg => TaintHelper.isTainted(arg));
+
+      // If argsArray[1] is not in type of array, we need to check if it is tainted
+      if (!Utils.isArray(argsArray[1])) {
+        return TaintHelper.isTainted(argsArray[1]);
+      }else{
+        // If argsArray[1] is in type of array, it can be [arg1, arg2, ...] or arg1 is an array
+        return TaintHelper.isTainted(argsArray[1]) ||
+                (argsArray[1].length > 0 &&
+                argsArray[1].some(arg => TaintHelper.isTainted(arg)));
+      }
     }
 
     return argsArray.some(arg => TaintHelper.isTainted(arg));

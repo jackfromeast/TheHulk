@@ -47,6 +47,7 @@ export class TaintTracking {
     this.dangerousFlows = [];
 
     this.taintStackHelper = new TaintStackHelper();
+    this.MAX_DEPTH_FOR_TAINT_CHECK = 3;
   }
 
   /**
@@ -275,14 +276,24 @@ export class TaintTracking {
       throw new Error("[TheHulk] Function object is tainted!");
     }
 
+    // FIXME
+    // We should be very cautious on the functions that are called by the built-in functions e.g. custom toString function and so on
+    // We will lose control of these kind of functions's return value
+    // 1/ Check if one of the arguments is the callback function for the built-in function
+    // if (Utils.isNativeFunction(fTobeCheck) && isAnyUserDefinedFunction())
+ 
     // If none of the arguments are tainted, we skip to the use any rules
     if (!TaintHelper.risAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
+      // Push the function to the stack
+      // this.taintStackHelper.pushStackFrame(f_c, iid);
       return {f: f_c, base: base_c, args: args, skip: false};
     }
 
     if (Utils.isNativeFunction(fTobeCheck)) {
       let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
       if (rule) {
+        // Push the function to the stack
+        // this.taintStackHelper.pushStackFrame(rule, iid);
         return {f: rule, base: base, args: args, skip: false, reflected: reflected};
       }
       else {
@@ -293,11 +304,14 @@ export class TaintTracking {
         }
         args = Array.from(args).map(item => TaintHelper.concreteHard(item)); 
 
+        // Push the function to the stack
+        // this.taintStackHelper.pushStackFrame(f_c, iid);
         return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
       }
     }
   
     // f is not a built-in function
+    // this.taintStackHelper.pushStackFrame(f_c, iid);
     return {f: f_c, base: base, args: args, skip: false, reflected:""};
   };
 
@@ -352,9 +366,18 @@ export class TaintTracking {
     let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
     if (!TaintHelper.isTainted(result) && reason) {
       // TODO: We need to clone the variable or only save the taint information and not the value
-      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("invokeFun", [f, base, args, result], iid));
+      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
       result = TaintHelper.createTaintValue(result, taintInfo);
     }
+
+    // Pop the function from the stack
+    // let frame = this.taintStackHelper.peakStackFrame();
+    // if (frame.function !== f) {
+    //   throw new Error("[TheHulk] Function object is not the same!");
+    // } else{
+    //   this.taintStackHelper.popStackFrame();
+    // }
+    
     return {result: result};
   };
 
@@ -487,7 +510,7 @@ export class TaintTracking {
       if (val instanceof WrappedValue) {
         val = val.getConcrete();
       }
-      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", [base, offset], iid));
+      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", base, [offset], iid));
       val = TaintHelper.createTaintValue(val, taintInfo);
     }
 
@@ -595,7 +618,10 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   _return (iid, val) {
-      return {result: val};
+    // if (this.taintStackHelper.shouldConcretizeReturn) {
+    //   val = TaintHelper.concreteWrappedOnly(val);
+    // }
+    return {result: val};
   };
 
   /**

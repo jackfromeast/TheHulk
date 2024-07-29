@@ -58,6 +58,7 @@ export class StringBuiltinsTaintPropRules {
     'repeat': [String.prototype.repeat, this.repeatStringModel, 'BASE_TAINTED'],
 
     // Arguments only
+    // 'String': [String, this.StringModel, 'FIRST_ARGS_TAINTED'],
     'raw': [String.raw, this.rawStringModel, 'ANY_ARGS_TAINTED'],
     'fromCharCode': [String.fromCharCode, this.fromCharCodeStringModel, 'ANY_ARGS_TAINTED'],
     'fromCodePoint': [String.fromCodePoint, this.fromCodePointStringModel, 'ANY_ARGS_TAINTED'],
@@ -139,7 +140,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCharCode', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCharCode', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -181,7 +182,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:at', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:at', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -218,7 +219,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCodePoint', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCodePoint', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -259,7 +260,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:raw', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:raw', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -300,7 +301,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charAt', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charAt', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -341,7 +342,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charCodeAt', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charCodeAt', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -382,7 +383,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:codePointAt', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:codePointAt', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -428,7 +429,7 @@ export class StringBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:concat', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:concat', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -468,7 +469,7 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:endsWith', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:endsWith', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -508,7 +509,7 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:includes', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:includes', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -548,7 +549,7 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:indexOf', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:indexOf', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -584,7 +585,7 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:isWellFormed', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:isWellFormed', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -624,7 +625,7 @@ export class StringBuiltinsTaintPropRules {
     if (TaintHelper.rgetTaintInfo(base)) {
       const taintInfo = TaintHelper.rgetTaintInfo(base);
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:lastIndexOf', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:lastIndexOf', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -665,7 +666,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:localeCompare', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:localeCompare', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -706,7 +707,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:match', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:match', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -747,7 +748,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:matchAll', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:matchAll', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -788,7 +789,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:normalize', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:normalize', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -829,7 +830,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padEnd', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padEnd', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -870,7 +871,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padStart', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padStart', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -911,7 +912,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:repeat', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:repeat', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -956,7 +957,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replace', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replace', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1001,7 +1002,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replaceAll', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replaceAll', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1042,7 +1043,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:search', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:search', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1083,7 +1084,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:slice', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:slice', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1118,7 +1119,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:substr', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:substr', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1160,7 +1161,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:split', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:split', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1201,7 +1202,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:startsWith', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:startsWith', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1242,7 +1243,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleLowerCase', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleLowerCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1283,7 +1284,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleUpperCase', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleUpperCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1324,7 +1325,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLowerCase', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLowerCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1365,7 +1366,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toString', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toString', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1406,7 +1407,7 @@ export class StringBuiltinsTaintPropRules {
 
     if (taintInfo) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toUpperCase', [base, argsArray], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toUpperCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1446,7 +1447,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toWellFormed', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toWellFormed', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1483,7 +1484,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trim', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trim', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1519,7 +1520,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimEnd', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimEnd', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1555,7 +1556,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimStart', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimStart', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1591,7 +1592,7 @@ export class StringBuiltinsTaintPropRules {
     let taintInfo = TaintHelper.rgetTaintInfo(base);
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:valueOf', [base], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:valueOf', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;

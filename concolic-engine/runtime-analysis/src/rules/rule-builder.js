@@ -67,12 +67,6 @@ export class RuleBuilder {
 
       let [result, thrown] = this.runOriginFunc(unaryOpsOrigin, null, [operator, left], true);
 
-      // let [left_c, left_taint_info] = TaintHelper.concrete(left);
-      // let result = UnaryOpsTaintPropRules.UnaryJumpTable[operator](left_c);
-      // if (left_taint_info) {
-      //   left = TaintHelper.createTaintValue(left_c, left_taint_info, true);
-      // }
-
       if (!featureDisabled && condition(left)) {
         result = modelF(operator, left, result, iid);
       }
@@ -108,19 +102,6 @@ export class RuleBuilder {
       }
 
       let [result, thrown] = this.runOriginFunc(binaryOpsOrigin, null, [operator, left, right], true);
-
-
-      // let [left_c, left_taint_info] = TaintHelper.concrete(left);
-      // let [right_c, right_taint_info] = TaintHelper.concrete(right);
-
-      // let result = BinaryOpsTaintPropRules.BinaryJumpTable[operator](left_c, right_c);
-
-      // if (left_taint_info) {
-      //   left = TaintHelper.createTaintValue(left_c, left_taint_info, true);
-      // }
-      // if (right_taint_info) {
-      //   right = TaintHelper.createTaintValue(right_c, right_taint_info, true);
-      // }
 
       if (!featureDisabled && condition(left, right)) {
         result = modelF(operator, left, right, result, iid);
@@ -165,19 +146,6 @@ export class RuleBuilder {
       }
 
       let [result, thrown] = this.runOriginFunc(getFieldOriginal, null, [base, offset], true);
-
-      // let [base_c, base_taint_info] = TaintHelper.concrete(base);
-      // let [offset_c, offset_taint_info] = TaintHelper.concrete(offset);
-
-      // Here need to make sure that the offset can be converted to primitive type (i.e. String)
-      // let result = base_c[offset_c];
-
-      // if (base_taint_info) {
-      //   base = TaintHelper.createTaintValue(base_c, base_taint_info, true);
-      // }
-      // if (offset_taint_info) {
-      //   offset = TaintHelper.createTaintValue(offset_c, offset_taint_info, true);
-      // }
       
       if (!featureDisabled && condition(base) && !(result instanceof Function)) {
         result = modelF(base, offset, result, iid);
@@ -207,6 +175,12 @@ export class RuleBuilder {
    */
   static makeRulePutField(condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (base, offset, val, iid) => {
+
+      function putFieldOriginal(base, offset, val) {
+        base[offset] = val;
+      }
+
+      let [result, thrown] = this.runOriginFunc(putFieldOriginal, null, [base, offset, val], concretize);
 
       if (!featureDisabled && condition(val)) {
         val = modelF(base, offset, val);

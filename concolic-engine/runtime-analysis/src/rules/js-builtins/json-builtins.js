@@ -72,7 +72,7 @@ export class JSONBuiltinsRules {
     let taintInfo = TaintHelper.getTaintInfo(args[0]);
 
     if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'JSON:parse', [args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'JSON:parse', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -111,7 +111,7 @@ export class JSONBuiltinsRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'JSON:stringify', [args[0]], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'JSON:stringify', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

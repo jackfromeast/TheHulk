@@ -81,7 +81,7 @@ export class GetFieldTaintPropRules {
       // If the base object itself is tainted while the val is not
       else {
         let taintInfo = TaintHelper.getTaintInfo(base);
-        let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'getField', [base, offset], iid);
+        let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'getField', base, [offset], iid);
         val = TaintHelper.createTaintValue(val, newTaintInfo)
       }
     }

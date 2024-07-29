@@ -75,7 +75,7 @@ export class RegExpBuiltinsRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'RegExp:exec', [base, args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'RegExp:exec', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -112,7 +112,7 @@ export class RegExpBuiltinsRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'RegExp:test', [base, args], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'RegExp:test', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

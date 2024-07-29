@@ -72,9 +72,9 @@ export class TaintInfo {
     return this.taintPropOperations;
   }
 
-  addTaintPropOperation(operation, argument, location) {
+  addTaintPropOperation(operation, base, argument, location) {
     this.taintPropOperations.push(
-      new TaintPropOperation(operation, argument, location));
+      new TaintPropOperation(operation, base, argument, location));
   }
 }
 
@@ -98,12 +98,14 @@ export class TaintPropOperation {
    * @TODO
    * Concrete the arguments here, like toString, etc.
    * 
-   * @param {String} operation 
+   * @param {String} operation
+   * @param {*} base
    * @param {Array<*>} argument
    * @param {Number} location
    */
-  constructor(operation, argument, location) {
+  constructor(operation, base, argument, location) {
     this.operation = operation;
+    this.base = this.cloneableOne(base);
     this.arguments = this.cloneable(argument);
     this.location = location;
   }
@@ -122,8 +124,7 @@ export class TaintPropOperation {
         if (arg instanceof WrappedValue) {
           return Utils.safeToString(arg);
         }
-        structuredClone(arg);
-        return arg;
+        return structuredClone(arg);
       } catch (e) {
         if (arg.toString) {
           return Utils.safeToString(arg);
@@ -132,6 +133,22 @@ export class TaintPropOperation {
         }
       }
     });
+  }
+
+  cloneableOne(base) {
+    try {
+      // If the argument itself is a TaintValue
+      if (base instanceof WrappedValue) {
+        return Utils.safeToString(base);
+      }
+      return structuredClone(base);
+    } catch (e) {
+      if (base.toString) {
+        return Utils.safeToString(base);
+      }else {
+        return "[Unable to clone and convert to string (no toString method)]";
+      }
+    }
   }
 
   getOperation() {

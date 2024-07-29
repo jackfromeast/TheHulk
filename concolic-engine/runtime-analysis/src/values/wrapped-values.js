@@ -113,7 +113,7 @@ class TaintValue extends WrappedValue {
   }
 
   toString() {
-    return "TaintValue(" + Utils.safeToString(this.concrete) + ", " + this.taintInfo + ")";
+    return "TaintValue(" + Utils.safeToString(this.concrete) + ")";
   }
 
   clone() {

@@ -10,13 +10,14 @@ export class Utils {
     J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
     
     try{
-      const clonedTaintedValue = structuredClone(taintedValue);
+      // TODO: Think of a better way to take the snapshot of the tainted value
+      // const clonedTaintedValue = structuredClone(taintedValue);
       J$$.analysis.dangerousFlows.push({
         sourceReason: sourceReason,
         sourceLoc: sourceLoc,
         sinkReason: sinkReason,
         sinkLoc: sinkLoc,
-        taintedValue: clonedTaintedValue,
+        taintedValue: taintedValue,
         iid: iid
       });
     }
@@ -35,7 +36,7 @@ export class Utils {
     try {
       // value.toString shouldn't be overwritten by developer
       // If it is overwritten, we will get recursive function
-      if (!isNativeFunction(value.toString)) { throw new Error('toString is not native'); }
+      if (!Utils.isNativeFunction(value.toString)) { throw new Error('toString is not native'); }
       return value.toString();
     } catch (e) {
       return '[Unable to convert to string]';
@@ -134,6 +135,10 @@ export class Utils {
         // isNativeFunction called on non-function/non-object;
         return false;
     }
+  }
+
+  static isAnyUserDefinedFunction(args) {
+    return Array.from(args).some(arg => typeof arg === 'function' && !Utils.isNativeFunction(arg));
   }
 
   /**
