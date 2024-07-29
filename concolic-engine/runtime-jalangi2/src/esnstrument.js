@@ -27,7 +27,7 @@ if (typeof J$$ === 'undefined') {
 }
 
 const acorn = require('acorn');
-const esotope = require('esotope');
+const astring = require('astring');
 const babel = require('@babel/standalone');
 
 // import * as babel from '@babel/core';
@@ -39,7 +39,7 @@ const babel = require('@babel/standalone');
       return;
   }
 
-  function es6Transform(code) {
+  function es5Transform(code) {
     if (typeof(babel) !== 'undefined' && !process.env['NO_ES7']) {
         var res = babel.transform(code, {
           retainLines: true,
@@ -773,6 +773,29 @@ const babel = require('@babel/standalone');
   function wrapLogicalOr(node, left, right) {
       if (!Config.INSTR_CONDITIONAL || Config.INSTR_CONDITIONAL("||", node)) {
           printCondIidToLoc(node);
+        /** 
+         * This function convert the logical `or` to contional expression ?:
+         * E.g. let x = a || b => let x = J$.C(a) ? J$._() : b 
+         * J$._() retruns the last computed value which is J$.C(a) or b
+         * 
+         * The problem is that if a is an symbolic value, in J$.C(a) convert a to its concrete value
+         * (otherwise, the condition will always return true due to our symbolic object wrapper).
+         * Then J$._() will be the concrete value of a, and we will lose the symbolic variable.
+         * 
+         * To solve this problem, my first solution is to modify the instrumentation: let x = a || b => let x = J$.C(a) ? a : b
+         * But this would cause a problem when instrumenting chained logical or: 
+         * let x = a() || b() || c() =>
+         * J$.C((J$.C(a()) ? a():b())) ? (J$.C(a()) ? a():b()) : c()
+         * 
+         * in stead of generating something like:
+         * let x = J$.C(a()) ? a() : J$.C(b()) ? b() : c() 
+         * 
+         * Currently, I use the second solution in the following code:
+         * let J$._() = a instead of let J$._() = J$.C(a)
+         * 
+         * modified in runtime/analysis.js:C function and analyser/src/symbolic-execution.js:conditional function
+         *
+         */
           var ret = replaceInExpr(
               logConditionalFunName + "(" + RP + "1, " + RP + "2)?" + logLastFunName + "():" + RP + "3",
               getCondIid(),
@@ -899,7 +922,7 @@ const babel = require('@babel/standalone');
   function createCallAsFunEnterStatement(node) {
       printIidToLoc(node);
       var ret = replaceInStatement(
-          logFunctionEnterFunName + "(" + RP + "1,arguments.callee, this, arguments)",
+          logFunctionEnterFunName + "(" + RP + "1,undefined, this, arguments)",
           getIid()
       );
       transferLoc(ret[0].expression, node);
@@ -1021,18 +1044,18 @@ const babel = require('@babel/standalone');
 
   function syncDefuns(node, scope, isScript) {
       var ret = [], ident;
-      if (!isScript) {
-          if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {
-              if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {
-                  ident = createIdentifierAst("arguments");
-                  ret = ret.concat(createCallInitAsStatement(node,
-                      createLiteralAst("arguments"),
-                      ident,
-                      true,
-                      ident, false, true));
-              }
-          }
-      }
+    //   if (!isScript) {
+    //       if (!Config.INSTR_TRY_CATCH_ARGUMENTS || Config.INSTR_TRY_CATCH_ARGUMENTS(node)) {
+    //           if (!Config.INSTR_INIT || Config.INSTR_INIT(node)) {
+    //               ident = createIdentifierAst("arguments");
+    //               ret = ret.concat(createCallInitAsStatement(node,
+    //                   createLiteralAst("arguments"),
+    //                   ident,
+    //                   true,
+    //                   ident, false, true));
+    //           }
+    //       }
+    //   }
       if (scope) {
               for (var name in scope.vars) {
                   if (HOP(scope.vars, name)) {
@@ -1885,7 +1908,7 @@ const babel = require('@babel/standalone');
 //         StatCollector.resumeTimer("parse");
 //        console.time("parse")
 //        var newAst = esprima.parse(code, {loc:true, range:true});
-      var newAst = acorn.parse(es6Transform(code), {locations: true, ecmaVersion: 6 });
+      var newAst = acorn.parse(code, {locations: true, ecmaVersion: 11, sourceType: 'module', allowImportExportEverywhere: true});
 //        console.timeEnd("parse")
 //        StatCollector.suspendTimer("parse");
 //        StatCollector.resumeTimer("transform");
@@ -1962,15 +1985,17 @@ const babel = require('@babel/standalone');
               code = removeShebang(code);
               iidSourceInfo = {};
               var newAst;
+              var code_es5 = es5Transform(code);
               if (Config.ENABLE_SAMPLING) {
-                  newAst = transformString(code, [visitorCloneBodyPre, visitorRRPost, visitorOps, visitorMergeBodyPre], [undefined, visitorRRPre, undefined, undefined]);
+                  newAst = transformString(code_es5, [visitorCloneBodyPre, visitorRRPost, visitorOps, visitorMergeBodyPre], [undefined, visitorRRPre, undefined, undefined]);
               } else {
-                  newAst = transformString(code, [visitorRRPost, visitorOps], [visitorRRPre, undefined]);
+                  newAst = transformString(code_es5, [visitorRRPost, visitorOps], [visitorRRPre, undefined]);
               }
               // post-process AST to hoist function declarations (required for Firefox)
               var hoistedFcts = [];
               newAst = hoistFunctionDeclaration(newAst, hoistedFcts);
-              var newCode = esotope.generate(newAst, {comment: true ,parse: acorn.parse});
+              //   var newCode = esotope.generate(newAst, {comment: true ,parse: acorn.parse});
+              var newCode = astring.generate(newAst);
               code = newCode + "\n" + noInstr + "\n";
           } catch(ex) {
               console.log("Failed to instrument", code);
@@ -2022,7 +2047,7 @@ const babel = require('@babel/standalone');
 // exports J$$.instrumentCode
 // exports J$$.instrumentEvalCode
 // depends on acorn
-// depends on esotope
+// depends on astring
 // depends on babel
 // depends on J$$.Constants
 // depends on J$$.Config
