@@ -1,0 +1,11 @@
+{
+  "google.com/05046f26c8": [
+    "[!] ERROR: Failed to read a named property '__TAINT__' from 'Window': Blocked a frame with origin \"https://ogs.google.com\" from accessing a cross-origin frame.",
+    "[!] ERROR: Cannot convert object to primitive value"
+  ],
+  "youtube.com/1467931a0e": [
+    "[!] ERROR: Cannot read properties of undefined (reading 'length')",
+    "[!] ERROR: Maximum call stack size exceeded",
+    "[!] ERROR: Cannot read properties of undefined (reading 'prototype')"
+  ]
+}

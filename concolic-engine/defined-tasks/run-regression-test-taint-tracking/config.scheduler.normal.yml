@@ -1,0 +1,33 @@
+scheduler:
+  TEST_NAME: "REGRESSION-TEST-TAINT-TRACKING-NORMAL"
+  # Path to workspace (base directory for storing results)
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-regression-test-taint-tracking/output"
+
+  # Option: "seed" or "list"
+  MODE: "list"
+  SEED_URL: "http://10.161.159.131:8001/index.html"
+  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  URL_LIST_FROM: 0
+  URL_LIST_TO: 10
+
+
+  # Format of the urls.csv file:
+  #   1,google.com
+  #   2,facebook.com
+  #   3,amazonaws.com
+  #   4,microsoft.com
+  #   5,apple.com
+  #   6,googleapis.com
+  #   7,akamaiedge.net
+  #   8,youtube.com
+  #   9,a-msedge.net
+  #   10,twitter.com  
+
+  # Maximum number of workers to run in parallel
+  MAX_WORKER: 1
+  # Maximum number of urls to visit
+  MAX_URL: 1
+  # Time budget for each worker to visit a single domain
+  TIMEOUT_PER_DOMAIN: 600000
+
+
