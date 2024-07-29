@@ -9,16 +9,20 @@ export class Utils {
   static reportDangerousFlow(sourceReason, sourceLoc, sinkReason, sinkLoc, taintedValue, iid) {
     J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
     
-    const clonedTaintedValue = JSON.parse(JSON.stringify(taintedValue));
-
-    J$$.analysis.dangerousFlows.push({
-      sourceReason: sourceReason,
-      sourceLoc: sourceLoc,
-      sinkReason: sinkReason,
-      sinkLoc: sinkLoc,
-      taintedValue: clonedTaintedValue,
-      iid: iid
-    });
+    try{
+      const clonedTaintedValue = structuredClone(taintedValue);
+      J$$.analysis.dangerousFlows.push({
+        sourceReason: sourceReason,
+        sourceLoc: sourceLoc,
+        sinkReason: sinkReason,
+        sinkLoc: sinkLoc,
+        taintedValue: clonedTaintedValue,
+        iid: iid
+      });
+    }
+    catch(e){
+      J$$.analysis.logger.debug("Failed to clone tainted value", taintedValue, " because ", e);
+    }
   }
 
   /**
@@ -35,6 +39,18 @@ export class Utils {
       return value.toString();
     } catch (e) {
       return '[Unable to convert to string]';
+    }
+  }
+
+  /**
+   * Safe toPrimitive function that handles exceptions
+   * @param {*} value 
+   */
+  static safeToPrimitive(value) {
+    try {
+      return value.toString();
+    } catch (e) {
+      return null;
     }
   }
 
@@ -120,14 +136,6 @@ export class Utils {
     }
   }
 
-  static isArguments(args) {
-    return Object.prototype.toString.call(args) === '[object Arguments]';
-  }
-
-  static isPrimitive(value) {
-    return value !== Object(value);
-  }
-
   /**
    * Check the real type of the value no matter if it is tainted
    * @param {*} value 
@@ -139,13 +147,21 @@ export class Utils {
     return typeof value;
   }
 
+  static isArguments(args) {
+    return Object.prototype.toString.call(args) === '[object Arguments]';
+  }
+
+  static isPrimitive(value) {
+    return value !== Object(value);
+  }
+
   /**
    * Check if the value is a string no matter if it is tainted
    * @param {*} value 
    * @returns 
    */
   static isString(value) {
-    return Utils.realTypeOf(value) === 'string' || TaintHelper.concrete(value) instanceof String;
+    return Utils.realTypeOf(value) === 'string' || TaintHelper.concreteWrappedOnly(value) instanceof String;
   }
 
   /**

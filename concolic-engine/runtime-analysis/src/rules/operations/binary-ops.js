@@ -109,7 +109,7 @@ export class BinaryOpsTaintPropRules {
     }
     
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `BinaryOps: ${operator}`, [left, right], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `BinaryOps:${operator}`, [left, right], iid);
       result = TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

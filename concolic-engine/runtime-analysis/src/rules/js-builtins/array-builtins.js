@@ -44,7 +44,7 @@ export class ArrayBuiltinsTaintPropRules {
    */
   supportedArrayBuiltins = {
     'from': [Array.from, this.fromArrayModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
-    'join': [Array.prototype.join, this.joinArrayModel, 'BASE_TAINTED || FIRST_ARG_TAINTED'],
+    'join': [Array.prototype.join, this.joinArrayModel, 'BASE_TAINTED_RECURSIVE || FIRST_ARG_TAINTED_RECURSIVE'],
     'toString': [Array.prototype.toString, this.toStringArrayModel, 'BASE_TAINTED'],
     'toLocaleString': [Array.prototype.toLocaleString, this.toLocaleStringArrayModel, 'BASE_TAINTED'],
   };

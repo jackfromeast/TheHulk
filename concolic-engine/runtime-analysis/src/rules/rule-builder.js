@@ -26,6 +26,7 @@ import { WrappedValue, _, TaintValue } from '../values/wrapped-values.js';
 import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
 import { BinaryOpsTaintPropRules } from './operations/binary-ops.js';
 import { UnaryOpsTaintPropRules } from './operations/unary-ops.js';
+import { Utils } from '../utils/util.js';
 
 /**
  * @description
@@ -60,7 +61,17 @@ export class RuleBuilder {
    */
   static makeRuleUnary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, iid) => {
-      let result = UnaryOpsTaintPropRules.UnaryJumpTable[operator](TaintHelper.concrete(left));
+      function unaryOpsOrigin(operator, left_c) {
+        return UnaryOpsTaintPropRules.UnaryJumpTable[operator](left_c);
+      }
+
+      let [result, thrown] = this.runOriginFunc(unaryOpsOrigin, null, [operator, left], true);
+
+      // let [left_c, left_taint_info] = TaintHelper.concrete(left);
+      // let result = UnaryOpsTaintPropRules.UnaryJumpTable[operator](left_c);
+      // if (left_taint_info) {
+      //   left = TaintHelper.createTaintValue(left_c, left_taint_info, true);
+      // }
 
       if (!featureDisabled && condition(left)) {
         result = modelF(operator, left, result, iid);
@@ -91,9 +102,25 @@ export class RuleBuilder {
    */
   static makeRuleBinary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, right, iid) => {
-      let leftValue = TaintHelper.concrete(left);
-      let rightValue = TaintHelper.concrete(right);
-      let result = BinaryOpsTaintPropRules.BinaryJumpTable[operator](leftValue, rightValue);
+
+      function binaryOpsOrigin(operator, left_c, right_c) {
+        return BinaryOpsTaintPropRules.BinaryJumpTable[operator](left_c, right_c);
+      }
+
+      let [result, thrown] = this.runOriginFunc(binaryOpsOrigin, null, [operator, left, right], true);
+
+
+      // let [left_c, left_taint_info] = TaintHelper.concrete(left);
+      // let [right_c, right_taint_info] = TaintHelper.concrete(right);
+
+      // let result = BinaryOpsTaintPropRules.BinaryJumpTable[operator](left_c, right_c);
+
+      // if (left_taint_info) {
+      //   left = TaintHelper.createTaintValue(left_c, left_taint_info, true);
+      // }
+      // if (right_taint_info) {
+      //   right = TaintHelper.createTaintValue(right_c, right_taint_info, true);
+      // }
 
       if (!featureDisabled && condition(left, right)) {
         result = modelF(operator, left, right, result, iid);
@@ -132,9 +159,25 @@ export class RuleBuilder {
    */
   static makeRuleGetField(condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (base, offset, iid) => {
-      let base_c = TaintHelper.concrete(base);
-      let offset_c = TaintHelper.concrete(offset);
-      let result = base_c[offset_c];
+
+      function getFieldOriginal(base, offset) {
+        return base[offset];
+      }
+
+      let [result, thrown] = this.runOriginFunc(getFieldOriginal, null, [base, offset], true);
+
+      // let [base_c, base_taint_info] = TaintHelper.concrete(base);
+      // let [offset_c, offset_taint_info] = TaintHelper.concrete(offset);
+
+      // Here need to make sure that the offset can be converted to primitive type (i.e. String)
+      // let result = base_c[offset_c];
+
+      // if (base_taint_info) {
+      //   base = TaintHelper.createTaintValue(base_c, base_taint_info, true);
+      // }
+      // if (offset_taint_info) {
+      //   offset = TaintHelper.createTaintValue(offset_c, offset_taint_info, true);
+      // }
       
       if (!featureDisabled && condition(base) && !(result instanceof Function)) {
         result = modelF(base, offset, result, iid);
@@ -232,7 +275,7 @@ export class RuleBuilder {
    */
   static makeNoneRule(f) {
     let newrule = (base, args, iid, reflected) => {
-      let [result, thrown] =  this.runOriginFunc(f, base, args, false, reflected);
+      let [result, thrown] = this.runOriginFunc(f, base, args, false, reflected);
 
       if (thrown) {
         throw thrown;
@@ -258,6 +301,9 @@ export class RuleBuilder {
    * For example, for `Array.from([TAINTED("a")]`, we will lose the taint information of the element if 
    * we use rconcrete. But we can pass the taint (make the taint alive) by using concrete + noneAffect model function.
    * 
+   * The runOriginFunc will make sure that
+   * 1/ The function will be invoked will the concretized base and arguments.
+   * 2/ The taint information of base and arguments will be restored after the function invocation.
    * 
    * @param {Function} f - The function to execute.
    * @param {Object} base - The base object for the function call.
@@ -267,34 +313,51 @@ export class RuleBuilder {
    */
   static runOriginFunc(f, base, args, concretize=true, reflected) {
     let result, thrown;
+    let c_base, c_args;
+    let storedTaintInfo = [];
 
     try {
-      let c_base, c_args;
-      if (concretize==true) {
-        c_base = base !== null ? TaintHelper.concrete(base) : base;
-        c_args = Array.from(args).map(item => TaintHelper.concrete(item)); 
-
+      if (concretize) {
+        [c_base, storedTaintInfo[0]] = base !== null ? TaintHelper.concrete(base) : [base, null];
+        c_args = Array.from(args).map((item, index) => {
+          let [concreteItem, taintInfo] = TaintHelper.concrete(item);
+          storedTaintInfo[index + 1] = taintInfo;
+          return concreteItem;
+        });
+  
         // TODO:
         // There are functions that we need to concretize the arguments recursively
-        if (f == JSON.stringify) {
-          c_args[0] = TaintHelper.rconcrete(c_args[0]);
+        if (f === JSON.stringify) {
+          c_args[0] = TaintHelper.rconcreteHard(c_args[0]);
         }
       } else {
         c_base = base;
         c_args = Array.from(args);
       }
-      
+  
       if (reflected === "apply") {
         result = Function.prototype.apply.call(f.apply, c_base, c_args);
-      }else if (reflected === "call") {
+      } else if (reflected === "call") {
         result = Function.prototype.apply.call(f.call, c_base, c_args);
-      }else {
+      } else {
         result = Function.prototype.apply.call(f, c_base, c_args);
       }
     } catch (e) {
       thrown = e;
+    } finally {
+      // Restore taint information using createTaintValue
+      if (concretize) {
+        if (storedTaintInfo[0] && !Utils.isPrimitive(base)) {
+          base = TaintHelper.reinstallTaint(c_base, storedTaintInfo[0]);
+        }
+        Array.from(args).forEach((item, index) => {
+          if (storedTaintInfo[index + 1] && !Utils.isPrimitive(item)) {
+            args[index] = TaintHelper.reinstallTaint(c_args[index], storedTaintInfo[index + 1]);
+          }
+        });
+      }
     }
-
+  
     return [result, thrown];
   }
 }

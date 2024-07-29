@@ -69,7 +69,6 @@ export class GetFieldTaintPropRules {
    * @param {*} val 
    */
   defaultGetFieldModel(base, offset, val, iid) {
-    let offset_c = TaintHelper.concrete(offset);
     if (TaintHelper.isTainted(base)) {
       // TYPE-1
       // If value itself is tainted, we don't need to create new taint value
@@ -85,8 +84,6 @@ export class GetFieldTaintPropRules {
         let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'getField', [base, offset], iid);
         val = TaintHelper.createTaintValue(val, newTaintInfo)
       }
-    }else{
-      base[offset_c] = val;
     }
 
     return val;

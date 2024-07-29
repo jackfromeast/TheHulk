@@ -26,6 +26,7 @@ import { TaintPropOperation } from './values/taint-info.js';
 import { TaintHelper } from './taint-helper.js';
 import { Utils } from './utils/util.js';
 import { ConcretizedFunctions } from './rules/rule-concretized.js';
+import { TaintStackHelper } from './taint-stack-helper.js';
 
 export class TaintTracking {
   constructor(sandbox) {
@@ -35,7 +36,7 @@ export class TaintTracking {
     this.logger = new Logger({
       level: 'debug',
       name: 'TheHulk',
-      logUnsupportBuiltin: true,
+      logUnsupportBuiltin: false,
       logTaintInstall: false
     });
 
@@ -44,6 +45,8 @@ export class TaintTracking {
     this.taintSinkRules = new TaintSinkRules();
 
     this.dangerousFlows = [];
+
+    this.taintStackHelper = new TaintStackHelper();
   }
 
   /**
@@ -137,7 +140,8 @@ export class TaintTracking {
     if (rule) {
       result = rule(left, iid);
     } else {
-      result = this.taintPropRules.unaryRules.UnaryJumpTable[op](TaintHelper.concrete(left));
+      let left_c = TaintHelper.concreteWrappedOnly(left);
+      result = this.taintPropRules.unaryRules.UnaryJumpTable[op](left_c);
     }
 
     return {result: result};
@@ -157,7 +161,7 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   conditional (iid, result) {
-    return {result: TaintHelper.concrete(result)};
+    return {result: TaintHelper.concreteWrappedOnly(result)};
   };
 
   /**
@@ -263,8 +267,8 @@ export class TaintTracking {
       reflected = f === Function.prototype.apply ? "apply" : "call";
     }
 
-    let base_c = TaintHelper.concrete(base);
-    let f_c = TaintHelper.concrete(f);
+    let base_c = TaintHelper.concreteWrappedOnly(base);
+    let f_c = TaintHelper.concreteWrappedOnly(f);
 
     if (f_c !== f) {
       // We don't taint the function object
@@ -287,14 +291,14 @@ export class TaintTracking {
         if (!ConcretizedFunctions.isKnownConcretized(f)){
           J$$.analysis.logger.reportUnsupportedBuiltin(f, base);
         }
-        args = Array.from(args).map(item => TaintHelper.concrete(item)); 
+        args = Array.from(args).map(item => TaintHelper.concreteHard(item)); 
 
         return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
       }
     }
   
     // f is not a built-in function
-    return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
+    return {f: f_c, base: base, args: args, skip: false, reflected:""};
   };
 
   /**

@@ -88,7 +88,7 @@ export class UnaryOpsTaintPropRules {
     }
     
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `UnaryOps: ${operator}`, [left], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `UnaryOps:${operator}`, [left], iid);
       result = TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

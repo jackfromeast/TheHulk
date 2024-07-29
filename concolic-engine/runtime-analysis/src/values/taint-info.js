@@ -1,4 +1,5 @@
 import { WrappedValue } from "./wrapped-values.js";
+import { Utils } from "../utils/util.js";
 /**
  * @description
  * --------------------------------
@@ -119,13 +120,13 @@ export class TaintPropOperation {
       try {
         // If the argument itself is a TaintValue
         if (arg instanceof WrappedValue) {
-          return arg.toString();
+          return Utils.safeToString(arg);
         }
         structuredClone(arg);
         return arg;
       } catch (e) {
         if (arg.toString) {
-          return arg.toString();
+          return Utils.safeToString(arg);
         }else {
           return "[Unable to clone and convert to string (no toString method)]";
         }

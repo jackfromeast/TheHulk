@@ -78,11 +78,11 @@ export class PutFieldTaintPropRules {
       throw new Error('DOMNodesPutFieldModel: base is not an Element');
     }
 
-    val = TaintHelper.concrete(val);
+    val = TaintHelper.concreteWrappedOnly(val);
 
-    let offset_c = TaintHelper.concrete(offset);
+    let offset_c = TaintHelper.concreteWrappedOnly(offset);
     if (TaintHelper.isTainted(base)) {
-      TaintHelper.concrete(base)[offset_c] = val;
+      TaintHelper.concreteWrappedOnly(base)[offset_c] = val;
     }else{
       base[offset_c] = val;
     }
@@ -100,9 +100,9 @@ export class PutFieldTaintPropRules {
    * @param {*} val 
    */
   defaultPutFieldModel(base, offset, val, iid) {
-    let offset_c = TaintHelper.concrete(offset);
+    let offset_c = TaintHelper.concrete(offset)[0];
     if (TaintHelper.isTainted(base)) {
-      TaintHelper.concrete(base)[offset_c] = val;
+      TaintHelper.concrete(base)[0][offset_c] = val;
     }else{
       base[offset_c] = val;
     }
