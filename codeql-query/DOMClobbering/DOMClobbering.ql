@@ -90,8 +90,9 @@ class DebuggingConfig extends TaintTracking::Configuration {
   
   }
   
-  from DebuggingConfig cfg, DataFlow::PathNode source, DataFlow::PathNode sink
-  where cfg.hasFlowPath(source, sink)
-  select sink.getNode(), source, sink,
-    "$@ is potentially clobberable and flows to the XSS sink.", source.getNode(), source.getNode().toString()
+
+from DebuggingConfig cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
+select sink.getNode(), source, sink,
+    "$@ is potentially clobberable and flows to the sink with type $@.", source.getNode(), source.getNode().toString(), sink.getNode(), sink.getNode().(ClientSideSinks).getLabel()
   
