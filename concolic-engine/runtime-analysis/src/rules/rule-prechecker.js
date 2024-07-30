@@ -5,14 +5,14 @@ import { TaintHelper } from '../taint-helper.js';
  * --------------------------------
  * Performing precheck for user-defined bind functions for each rule.
  * 
- * When executing the original operation (e.g., a built-in function or a binary/unary/get/set operation) on stripped values,
+ * When executing the original operation (e.g., built-in functions or a binary/unary/get/set operation) on stripped values (the first step),
  * it might implicitly call a user-defined function (e.g., toString, getter, or setter).
  * This can lead to several issues if the bind function returns a tainted value:
- * 1/ it might directly apply to the original operation without stripping, making the value taint-aware,
- * or 2/ it could alter the program logic. The following two cases illustrate these problems.
+ * 1/ it might directly apply to the original operation without stripping, making the value taint-aware, or
+ * 2/ it could alter the program logic. The following two cases illustrate these problems.
+ * For more details, see the documentation: https://github.com/jackfromeast/TheHulk/wiki/Concolic-Execution-Bind-User-Functions
  * 
  * Perchecker will handle these user-defined functions and ensure the runOriginalFun won't arrive at any user-defined functions.
- * 
  */
 export class BindValueChecker {
 

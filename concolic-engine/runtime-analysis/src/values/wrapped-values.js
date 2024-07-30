@@ -113,6 +113,24 @@ class TaintValue extends WrappedValue {
   }
 
   toString() {
+    if (J$$.analysis.DCHECK) {
+      try {
+        const error = new Error();
+        const stack = error.stack.split('\n');
+  
+        const topFrames = stack.slice(2, 6); // 2,3,4,5
+        const hasvalidCallSite = topFrames.some(frame => frame.includes('addTaintPropOperation') ||
+                                                         frame.includes('checkTaintAtSinkInvokeFun'));
+  
+        if (!hasvalidCallSite) {
+          debugger; 
+          J$$.analysis.logger.debug('Unkown caller of TaintValue.toString.');
+        }
+      } catch (e) {
+        J$$.analysis.logger.debug('Error during DebugCheck in toString.');
+      }
+    }
+
     return "TaintValue(" + Utils.safeToString(this.concrete) + ")";
   }
 

@@ -46,6 +46,7 @@ export class TaintTracking {
 
     this.dangerousFlows = [];
 
+    this.DCHECK = true;
     this.taintStackHelper = new TaintStackHelper();
     this.MAX_DEPTH_FOR_TAINT_CHECK = 3;
   }
@@ -538,7 +539,7 @@ export class TaintTracking {
    * <tt>val</tt> are replaced with that from the returned object if an object is returned.
    */
   putFieldPre (iid, base, offset, val, isComputed, isOpAssign) {
-    return {base: base, offset: offset, val: val, skip: false};
+    return {base: base, offset: offset, val: val, skip: true};
   };
 
 

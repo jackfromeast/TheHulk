@@ -286,12 +286,6 @@ export class RuleBuilder {
    * 
    * @notes
    * --------------------------------
-   * We should be careful when using recursive concrete (rconcrete) function. It will make us lose
-   * the taint unintentionally. 
-   * 
-   * For example, for `Array.from([TAINTED("a")]`, we will lose the taint information of the element if 
-   * we use rconcrete. But we can pass the taint (make the taint alive) by using concrete + noneAffect model function.
-   * 
    * The runOriginFunc will make sure that
    * 1/ The function will be invoked will the concretized base and arguments.
    * 2/ The taint information of base and arguments will be restored after the function invocation.
