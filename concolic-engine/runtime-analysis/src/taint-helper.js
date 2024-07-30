@@ -129,13 +129,29 @@ export class TaintHelper {
   /**
    * Check if the value is tainted in one level
    * @param {*} value 
-   * @returns 
+   * @returns {boolean}
    */
   static isTainted(value) {
     try {
-      return value instanceof TaintValue || (!Utils.isPrimitive(value) && value[TaintPropName]);
-    }
-    catch (DOMException) {
+      // Check if value is an instance of TaintValue
+      if (value instanceof TaintValue) {
+        return true;
+      }
+
+      // Check if the value is primitive
+      if (Utils.isPrimitive(value)) {
+        return false;
+      }
+
+      // Ensure there is no user-defined getter on TaintPropName
+      const descriptor = Object.getOwnPropertyDescriptor(value, TaintPropName);
+      if (descriptor && descriptor.get && Utils.isUserDefinedFunction(descriptor.get)) {
+        // Avoid infinite recursion call
+        return false;
+      }
+
+      return value[TaintPropName] !== undefined;
+    } catch (DOMException) {
       J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
       return false;
     }

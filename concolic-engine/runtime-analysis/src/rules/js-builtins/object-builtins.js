@@ -186,4 +186,6 @@ export class ObjectBuiltinsTaintPropRules {
     }
     return result;
   }
+
+  // ToString, fill me!
 }

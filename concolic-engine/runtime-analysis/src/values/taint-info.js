@@ -43,8 +43,13 @@ export class TaintInfo {
     this.taintID = J$$.analysis.taintID++ || 0;
     this.taintSource = {
       location: iid,
-      sourceLocation: undefined, // J$$.iidToLocation(iid)
+      // sourceLocation: undefined, // J$$.iidToLocation(iid)
       reason: reason,
+      operation: operation
+    }
+    this.taintSink = {
+      location: undefined,
+      reason: undefined,
       operation: operation
     }
 
@@ -75,6 +80,14 @@ export class TaintInfo {
   addTaintPropOperation(operation, base, argument, location) {
     this.taintPropOperations.push(
       new TaintPropOperation(operation, base, argument, location));
+  }
+
+  addtaintSink(location, reason, operation) {
+    this.taintSink = {
+      location: location,
+      reason: reason,
+      operation: operation
+    }
   }
 }
 

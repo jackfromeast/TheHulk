@@ -4,8 +4,13 @@ import { TaintHelper } from "../taint-helper.js";
  * @description
  * --------------------------------
  * General utility functions that are used across the analysis
+ * 
  */
 export class Utils {
+  // Get a safe version of Object.prototype.toString and Function.prototype.toString
+  static safeObjectToString = Object.prototype.toString;
+  static safeFunctionToString = Function.prototype.toString;
+
   static reportDangerousFlow(sourceReason, sourceLoc, sinkReason, sinkLoc, taintedValue, iid) {
     J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
     
@@ -96,8 +101,9 @@ export class Utils {
    * @returns 
    */
   static isNativeFunction(f) {
-    const toString = Object.prototype.toString;
-    const fnToString = Function.prototype.toString;
+    // Need to make sure that Object.prototype.toString and Function.prototype.toString are not overwritten
+    const toString = Utils.safeObjectToString;
+    const fnToString = Utils.safeFunctionToString;
     const reHostCtor = /^\[object .+?Constructor\]$/;
     
     // We need to make sure String() is not overwritten by developer
@@ -137,6 +143,10 @@ export class Utils {
     }
   }
 
+  static isUserDefinedFunction(f) {
+    return typeof f === 'function' && !Utils.isNativeFunction(f);
+  }
+
   static isAnyUserDefinedFunction(args) {
     return Array.from(args).some(arg => typeof arg === 'function' && !Utils.isNativeFunction(arg));
   }
@@ -147,7 +157,7 @@ export class Utils {
    */
   static realTypeOf(value) {
     if (TaintHelper.isTainted(value)) {
-      return typeof TaintHelper.concrete(value);
+      return typeof TaintHelper.concreteWrappedOnly(value);
     }
     return typeof value;
   }

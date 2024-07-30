@@ -243,6 +243,7 @@ export class TaintTracking {
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
     let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
     if (reason) {
+      taintedArg.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
       // TODO: Handle multiple tainted arguments here
       Utils.reportDangerousFlow(
         taintedArg.getTaintInfo().getTaintSource().reason,
@@ -283,11 +284,11 @@ export class TaintTracking {
     // if (Utils.isNativeFunction(fTobeCheck) && isAnyUserDefinedFunction())
  
     // If none of the arguments are tainted, we skip to the use any rules
-    if (!TaintHelper.risAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
+    // if (!TaintHelper.risAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
       // Push the function to the stack
       // this.taintStackHelper.pushStackFrame(f_c, iid);
-      return {f: f_c, base: base_c, args: args, skip: false};
-    }
+      // return {f: f_c, base: base_c, args: args, skip: false};
+    // }
 
     if (Utils.isNativeFunction(fTobeCheck)) {
       let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
@@ -562,6 +563,7 @@ export class TaintTracking {
   putField (iid, base, offset, val, isComputed, isOpAssign) {
     let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
     if (reason) {
+      val.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation("putField", base, [offset], iid));
       Utils.reportDangerousFlow(
         val.taintInfo.getTaintSourceReason(),
         val.taintInfo.getTaintSourceLocation(),

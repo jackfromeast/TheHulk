@@ -21,11 +21,12 @@
  *
  */
 
-import { TaintHelper } from '../taint-helper.js';
 import { WrappedValue, _, TaintValue } from '../values/wrapped-values.js';
 import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
 import { BinaryOpsTaintPropRules } from './operations/binary-ops.js';
 import { UnaryOpsTaintPropRules } from './operations/unary-ops.js';
+import { BindValueChecker } from './rule-prechecker.js';
+import { TaintHelper } from '../taint-helper.js';
 import { Utils } from '../utils/util.js';
 
 /**
@@ -61,6 +62,16 @@ export class RuleBuilder {
    */
   static makeRuleUnary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, iid) => {
+      
+      // Before calling the original function,
+      // We prepare the arguments for runOriginFunc to make it won't call the user-defined function and surprise us
+      // We handle all the implicit bind operations here
+      // If operand is object and has user-defined toString or valueOf function
+      // See whether the unary operation will call the user-defined function
+      // If so, we call the function and replace the left with the result
+      // Only valueOf is considered for unary operations
+      left = BindValueChecker.handleUserDefinedValueOf(left, operator);
+
       function unaryOpsOrigin(operator, left_c) {
         return UnaryOpsTaintPropRules.UnaryJumpTable[operator](left_c);
       }
@@ -96,6 +107,8 @@ export class RuleBuilder {
    */
   static makeRuleBinary(operator, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (left, right, iid) => {
+
+      [left, right] = BindValueChecker.handleUserDefinedFunctionsForBinaryOps(left, right, operator);
 
       function binaryOpsOrigin(operator, left_c, right_c) {
         return BinaryOpsTaintPropRules.BinaryJumpTable[operator](left_c, right_c);
@@ -216,6 +229,8 @@ export class RuleBuilder {
    */
   static makeRule(f, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (base, args, iid, reflected) => {
+      [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(f, base, args);
+
       let [result, thrown] = this.runOriginFunc(f, base, args, concretize, reflected);
 
       if (!featureDisabled && condition(base, args, reflected)) {
@@ -249,6 +264,8 @@ export class RuleBuilder {
    */
   static makeNoneRule(f) {
     let newrule = (base, args, iid, reflected) => {
+      [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(f, base, args);
+
       let [result, thrown] = this.runOriginFunc(f, base, args, false, reflected);
 
       if (thrown) {
