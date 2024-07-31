@@ -334,8 +334,8 @@ export class RuleBuilder {
         // Only when we are sure that f will not change base and args
         // we can dehydrate the taint information with depth > 1
         if (f === JSON.stringify || f === Array.prototype.join) {
-          dehydratedBase = new DehydratedTaintValue(base, 3);
-          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg, 3));
+          dehydratedBase = new DehydratedTaintValue(base, 5);
+          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg, 5));
         } else {
           dehydratedBase = new DehydratedTaintValue(base);
           dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg));  

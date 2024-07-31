@@ -103,6 +103,10 @@ export class BinaryOpsTaintPropRules {
   defaultBinaryModel(operator, left, right, result, iid) {
     let taintInfo;
 
+    if (["===", "!==", "instanceof", "in", "!=", "==", "<", ">", "<=", ">=", "delete"].includes(operator)) {
+      return result;
+    }
+
     if (TaintHelper.isTainted(left) || TaintHelper.isTainted(right)) {
       if (TaintHelper.isTainted(left)) taintInfo = TaintHelper.getTaintInfo(left);
       if (TaintHelper.isTainted(right)) taintInfo = TaintHelper.getTaintInfo(right);

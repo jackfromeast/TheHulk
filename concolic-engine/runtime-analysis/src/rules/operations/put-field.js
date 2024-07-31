@@ -56,11 +56,22 @@ export class PutFieldTaintPropRules {
    * @returns {Function|null} The rule function if found, otherwise null.
    */
   getRule(base, offset) {
-    if (base instanceof Element) {
+    if (this.isDOMNodes(base)) {
       return this.ruleDict.find(x => x.base === 'DOMNodes').rule;
     }else{
       return this.ruleDict.find(x => x.base === 'default').rule;
     }
+  }
+
+  /**
+   * Value assigned to Node might have addtional semantics defined by browser or DOM standard.
+   * Now, we skip putting taint on the value.
+   * 
+   * https://developer.mozilla.org/en-US/docs/Web/API/Node
+   * @param {*} base 
+   */
+  isDOMNodes(base) {
+    if (base instanceof Node) { return true; } else { return false; }
   }
 
   /**
