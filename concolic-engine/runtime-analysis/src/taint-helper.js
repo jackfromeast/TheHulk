@@ -55,109 +55,6 @@ export class TaintHelper {
   }
 
   /**
-   * This function is used to reinstall the taint info for the object
-   * Sometimes, we will strip the taint info from the object and 
-   * perform some operations on the object and then we reinstall the taint info
-   * 
-   * @param {*} value 
-   * @param {TaintInfo|null} taintInfo 
-   */
-  static reinstallTaint(value, taintInfo) {
-    if (value === undefined || value === null) {
-      return value;
-    }
-
-    if (!taintInfo) {
-      return value;
-    }
-
-    try {
-      if (Utils.isPrimitive(value)) {
-        return new TaintValue(value, taintInfo);
-      }else{
-        if (!Object.isExtensible(value)) {
-          J$$.analysis.logger.debug("Cannot reinstall taint to non-extensible object", value);
-          return value;
-        }
-  
-        Object.defineProperty(value, TaintPropName, {
-          value: taintInfo,
-          enumerable: false,
-          writable: true,
-          configurable: true
-        });
-        return value;
-      }
-    }
-    catch (e) {
-      J$$.analysis.logger.debug("Failed to reinstall taint to", value, " because ", e);
-      return value;
-    }
-  }
-
-  static risTainted(value, depth = 0) {
-    if (depth > J$$.analysis.MAX_DEPTH_FOR_TAINT_CHECK) {
-      return false; // Do not trace beyond MAX_DEPTH_FOR_TAINT_CHECK layers
-    }
-    if (TaintHelper.isTainted(value)) {
-      return true;
-    } else if (Array.isArray(value)) {
-      try{
-        return value.some(item => TaintHelper.risTainted(item, depth + 1));
-      } catch (DOMException) {
-        J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
-        return false;
-      }
-    } else if (value && typeof value === 'object' && value.constructor === Object) {
-      return Object.keys(value).some(key => {
-        try{
-          // Check if the property has a getter or is a function
-          const descriptor = Object.getOwnPropertyDescriptor(value, key);
-          if (descriptor && (descriptor.get || typeof descriptor.value === 'function')) {
-            return false;
-          }
-          return TaintHelper.risTainted(value[key], depth + 1);
-        } catch (DOMException) {
-          J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
-          return false;
-        }
-      });
-    }
-    return false;
-  }
-
-  /**
-   * Check if the value is tainted in one level
-   * @param {*} value 
-   * @returns {boolean}
-   */
-  static isTainted(value) {
-    try {
-      // Check if value is an instance of TaintValue
-      if (value instanceof TaintValue) {
-        return true;
-      }
-
-      // Check if the value is primitive
-      if (Utils.isPrimitive(value)) {
-        return false;
-      }
-
-      // Ensure there is no user-defined getter on TaintPropName
-      const descriptor = Object.getOwnPropertyDescriptor(value, TaintPropName);
-      if (descriptor && descriptor.get && Utils.isUserDefinedFunction(descriptor.get)) {
-        // Avoid infinite recursion call
-        return false;
-      }
-
-      return value[TaintPropName] !== undefined;
-    } catch (DOMException) {
-      J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
-      return false;
-    }
-  }
-
-  /**
    * Concrete the value and return the concrete value and taint info
    * 
    * This function will concrete the value by one level guarranteed
@@ -238,7 +135,7 @@ export class TaintHelper {
     return value;
   }
   
-    /**
+  /**
    * Concrete the value if it is tainted recursively
    * 
    * Note that at most time, we don't need to concrete the value recursively
@@ -273,6 +170,110 @@ export class TaintHelper {
     return value;
   }
 
+
+  /**
+   * This function is used to reinstall the taint info for the object
+   * Sometimes, we will strip the taint info from the object and 
+   * perform some operations on the object and then we reinstall the taint info
+   * 
+   * @param {*} value 
+   * @param {TaintInfo|null} taintInfo 
+   */
+  static reinstall(value, taintInfo) {
+    if (value === undefined || value === null) {
+      return value;
+    }
+
+    if (!taintInfo) {
+      return value;
+    }
+
+    try {
+      if (Utils.isPrimitive(value)) {
+        return new TaintValue(value, taintInfo);
+      }else{
+        if (!Object.isExtensible(value)) {
+          J$$.analysis.logger.debug("Cannot reinstall taint to non-extensible object", value);
+          return value;
+        }
+  
+        Object.defineProperty(value, TaintPropName, {
+          value: taintInfo,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        });
+        return value;
+      }
+    }
+    catch (e) {
+      J$$.analysis.logger.debug("Failed to reinstall taint to", value, " because ", e);
+      return value;
+    }
+  }
+
+
+  static risTainted(value, depth = 0) {
+    if (depth > J$$.analysis.MAX_DEPTH_FOR_TAINT_CHECK) {
+      return false; // Do not trace beyond MAX_DEPTH_FOR_TAINT_CHECK layers
+    }
+    if (TaintHelper.isTainted(value)) {
+      return true;
+    } else if (Array.isArray(value)) {
+      try{
+        return value.some(item => TaintHelper.risTainted(item, depth + 1));
+      } catch (DOMException) {
+        J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+        return false;
+      }
+    } else if (value && typeof value === 'object' && value.constructor === Object) {
+      return Object.keys(value).some(key => {
+        try{
+          // Check if the property has a getter or is a function
+          const descriptor = Object.getOwnPropertyDescriptor(value, key);
+          if (descriptor && (descriptor.get || typeof descriptor.value === 'function')) {
+            return false;
+          }
+          return TaintHelper.risTainted(value[key], depth + 1);
+        } catch (DOMException) {
+          J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+          return false;
+        }
+      });
+    }
+    return false;
+  }
+
+  /**
+   * Check if the value is tainted in one level
+   * @param {*} value 
+   * @returns {boolean}
+   */
+  static isTainted(value) {
+    try {
+      // Check if value is an instance of TaintValue
+      if (value instanceof TaintValue) {
+        return true;
+      }
+
+      // Check if the value is primitive
+      if (Utils.isPrimitive(value)) {
+        return false;
+      }
+
+      // Ensure there is no user-defined getter on TaintPropName
+      const descriptor = Object.getOwnPropertyDescriptor(value, TaintPropName);
+      if (descriptor && descriptor.get && Utils.isUserDefinedFunction(descriptor.get)) {
+        // Avoid infinite recursion call
+        return false;
+      }
+
+      return value[TaintPropName] !== undefined;
+    } catch (DOMException) {
+      J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+      return false;
+    }
+  }
 
   /**
    * Create a new taintInfo object

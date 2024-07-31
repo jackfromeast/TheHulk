@@ -22,11 +22,12 @@
  */
 
 import { WrappedValue, _, TaintValue } from '../values/wrapped-values.js';
+import { DehydratedTaintValue } from '../values/dehydrated-taint-info.js';
 import { TaintInfo, TaintPropOperation } from '../values/taint-info.js';
 import { BinaryOpsTaintPropRules } from './operations/binary-ops.js';
 import { UnaryOpsTaintPropRules } from './operations/unary-ops.js';
+import { BaseClobberableBuiltins, ArgumentsClobberableBuiltins } from './rule-builtin-dict.js';
 import { BindValueChecker } from './rule-prechecker.js';
-import { TaintHelper } from '../taint-helper.js';
 import { Utils } from '../utils/util.js';
 
 /**
@@ -76,7 +77,9 @@ export class RuleBuilder {
         return UnaryOpsTaintPropRules.UnaryJumpTable[operator](left_c);
       }
 
-      let [result, thrown] = this.runOriginFunc(unaryOpsOrigin, null, [operator, left], true);
+      let result, thrown, _, tmp;
+      [result, thrown, _, tmp] = this.runOriginFunc(unaryOpsOrigin, null, [operator, left], true);
+      [operator, left] = tmp;
 
       if (!featureDisabled && condition(left)) {
         result = modelF(operator, left, result, iid);
@@ -114,7 +117,9 @@ export class RuleBuilder {
         return BinaryOpsTaintPropRules.BinaryJumpTable[operator](left_c, right_c);
       }
 
-      let [result, thrown] = this.runOriginFunc(binaryOpsOrigin, null, [operator, left, right], true);
+      let result, thrown, _, tmp;
+      [result, thrown, _, tmp] = this.runOriginFunc(binaryOpsOrigin, null, [operator, left, right], true);
+      [operator, left, right] = tmp;
 
       if (!featureDisabled && condition(left, right)) {
         result = modelF(operator, left, right, result, iid);
@@ -158,8 +163,10 @@ export class RuleBuilder {
         return base[offset];
       }
 
-      let [result, thrown] = this.runOriginFunc(getFieldOriginal, null, [base, offset], true);
-      
+      let result, thrown, _, tmp;
+      [result, thrown, _, tmp] = this.runOriginFunc(getFieldOriginal, null, [base, offset], true);
+      [base, offset] = tmp;
+
       if (!featureDisabled && condition(base) && !(result instanceof Function)) {
         result = modelF(base, offset, result, iid);
       }
@@ -192,8 +199,10 @@ export class RuleBuilder {
       function putFieldOriginal(base, offset, val) {
         base[offset] = val;
       }
-
-      let [result, thrown] = this.runOriginFunc(putFieldOriginal, null, [base, offset, val], concretize);
+      
+      let result, thrown, _, tmp;
+      [result, thrown, _, tmp] = this.runOriginFunc(putFieldOriginal, null, [base, offset, val], concretize);
+      [base, offset, val] = tmp;
 
       if (!featureDisabled && condition(val)) {
         val = modelF(base, offset, val);
@@ -222,6 +231,12 @@ export class RuleBuilder {
    * However, in the program, when the rule has been called, it might used the reflected function, e.g. `String.fromCharCode.call`.
    * The arguments of the reflected function are different from the real function, that the first argument is the base object.
    * 
+   * You should only create rule using the this function when you are sure that the function will not clobber the base or arguments.
+   * This is because, the runOriginFunc with concretize=true will dehydrate the taint information of the base and arguments
+   * If the base or args has changed, the moisturizeTaint will fail in general. However, in the most case, we can still restore the taint
+   * information even if base or args has changed if we only dehydrate the taint information with depth=1. This is because the base or args
+   * 's outmost layer will not be changed.
+   * 
    * @param {Function} f - The function to apply the rule to.
    * @param {Function} condition - The condition check function.
    * @param {Function} model - The modeling function.
@@ -229,9 +244,10 @@ export class RuleBuilder {
    */
   static makeRule(f, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (base, args, iid, reflected) => {
+      let result, thrown;
       [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(f, base, args);
 
-      let [result, thrown] = this.runOriginFunc(f, base, args, concretize, reflected);
+      [result, thrown, base, args] = this.runOriginFunc(f, base, args, concretize, reflected);
 
       if (!featureDisabled && condition(base, args, reflected)) {
         result = modelF(base, args, reflected, result, iid);
@@ -256,17 +272,26 @@ export class RuleBuilder {
    * This means, even the arguments are tainted or the return value is tainted,
    * we don't do anything but call the original function without even concretization.
    * 
-   * There are builtins that you want to use this rule, e.g. `Array.prototype.push`. As you
-   * don't want to propagate the taint to the return array while you also don't want to lose the
-   * taint information of its elements.
+   * There are builtins that you want to use this rule:
+   * 1/ The function that will clobber the base or arguments, e.g. `Array.prototype.push`.
+   *    Making NoneRule for these functions will not be a problem bacause 
+   *    1) it only changes the existing base or arguments and will not generate new values that need to be tainted
+   *    2) all of them are object/array/set/etc. builtins, and run the builtins with taint will not cause the error 
+   *       as taint is added by __TAINT__ property, not wrapped value.
+   *    Even if the function will clobber the base or arguments, in most case, using makeRule and hydrate with depth=1 will be fine,
+   *    e.g. Object.assign(obj1, obj2), after the builtin call, we can still restore the taint information of obj1 and obj2.
+   * 
+   * 
+   * 2/ The function that you don't want to propagate the taint to the return value.
    * 
    * @param {Function} f - The function to apply the rule to.
    */
   static makeNoneRule(f) {
     let newrule = (base, args, iid, reflected) => {
+      let result, thrown;
       [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(f, base, args);
 
-      let [result, thrown] = this.runOriginFunc(f, base, args, false, reflected);
+      [result, thrown, base, args] = this.runOriginFunc(f, base, args, false, reflected);
 
       if (thrown) {
         throw thrown;
@@ -284,11 +309,15 @@ export class RuleBuilder {
    * --------------------------------
    * Executes a function with the provided base and arguments, optionally concretizing them.
    * 
+   * The runOriginFunc will make sure that
+   * 1/ The function will be invoked with the concretized base and arguments if concretize=true.
+   * 2/ The taint information of base and arguments will be restored after the function invocation.
+   * 
    * @notes
    * --------------------------------
-   * The runOriginFunc will make sure that
-   * 1/ The function will be invoked will the concretized base and arguments.
-   * 2/ The taint information of base and arguments will be restored after the function invocation.
+   * You should only call the function with concretize=true when you are sure that the function will not clobber the base or arguments.
+   * We cannot handle the case whether operation will clobber the base or args itself and execute the function with taint will cause the error.
+   * For these kind of case, we need to use concretizeHard (I don't see any case so far, reason see MakeNoRule comments).
    * 
    * @param {Function} f - The function to execute.
    * @param {Object} base - The base object for the function call.
@@ -298,51 +327,63 @@ export class RuleBuilder {
    */
   static runOriginFunc(f, base, args, concretize=true, reflected) {
     let result, thrown;
-    let c_base, c_args;
-    let storedTaintInfo = [];
-
+    let dehydratedBase, dehydratedArgs;
+  
     try {
       if (concretize) {
-        [c_base, storedTaintInfo[0]] = base !== null ? TaintHelper.concrete(base) : [base, null];
-        c_args = Array.from(args).map((item, index) => {
-          let [concreteItem, taintInfo] = TaintHelper.concrete(item);
-          storedTaintInfo[index + 1] = taintInfo;
-          return concreteItem;
-        });
-  
-        // TODO:
-        // There are functions that we need to concretize the arguments recursively
-        if (f === JSON.stringify) {
-          c_args[0] = TaintHelper.rconcreteHard(c_args[0]);
+        // Only when we are sure that f will not change base and args
+        // we can dehydrate the taint information with depth > 1
+        if (f === JSON.stringify || f === Array.prototype.join) {
+          dehydratedBase = new DehydratedTaintValue(base, 3);
+          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg, 3));
+        } else {
+          dehydratedBase = new DehydratedTaintValue(base);
+          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg));  
         }
+
+        const concreteBase = dehydratedBase.concrete;
+        const concreteArgs = dehydratedArgs.map(dt => dt.concrete);
+
+        result = RuleBuilder.callOriginFunc(f, concreteBase, concreteArgs, reflected);
       } else {
-        c_base = base;
-        c_args = Array.from(args);
-      }
-  
-      if (reflected === "apply") {
-        result = Function.prototype.apply.call(f.apply, c_base, c_args);
-      } else if (reflected === "call") {
-        result = Function.prototype.apply.call(f.call, c_base, c_args);
-      } else {
-        result = Function.prototype.apply.call(f, c_base, c_args);
-      }
+        result = RuleBuilder.callOriginFunc(f, base, args, reflected);
+      }  
     } catch (e) {
       thrown = e;
     } finally {
-      // Restore taint information using createTaintValue
+      // Restore taint information
       if (concretize) {
-        if (storedTaintInfo[0] && !Utils.isPrimitive(base)) {
-          base = TaintHelper.reinstallTaint(c_base, storedTaintInfo[0]);
+        if (dehydratedBase) {
+          base = dehydratedBase.moisturizeTaint(dehydratedBase.concrete, dehydratedBase.DehydratedTaintInfo);
         }
         Array.from(args).forEach((item, index) => {
-          if (storedTaintInfo[index + 1] && !Utils.isPrimitive(item)) {
-            args[index] = TaintHelper.reinstallTaint(c_args[index], storedTaintInfo[index + 1]);
+          if (dehydratedArgs[index]) {
+            args[index] = dehydratedArgs[index].moisturizeTaint(dehydratedArgs[index].concrete, dehydratedArgs[index].DehydratedTaintInfo);
           }
         });
       }
     }
   
-    return [result, thrown];
+    return [result, thrown, base, args];
+  }
+
+  /**
+   * We assume the c_base and c_args are already concretized
+   * 
+   * @param {*} f 
+   * @param {*} c_base 
+   * @param {*} c_args 
+   * @param {*} reflected 
+   */
+  static callOriginFunc(f, c_base, c_args, reflected) {
+    let result;
+    if (reflected === "apply") {
+      result = Function.prototype.apply.call(f.apply, c_base, c_args);
+    } else if (reflected === "call") {
+      result = Function.prototype.apply.call(f.call, c_base, c_args);
+    } else {
+      result = Function.prototype.apply.call(f, c_base, c_args);
+    }
+    return result;
   }
 }

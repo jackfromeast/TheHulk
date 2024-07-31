@@ -123,8 +123,9 @@ class TaintValue extends WrappedValue {
                                                          frame.includes('checkTaintAtSinkInvokeFun'));
   
         if (!hasvalidCallSite) {
-          debugger; 
-          J$$.analysis.logger.debug('Unkown caller of TaintValue.toString.');
+          // debugger; 
+          // J$$.analysis.logger.debug('Unkown caller of TaintValue.toString.');
+          return this.concrete;
         }
       } catch (e) {
         J$$.analysis.logger.debug('Error during DebugCheck in toString.');
