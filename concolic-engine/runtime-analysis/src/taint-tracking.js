@@ -25,7 +25,7 @@ import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
 import { TaintHelper } from './taint-helper.js';
 import { Utils } from './utils/util.js';
-import { ConcretizedFunctions } from './rules/rule-concretized.js';
+import { ConcretizedBuiltins } from './rules/rule-builtin-dict.js';
 import { TaintStackHelper } from './taint-stack-helper.js';
 
 export class TaintTracking {
@@ -301,7 +301,7 @@ export class TaintTracking {
       else {
         // f is a built-in function but no rule found
         // We concretize the taint value and apply the original function
-        if (!ConcretizedFunctions.isKnownConcretized(f)){
+        if (!ConcretizedBuiltins.isKnownConcretized(f)){
           J$$.analysis.logger.reportUnsupportedBuiltin(f, base);
         }
         args = Array.from(args).map(item => TaintHelper.concreteHard(item)); 

@@ -30,6 +30,9 @@ export class ObjectBuiltinsTaintPropRules {
 
   noneAffectBuiltins = {
     'keys': Object.keys,
+    'defineProperty': Object.defineProperty,
+    'defineProperties': Object.defineProperties,
+    'setPrototypeOf': Object.setPrototypeOf
   };
 
   buildRules() {

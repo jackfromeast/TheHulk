@@ -146,6 +146,8 @@ export class ArrayBuiltinsTaintPropRules {
    * @param {*} result - The result of the function.
    * @param {number} iid - The instruction id.
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
+   * 
+   * //TODO: FORGET TO ADD THE NEW TAINT OPERATION
    */
   fromArrayModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
@@ -225,7 +227,7 @@ export class ArrayBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'join', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Array:join', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -271,7 +273,7 @@ export class ArrayBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'toString', base, [], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Array:toString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     
@@ -316,7 +318,7 @@ export class ArrayBuiltinsTaintPropRules {
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'toLocaleString', base, [], iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Array:toLocaleString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     
