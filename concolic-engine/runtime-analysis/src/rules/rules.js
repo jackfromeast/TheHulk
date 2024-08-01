@@ -8,6 +8,8 @@ import { ArrayBuiltinsTaintPropRules } from './js-builtins/array-builtins.js';
 import { JSONBuiltinsRules } from './js-builtins/json-builtins.js'
 import { RegExpBuiltinsRules } from './js-builtins/regexp-builtins.js';
 import { ObjectBuiltinsTaintPropRules } from './js-builtins/object-builtins.js';
+import { ReflectBuiltinsTaintPropRules } from './js-builtins/reflect-builtins.js';
+import { ProxyBuiltinsTaintPropRules } from './js-builtins/proxy-builtins.js';
 
 export class TaintPropRules {
   constructor() {
@@ -21,6 +23,8 @@ export class TaintPropRules {
     this.jsonBuiltinsRules = new JSONBuiltinsRules();
     this.regexpBuiltinsRules = new RegExpBuiltinsRules();
     this.objectBuiltinsRules = new ObjectBuiltinsTaintPropRules();
+    this.reflectBuiltinsRules = new ReflectBuiltinsTaintPropRules();
+    this.proxyBuiltinsRules = new ProxyBuiltinsTaintPropRules();
 
 
     this.invokeFunRules = this.aggregateRules([
@@ -28,7 +32,9 @@ export class TaintPropRules {
       this.arrayBuiltinsRules.ruleDict,
       this.jsonBuiltinsRules.ruleDict,
       this.regexpBuiltinsRules.ruleDict,
-      this.objectBuiltinsRules.ruleDict
+      this.objectBuiltinsRules.ruleDict,
+      this.reflectBuiltinsRules.ruleDict,
+      // this.proxyBuiltinsRules.ruleDict
     ]);
   }
 
