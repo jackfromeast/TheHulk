@@ -25,7 +25,7 @@ import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
 import { TaintHelper } from './taint-helper.js';
 import { Utils } from './utils/util.js';
-import { ConcretizedBuiltins } from './rules/rule-builtin-dict.js';
+import { DefinedConcretizeBuiltins } from './rules/rule-concretize.js';
 import { TaintStackHelper } from './taint-stack-helper.js';
 
 export class TaintTracking {
@@ -99,14 +99,20 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   binary (iid, op, left, right, result, isOpAssign, isSwitchCaseComparison, isComputed) {
-    let rule = this.taintPropRules.binaryRules.getRule(op);
-    if (rule) {
-      result = rule(left, right, iid);
-    } else {
-      result = this.taintPropRules.binaryRules.BinaryJumpTable[op](left, right);
-    }
+    try{
+      let rule = this.taintPropRules.binaryRules.getRule(op);
+      if (rule) {
+        result = rule(left, right, iid);
+      } else {
+        result = this.taintPropRules.binaryRules.BinaryJumpTable[op](left, right);
+      }
 
-    return {result: result};
+      return {result: result};
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
+    }
   };
 
   /**
@@ -137,16 +143,22 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    *
    */
-  unary (iid, op, left, result) {    
-    let rule = this.taintPropRules.unaryRules.getRule(op);
-    if (rule) {
-      result = rule(left, iid);
-    } else {
-      let left_c = TaintHelper.concreteWrappedOnly(left);
-      result = this.taintPropRules.unaryRules.UnaryJumpTable[op](left_c);
-    }
+  unary (iid, op, left, result) {
+    try { 
+      let rule = this.taintPropRules.unaryRules.getRule(op);
+      if (rule) {
+        result = rule(left, iid);
+      } else {
+        let left_c = TaintHelper.concreteWrappedOnly(left);
+        result = this.taintPropRules.unaryRules.UnaryJumpTable[op](left_c);
+      }
 
-    return {result: result};
+      return {result: result};
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
+    }
   };
 
 
@@ -242,79 +254,81 @@ export class TaintTracking {
    * an object is returned. The args should has Arguments type as it will passed to the InvokeFun operation.
    */
   invokeFunPre (iid, f, base, args, isConstructor, isMethod, functionIid, functionSid) {
-    let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
-    if (reason) {
-      taintedArg.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
-      // TODO: Handle multiple tainted arguments here
-      Utils.reportDangerousFlow(
-        taintedArg.getTaintInfo().getTaintSource().reason,
-        taintedArg.getTaintInfo().getTaintSource().location,
-        reason,
-        iid,
-        taintedArg,
-        iid
-      )
-    }
-
-    // Check if the function is a built-in function
-    // Functions can be called in different ways, 
-    // e.g. y.f(arg1, arg2, ...), y.f.call(this, arg1, arg2), y.f.apply(this, args)
-    // - y.f(arg1, arg2, ...) => base = y, f = y.f, args = [arg1, arg2, ...]
-    // - y.f.call(this, arg1, arg2) => base = f, f = f.apply, args = [this, arg1, arg2]
-    // - y.f.apply(this, args) => base = f, f = f.apply, args = [this, ...args]
-    // This will affect how we check the taint args and the base object
-    let fTobeCheck = f;
-    let reflected = "";
-    if (typeof(base) === "function" && (f === Function.prototype.apply || f === Function.prototype.call)) {
-      fTobeCheck = base;
-      reflected = f === Function.prototype.apply ? "apply" : "call";
-    }
-
-    let base_c = TaintHelper.concreteWrappedOnly(base);
-    let f_c = TaintHelper.concreteWrappedOnly(f);
-
-    if (f_c !== f) {
-      // We don't taint the function object
-      throw new Error("[TheHulk] Function object is tainted!");
-    }
-
-    // FIXME
-    // We should be very cautious on the functions that are called by the built-in functions e.g. custom toString function and so on
-    // We will lose control of these kind of functions's return value
-    // 1/ Check if one of the arguments is the callback function for the built-in function
-    // if (Utils.isNativeFunction(fTobeCheck) && isAnyUserDefinedFunction())
- 
-    // If none of the arguments are tainted, we skip to the use any rules
-    // if (!TaintHelper.risAnyArgumentsTainted(args, reflected) && !TaintHelper.risTainted(base)) {
-      // Push the function to the stack
-      // this.taintStackHelper.pushStackFrame(f_c, iid);
-      // return {f: f_c, base: base_c, args: args, skip: false};
-    // }
-
-    if (Utils.isNativeFunction(fTobeCheck)) {
-      let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
-      if (rule) {
-        // Push the function to the stack
-        // this.taintStackHelper.pushStackFrame(rule, iid);
-        return {f: rule, base: base, args: args, skip: false, reflected: reflected};
+    try {
+      let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
+      if (reason) {
+        taintedArg.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
+        // TODO: Handle multiple tainted arguments here
+        Utils.reportDangerousFlow(
+          taintedArg.getTaintInfo().getTaintSource().reason,
+          taintedArg.getTaintInfo().getTaintSource().location,
+          reason,
+          iid,
+          taintedArg,
+          iid
+        )
       }
-      else {
-        // f is a built-in function but no rule found
-        // We concretize the taint value and apply the original function
-        if (!ConcretizedBuiltins.isKnownConcretized(f)){
-          J$$.analysis.logger.reportUnsupportedBuiltin(f, base);
+
+      // Check if the function is a built-in function
+      // Functions can be called in different ways, 
+      // e.g. y.f(arg1, arg2, ...), y.f.call(this, arg1, arg2), y.f.apply(this, args)
+      // - y.f(arg1, arg2, ...) => base = y, f = y.f, args = [arg1, arg2, ...]
+      // - y.f.call(this, arg1, arg2) => base = f, f = f.apply, args = [this, arg1, arg2]
+      // - y.f.apply(this, args) => base = f, f = f.apply, args = [this, ...args]
+      // This will affect how we check the taint args and the base object
+      let fTobeCheck = f;
+      let reflected = "";
+      if (typeof(base) === "function" && (f === Function.prototype.apply || f === Function.prototype.call)) {
+        fTobeCheck = base;
+        reflected = f === Function.prototype.apply ? "apply" : "call";
+      }
+
+      let base_c = TaintHelper.concreteWrappedOnly(base);
+      let f_c = TaintHelper.concreteWrappedOnly(f);
+
+      if (f_c !== f) {
+        // We don't taint the function object
+        throw new Error("[TheHulk] Function object is tainted!");
+      }
+
+      if (Utils.isNativeFunction(fTobeCheck)) {
+      // if (Utils.isNativeFunction(fTobeCheck) && !isConstructor) {
+        let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
+        if (rule) {
+          // Push the function to the stack
+          // this.taintStackHelper.pushStackFrame(rule, iid);
+          return {f: rule, base: base, args: args, skip: false, reflected: reflected};
         }
-        args = Array.from(args).map(item => TaintHelper.concreteHard(item)); 
+        else {
+          // f is a built-in function but no rule found
+          // We concretize the taint value and apply the original function
+          if (!DefinedConcretizeBuiltins.isKnown(f)){
+            J$$.analysis.logger.reportUnsupportedBuiltin(f, base);
+          }
 
-        // Push the function to the stack
-        // this.taintStackHelper.pushStackFrame(f_c, iid);
-        return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
+          // Using rconcreteHard could be very dangerous, as
+          // - performace: if item is really big, like window, will the program run forever
+          // - functionality: we will lost all the taint information on global object like item
+          // However, it may break the program if we don't concretize the value for some built-in functions
+          // So, we maintain a known concretized list for the built-in functions for sepecial cases
+          // By default, we only concretize one level of the object
+          [base_c, args] = DefinedConcretizeBuiltins.concrete(f, base, args);
+
+          // Push the function to the stack
+          // this.taintStackHelper.pushStackFrame(f_c, iid);
+          return {f: f_c, base: base_c, args: args, skip: false, reflected:""};
+        }
       }
+    
+      // f is not a built-in function or it is a constructor
+      // this.taintStackHelper.pushStackFrame(f_c, iid);
+      return {f: f_c, base: base, args: args, skip: false, reflected:""};
+
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
     }
-  
-    // f is not a built-in function
-    // this.taintStackHelper.pushStackFrame(f_c, iid);
-    return {f: f_c, base: base, args: args, skip: false, reflected:""};
   };
 
   /**
@@ -365,22 +379,28 @@ export class TaintTracking {
    *
    */
   invokeFun (iid, f, base, args, result, isConstructor, isMethod, functionIid, functionSid) {
-    let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
-    if (!TaintHelper.isTainted(result) && reason) {
-      // TODO: We need to clone the variable or only save the taint information and not the value
-      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
-      result = TaintHelper.createTaintValue(result, taintInfo);
-    }
+    try {
+      let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
+      if (!TaintHelper.isTainted(result) && reason) {
+        // TODO: We need to clone the variable or only save the taint information and not the value
+        let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
+        result = TaintHelper.createTaintValue(result, taintInfo);
+      }
 
-    // Pop the function from the stack
-    // let frame = this.taintStackHelper.peakStackFrame();
-    // if (frame.function !== f) {
-    //   throw new Error("[TheHulk] Function object is not the same!");
-    // } else{
-    //   this.taintStackHelper.popStackFrame();
-    // }
-    
-    return {result: result};
+      // Pop the function from the stack
+      // let frame = this.taintStackHelper.peakStackFrame();
+      // if (frame.function !== f) {
+      //   throw new Error("[TheHulk] Function object is not the same!");
+      // } else{
+      //   this.taintStackHelper.popStackFrame();
+      // }
+      
+      return {result: result};
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
+    }
   };
 
   /**
@@ -503,20 +523,25 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   getField (iid, base, offset, val, isComputed, isOpAssign, isMethodCall) {
-    
-    val = this.taintPropRules.getFieldRules.getRule(base, offset)(base, offset, iid)
-    
-    let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
-    if (!TaintHelper.isTainted(val) && reason) {
-      // The taint introduced from taintSourceRules has more priority
-      if (val instanceof WrappedValue) {
-        val = val.getConcrete();
+    try {
+      val = this.taintPropRules.getFieldRules.getRule(base, offset)(base, offset, iid)
+      
+      let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
+      if (!TaintHelper.isTainted(val) && reason) {
+        // The taint introduced from taintSourceRules has more priority
+        if (val instanceof WrappedValue) {
+          val = val.getConcrete();
+        }
+        let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", base, [offset], iid));
+        val = TaintHelper.createTaintValue(val, taintInfo);
       }
-      let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation("getField", base, [offset], iid));
-      val = TaintHelper.createTaintValue(val, taintInfo);
-    }
 
-    return {result: val};
+      return {result: val};
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
+    }
   };
 
 
@@ -562,22 +587,33 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   putField (iid, base, offset, val, isComputed, isOpAssign) {
-    let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
-    if (reason) {
-      val.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation("putField", base, [offset], iid));
-      Utils.reportDangerousFlow(
-        val.taintInfo.getTaintSourceReason(),
-        val.taintInfo.getTaintSourceLocation(),
-        reason,
-        iid,
-        val,
-        iid
-      )
+    try {
+      if (J$$.analysis.DCHECK) {
+        if (offset === "__TAINT__") {
+          debugger;
+        }
+      }
+
+      let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
+      if (reason) {
+        val.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation("putField", base, [offset], iid));
+        Utils.reportDangerousFlow(
+          val.taintInfo.getTaintSourceReason(),
+          val.taintInfo.getTaintSourceLocation(),
+          reason,
+          iid,
+          val,
+          iid
+        )
+      }
+
+      val = this.taintPropRules.putFieldRules.getRule(base, offset)(base, offset, val, iid)
+      return {result: val};
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
     }
-
-    val = this.taintPropRules.putFieldRules.getRule(base, offset)(base, offset, val, iid)
-
-    return {result: val};
   };
 
 
