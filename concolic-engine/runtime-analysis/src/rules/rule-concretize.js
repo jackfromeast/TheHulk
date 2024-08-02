@@ -11,11 +11,15 @@ import { TaintHelper } from "../taint-helper.js";
  *   defined instructions. By default, we will concretize the base and args by one level, but for specific
  *   fucntions, we will concretize the base or args in a fine grain manner.
  */
-export class DefinedConcretizeBuiltins {
+export class DefinedConcretizeBuiltinHelper {
+  constructor() {
+    this.prepare();
+  }
+
   /**
    * Known functions that are explicitly handled for concretization.
    */
-  static knownConcretizedList = [
+  knownConcretizedList = [
     // Array Object
     Array.isArray,
     Array.prototype.indexOf,
@@ -45,23 +49,30 @@ export class DefinedConcretizeBuiltins {
     document.getElementsByTagName
   ];
 
-  // Method to check if a given function is in the concretized list
-  static isKnown(func) {
-    return DefinedConcretizeBuiltins.knownConcretizedList.includes(func);
-  }
-
-  static concretizedDict = {
+  concretizedDict = {
     // Browser APIs with specific concretization strategies
-    "PresentationRequest": [PresentationRequest, "ARG0_ARRAY_ONE_LEVEL"]
+    "FinalizationRegistry.prototype.register": [FinalizationRegistry.prototype.register, "NONE"],
   };
+
+  prepare() {
+    // Check if PresentationRequest is defined
+    if (typeof PresentationRequest !== 'undefined') {
+      this.concretizedDict["PresentationRequest"] = [PresentationRequest, "ARG0_ARRAY_ONE_LEVEL"];
+    }
+  }    
+
+  // Method to check if a given function is in the concretized list
+  isKnown(func) {
+    return this.knownConcretizedList.includes(func);
+  }
 
   /**
    * Validates a concretization strategy string.
    * @param {string} strategyString - The strategy string to validate.
    */
-  static validateStrategyString(strategyString) {
+  validateStrategyString(strategyString) {
     const validStrategies = [
-      'ARGS_SELF', 'BASE_SELF', 'ARG0_ARRAY_ONE_LEVEL', 'BASE_AND_ARGS_SELF'
+      'NONE', 'ARGS_SELF', 'BASE_SELF', 'ARG0_ARRAY_ONE_LEVEL', 'BASE_AND_ARGS_SELF'
     ];
     const strategyTokens = strategyString.split(/\s*(&&|\|\|)\s*/);
     for (const token of strategyTokens) {
@@ -76,10 +87,13 @@ export class DefinedConcretizeBuiltins {
    * @param {string} strategyString - The strategy string defining the concretization actions.
    * @returns {Function} A function that applies the concretization strategy.
    */
-  static makeStrategy(strategyString) {
-    DefinedConcretizeBuiltins.validateStrategyString(strategyString);
+  makeStrategy(strategyString) {
+    this.validateStrategyString(strategyString);
 
     const strategies = {
+      'NONE': (base, args) => {
+        return [base, args];
+      },
       'ARGS_SELF': (base, args) => {
         args = Array.from(args).map(arg => TaintHelper.concreteHard(arg));
         return [base, args];
@@ -124,18 +138,18 @@ export class DefinedConcretizeBuiltins {
    * @param {Arguments} args - The arguments passed to the function.
    * @returns {{ base: any, args: any[] }} The concretized base and arguments.
    */
-  static concrete(f, base, args) {
+  concrete(f, base, args) {
     let concretizationStrategy = "ARGS_SELF";
 
     // Determine the concretization strategy for the function
-    for (const [key, value] of Object.entries(DefinedConcretizeBuiltins.concretizedDict)) {
+    for (const [key, value] of Object.entries(this.concretizedDict)) {
       if (value[0] === f) {
         concretizationStrategy = value[1];
         break;
       }
     }
 
-    const strategyFunction = DefinedConcretizeBuiltins.makeStrategy(concretizationStrategy);
+    const strategyFunction = this.makeStrategy(concretizationStrategy);
     const [base_c, args_c] = strategyFunction(base, args);
 
     return [base_c, args_c];

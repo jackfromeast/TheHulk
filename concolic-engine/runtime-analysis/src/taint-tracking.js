@@ -25,7 +25,7 @@ import { TaintSinkRules } from './taint-sinks.js';
 import { TaintPropOperation } from './values/taint-info.js';
 import { TaintHelper } from './taint-helper.js';
 import { Utils } from './utils/util.js';
-import { DefinedConcretizeBuiltins } from './rules/rule-concretize.js';
+import { DefinedConcretizeBuiltinHelper } from './rules/rule-concretize.js';
 import { TaintStackHelper } from './taint-stack-helper.js';
 
 export class TaintTracking {
@@ -34,7 +34,7 @@ export class TaintTracking {
     this.sandbox = sandbox;
     this.coverage = new Coverage(sandbox);
     this.logger = new Logger({
-      level: 'debug',
+      level: 'info',
       name: 'TheHulk',
       logUnsupportBuiltin: false,
       logTaintInstall: false
@@ -48,6 +48,7 @@ export class TaintTracking {
 
     this.DCHECK = true;
     this.taintStackHelper = new TaintStackHelper();
+    this.builtinConcretizeHelper = new DefinedConcretizeBuiltinHelper();
     this.MAX_DEPTH_FOR_TAINT_CHECK = 3;
   }
 
@@ -301,7 +302,7 @@ export class TaintTracking {
         else {
           // f is a built-in function but no rule found
           // We concretize the taint value and apply the original function
-          if (!DefinedConcretizeBuiltins.isKnown(f)){
+          if (!this.builtinConcretizeHelper.isKnown(f)){
             J$$.analysis.logger.reportUnsupportedBuiltin(f, base);
           }
 
@@ -311,7 +312,7 @@ export class TaintTracking {
           // However, it may break the program if we don't concretize the value for some built-in functions
           // So, we maintain a known concretized list for the built-in functions for sepecial cases
           // By default, we only concretize one level of the object
-          [base_c, args] = DefinedConcretizeBuiltins.concrete(f, base, args);
+          [base_c, args] = this.builtinConcretizeHelper.concrete(f, base, args);
 
           // Push the function to the stack
           // this.taintStackHelper.pushStackFrame(f_c, iid);
@@ -380,7 +381,7 @@ export class TaintTracking {
   invokeFun (iid, f, base, args, result, isConstructor, isMethod, functionIid, functionSid) {
     try {
       let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
-      if (!TaintHelper.isTainted(result) && reason) {
+      if (reason && !TaintHelper.isTainted(result)) {
         // TODO: We need to clone the variable or only save the taint information and not the value
         let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
         result = TaintHelper.createTaintValue(result, taintInfo);

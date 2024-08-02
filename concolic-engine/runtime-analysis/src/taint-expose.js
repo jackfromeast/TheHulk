@@ -10,3 +10,7 @@ J$$.wrapTaint = function (val, iid) {
   let taintInfo = new TaintInfo(-1, "ManuallyAdded", new TaintPropOperation("ManuallyAdded", null, [], -1));
   return TaintHelper.createTaintValue(val, taintInfo);
 }
+
+J$$.isTainted = function (val) {
+  return TaintHelper.isTainted(val);
+}

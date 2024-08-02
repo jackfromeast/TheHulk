@@ -343,6 +343,7 @@ export class TaintHelper {
     }
     
     // A workaround to clone the object with the same prototype
+    // The following line will be slow
     let newTaintInfo = Object.create(Object.getPrototypeOf(oldTaintInfo));
     Object.assign(newTaintInfo, structuredClone(Object.assign({}, oldTaintInfo)));
 
@@ -363,7 +364,7 @@ export class TaintHelper {
     let clonedArgs = args.map(arg => {
       try {
         if (arg instanceof WrappedValue) {
-          return arg.toString();
+          return arg.toStringInternal();
         }
         // return structuredClone(arg);
         return Utils.safeToString(arg);

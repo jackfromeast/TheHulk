@@ -10,6 +10,9 @@ import { RegExpBuiltinsRules } from './js-builtins/regexp-builtins.js';
 import { ObjectBuiltinsTaintPropRules } from './js-builtins/object-builtins.js';
 import { ReflectBuiltinsTaintPropRules } from './js-builtins/reflect-builtins.js';
 import { ProxyBuiltinsTaintPropRules } from './js-builtins/proxy-builtins.js';
+import { SymbolBuiltinsTaintPropRules } from './js-builtins/symbol-builtins.js';
+import { BooleanBuiltinsTaintPropRules } from './js-builtins/boolean-builtins.js';
+import { NumberBuiltinsTaintPropRules } from './js-builtins/number-builtins.js';
 
 export class TaintPropRules {
   constructor() {
@@ -25,6 +28,9 @@ export class TaintPropRules {
     this.objectBuiltinsRules = new ObjectBuiltinsTaintPropRules();
     this.reflectBuiltinsRules = new ReflectBuiltinsTaintPropRules();
     this.proxyBuiltinsRules = new ProxyBuiltinsTaintPropRules();
+    this.symbolBuiltinsRules = new SymbolBuiltinsTaintPropRules();
+    this.booleanBuiltinsRules = new BooleanBuiltinsTaintPropRules();
+    this.numberBuiltinsRules = new NumberBuiltinsTaintPropRules();
 
 
     this.invokeFunRules = this.aggregateRules([
@@ -34,7 +40,10 @@ export class TaintPropRules {
       this.regexpBuiltinsRules.ruleDict,
       this.objectBuiltinsRules.ruleDict,
       this.reflectBuiltinsRules.ruleDict,
-      // this.proxyBuiltinsRules.ruleDict
+      this.proxyBuiltinsRules.ruleDict,
+      this.symbolBuiltinsRules.ruleDict,
+      this.booleanBuiltinsRules.ruleDict,
+      this.numberBuiltinsRules.ruleDict,
     ]);
   }
 
