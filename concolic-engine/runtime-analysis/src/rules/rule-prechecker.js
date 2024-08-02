@@ -56,6 +56,13 @@ export class BindValueChecker {
       }
       args[0] = wrapped_f;
     }
+    else if (f === String.prototype.replace && typeof args[1] === 'function') {
+      const original_f = args[1];
+      function wrapped_f (...wrappedArgs) {
+        return TaintHelper.concreteWrappedOnly(original_f.call(this, ...wrappedArgs));
+      }
+      args[1] = wrapped_f;
+    }
     return [base, args];
   }
 
