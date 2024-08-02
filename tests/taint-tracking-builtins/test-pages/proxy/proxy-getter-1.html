@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Taint Tracking Test Websites - Micro Benchmarks - array-forEach-1</h1>
+<h1>Taint Tracking Test Websites - Micro Benchmarks - proxy-getter-1</h1>
 
 <section>
     <p>
@@ -38,7 +38,7 @@
 <div class="column">
 <p><span class="label">Testing Code:</span><br><br>
 <pre>
-* @Name: array-forEach-1
+* @Name: proxy-getter-1
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
@@ -46,12 +46,15 @@
  */
 (function() {
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    let taintedResult;
-    arr.forEach(item => {
-      taintedResult = item;
-    });
+    let taintedValue = { a: J$$.wrapTaint('tainted') };
+    const handler = {
+      get(target, prop, receiver) {
+        return Reflect.get(...arguments);
+      },
+    };
+    
+    let proxy = new Proxy(taintedValue, handler);
+    let taintedResult = proxy.a;
 
     let scriptEle = document.createElement('script');
     scriptEle.src = `https://example.com/${taintedResult}`;
@@ -66,11 +69,11 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../array/array-filter-1.html">Next Test: array-filter-1</a></li>
+    <li><a href="../proxy/proxy-getter-2.html">Next Test: proxy-getter-2</a></li>
   </ul>
 </section>
 
-<script src="scripts/array-forEach-1.js"></script>
+<script src="scripts/proxy-getter-1.js"></script>
 
 </body>
 </html>

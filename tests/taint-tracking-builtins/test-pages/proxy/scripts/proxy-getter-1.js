@@ -1,5 +1,5 @@
 /**
- * @Name: array-join-1
+ * @Name: proxy-getter-1
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
@@ -7,13 +7,15 @@
  */
 (function() {
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    let taintedResult = arr.join('');
-
-    if (taintedResult.includes("TaintValue")){
-      throw new Error("The toString method of TaintValue should not be called.");
-    }
+    let taintedValue = { a: J$$.wrapTaint('tainted') };
+    const handler = {
+      get(target, prop, receiver) {
+        return Reflect.get(...arguments);
+      },
+    };
+    
+    let proxy = new Proxy(taintedValue, handler);
+    let taintedResult = proxy.a;
 
     let scriptEle = document.createElement('script');
     scriptEle.src = `https://example.com/${taintedResult}`;

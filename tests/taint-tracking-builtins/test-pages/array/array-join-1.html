@@ -50,6 +50,10 @@
     let arr = [taintedValue];
     let taintedResult = arr.join('');
 
+    if (taintedResult.includes("TaintValue")){
+      throw new Error("The toString method of TaintValue should not be called.");
+    }
+
     let scriptEle = document.createElement('script');
     scriptEle.src = `https://example.com/${taintedResult}`;
   } else {

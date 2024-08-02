@@ -1,22 +1,21 @@
 /**
- * @Name: array-join-1
+ * @Name: replace-2
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
  * @SinkCode: document.createElement('script').src
  */
 (function() {
+  // Check if J$$ exists
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    let taintedResult = arr.join('');
+    let taintedString = 'exampleJ$1';
+    let taintedReplaced = taintedString.replace(J$$.wrapTaint('J$1'), ()=>{
+      return J$$.wrapTaint('$$');
+    });
 
-    if (taintedResult.includes("TaintValue")){
-      throw new Error("The toString method of TaintValue should not be called.");
-    }
-
+    // Create a new script element
     let scriptEle = document.createElement('script');
-    scriptEle.src = `https://example.com/${taintedResult}`;
+    scriptEle.src = `https://example.com/${taintedReplaced}`;
   } else {
     console.error("J$$ is not defined or does not have wrapTaint method.");
   }

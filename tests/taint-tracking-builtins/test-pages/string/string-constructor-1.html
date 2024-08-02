@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Taint Tracking Test Websites - Micro Benchmarks - array-forEach-1</h1>
+<h1>Taint Tracking Test Websites - Micro Benchmarks - string-constructor-1</h1>
 
 <section>
     <p>
@@ -38,23 +38,27 @@
 <div class="column">
 <p><span class="label">Testing Code:</span><br><br>
 <pre>
-* @Name: array-forEach-1
+* @Name: string-constructor-1
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
  * @SinkCode: document.createElement('script').src
  */
 (function() {
+  // Check if J$$ exists
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    let taintedResult;
-    arr.forEach(item => {
-      taintedResult = item;
-    });
+    let taintedValues = J$$.wrapTaint("HELLOWORLD");
 
     let scriptEle = document.createElement('script');
-    scriptEle.src = `https://example.com/${taintedResult}`;
+
+    let taintedSrc = new String(taintedValues);
+
+    if (taintedSrc.includes("TaintValue")) {
+      throw new Error("Tainted value found in src");
+    }
+    // Set the src of the new script element
+    scriptEle.src = `https://example.com/${taintedSrc}`;
+
   } else {
     console.error("J$$ is not defined or does not have wrapTaint method.");
   }
@@ -66,11 +70,11 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../array/array-filter-1.html">Next Test: array-filter-1</a></li>
+    <li><a href="../string/fromCharCode-1.html">Next Test: fromCharCode-1</a></li>
   </ul>
 </section>
 
-<script src="scripts/array-forEach-1.js"></script>
+<script src="scripts/string-constructor-1.js"></script>
 
 </body>
 </html>
