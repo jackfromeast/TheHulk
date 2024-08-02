@@ -40,14 +40,39 @@ export class Utils {
    * @description
    * --------------------------------
    * Safe toString function that handles exceptions
-   * The value might doesn't inherited from Object.prototype and don't have toString method
+   * - The value might doesn't inherited from Object.prototype and don't have toString method
+   * - The value can have user-defined toString method, we need to check if it is native
+   * - The value may be proixied, and calling toString will trigger the getter
    */
   static safeToString(value) {
     try {
-      // value.toString shouldn't be overwritten by developer
-      // If it is overwritten, we will get recursive function
-      // Change the new Error to return the string directly to save performance
-      if (!Utils.isNativeFunction(value.toString)) { return '[Unable to convert to string]'; }
+      if (value === null || value === undefined) {
+        return value + '';
+      }
+
+      if (Utils.isPrimitive(value)) {
+        return value.toString();
+      } else {
+        return Object.prototype.toString.call(value);
+      }
+      
+    } catch (e) {
+      return '[Unable to convert to string]';
+    }
+  }
+
+  /**
+   * @description
+   * --------------------------------
+   * Safe toString function that handles exceptions and is user-defined function aware
+   * - The value might doesn't inherited from Object.prototype and don't have toString method
+   */
+  static safeToStringWithUserDefinedToString(value) {
+    try {
+      if (value === null || value === undefined) {
+        return value + '';
+      }
+
       return value.toString();
     } catch (e) {
       return '[Unable to convert to string]';

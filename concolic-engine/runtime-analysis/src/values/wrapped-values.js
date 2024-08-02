@@ -137,15 +137,16 @@ class TaintValue extends WrappedValue {
         const topFrames = stack.slice(2, 6); // 2,3,4,5
         const hasValidCallSite = topFrames.some(frame => frame.includes('addTaintPropOperation') ||
                                                          frame.includes('checkTaintAtSinkInvokeFun') ||
-                                                         frame.includes('checkTaintAtSinkPutField'));
-                                                        //  frame.includes('CustomElementRegistry.value')                                                 
+                                                         frame.includes('checkTaintAtSinkPutField') ||
+                                                         frame.includes('defaultPutFieldModel') ||
+                                                         frame.includes('CustomElementRegistry.value'));                                                 
         if (!hasValidCallSite) {
           // Although we will concretize the base and args before running runOriginFunc
           // But there are cases where the tainted valued is not stored in base or args and will be processed by the callback function
           // passed in the runOriginFunc
           // J$$.analysis.logger.debug('Unkown caller of TaintValue.toString.');
           // debugger;
-          return this.concrete;
+          return Utils.safeToString(this.concrete);
         }
       } catch (e) {
         J$$.analysis.logger.debug('Error during DebugCheck in toString.');
