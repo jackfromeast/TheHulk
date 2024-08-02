@@ -292,12 +292,11 @@ export class TaintTracking {
       }
 
       if (Utils.isNativeFunction(fTobeCheck)) {
-      // if (Utils.isNativeFunction(fTobeCheck) && !isConstructor) {
         let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
         if (rule) {
           // Push the function to the stack
           // this.taintStackHelper.pushStackFrame(rule, iid);
-          return {f: rule, base: base, args: args, skip: false, reflected: reflected};
+          return {f: rule, base: base, args: args, skip: false, reflected: reflected, isConstructor: false};
         }
         else {
           // f is a built-in function but no rule found

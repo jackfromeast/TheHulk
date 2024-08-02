@@ -17,6 +17,8 @@ export class StringBuiltinsTaintPropRules {
   }
 
   supportedStringBuiltins = {
+    'String': [String, this.StringConstructorModel, 'FIRST_ARG_TAINTED'],
+
     // Base or any argument is tainted
     'at': [String.prototype.at, this.atStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
     'charAt': [String.prototype.charAt, this.charAtStringModel, 'BASE_TAINTED || ANY_ARGS_TAINTED'],
@@ -72,6 +74,13 @@ export class StringBuiltinsTaintPropRules {
    */
   buildRules() {
     for (const [fName, fGroup] of Object.entries(this.supportedStringBuiltins)) {
+      if (fName === 'String') {
+        const condition = ConditionBuilder.makeCondition(fGroup[2]);
+        const rule = RuleBuilder.makeRuleForConstructor(fGroup[0], condition, fGroup[1]);
+        this.addRule(fGroup[0], rule);
+        continue;
+      }
+
       const condition = ConditionBuilder.makeCondition(fGroup[2]);
       const rule = RuleBuilder.makeRule(fGroup[0], condition, fGroup[1]);
       this.addRule(fGroup[0], rule);
@@ -108,6 +117,41 @@ export class StringBuiltinsTaintPropRules {
     return found ? found.rule : null;
   }
 
+  /**
+   * @description
+   * --------------------------------
+   * Apply the taint propagation rule for the String constructor.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: FIRST_ARG_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * new String(value)
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * new String(TAINTED("Hello"))
+   * -> TAINTED("Hello")
+   * 
+   * @param {Function} f - The string built-in function.
+   * @param {Array} args - The arguments to the function.
+   * @param {String} reflected - The reflected function name.
+   * @param {*} result - The result of the function.
+   * @param {number} iid - The instruction id.
+   * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
+   */
+  StringConstructorModel(base, args, reflected, result, iid) {
+    let taintInfo = TaintHelper.getTaintInfo(args[0]);
+    let argsArray = Utils.getArrayLikeArguments(args, reflected);
+    if (taintInfo) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:constructor', base, argsArray, iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
+    }
+    return result;
+  }
 
   /**
    * @description

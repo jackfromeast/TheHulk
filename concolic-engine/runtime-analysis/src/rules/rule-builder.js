@@ -303,6 +303,33 @@ export class RuleBuilder {
     return newrule;
   }
 
+  /**
+   * @description
+   * --------------------------------
+   * Creates a new rule for the constructor.
+   * 
+   * @param {Function} f - f is the constructor should be invoked through new keyword.
+  */
+  static makeRuleForConstructor(constructor, condition, modelF, concretize = true, featureDisabled = false) {
+    let newRule = (base, args, iid, reflected) => {
+      let result, thrown;
+      [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(constructor, base, args);
+
+      [result, thrown, args] = this.runOriginFuncAsConstructor(constructor, args, concretize);
+
+      if (!featureDisabled && condition(base, args, reflected)) {
+        result = modelF(base, args, reflected, result, iid);
+      }
+
+      if (thrown) {
+          throw thrown;
+      }
+
+      return result;
+    };
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
+  }
 
   /**
    * @description
@@ -333,9 +360,12 @@ export class RuleBuilder {
       if (concretize) {
         // Only when we are sure that f will not change base and args
         // we can dehydrate the taint information with depth > 1
-        if (f === JSON.stringify || f === Array.prototype.join) {
-          dehydratedBase = new DehydratedTaintValue(base, 5);
+        if (f === JSON.stringify) {
+          dehydratedBase = new DehydratedTaintValue(base);
           dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg, 5));
+        } else if (f === Array.prototype.join) {
+          dehydratedBase = new DehydratedTaintValue(base, 5);
+          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg));
         } else {
           dehydratedBase = new DehydratedTaintValue(base);
           dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg));  
@@ -367,6 +397,34 @@ export class RuleBuilder {
     return [result, thrown, base, args];
   }
 
+  static runOriginFuncAsConstructor(constructor, args, concretize=true) {
+    let result, thrown;
+    let dehydratedBase, dehydratedArgs;
+  
+    try {
+      if (concretize) {
+        dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg));  
+        const concreteArgs = dehydratedArgs.map(dt => dt.concrete);
+        result = RuleBuilder.callOriginFuncAsConstructor(constructor, concreteArgs);
+      } else {
+        result = RuleBuilder.callOriginFuncAsConstructor(constructor, args);
+      }  
+    } catch (e) {
+      thrown = e;
+    } finally {
+      // Restore taint information
+      if (concretize) {
+        Array.from(args).forEach((item, index) => {
+          if (dehydratedArgs[index]) {
+            args[index] = dehydratedArgs[index].moisturizeTaint(dehydratedArgs[index].concrete, dehydratedArgs[index].DehydratedTaintInfo);
+          }
+        });
+      }
+    }
+  
+    return [result, thrown, args];
+  }
+
   /**
    * We assume the c_base and c_args are already concretized
    * 
@@ -385,5 +443,11 @@ export class RuleBuilder {
       result = Function.prototype.apply.call(f, c_base, c_args);
     }
     return result;
+  }
+
+
+  static callOriginFuncAsConstructor(constructor, args) {
+    const argsArray = Array.from(args);
+    return new constructor(...argsArray);
   }
 }
