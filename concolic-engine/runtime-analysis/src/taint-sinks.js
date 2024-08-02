@@ -1,5 +1,5 @@
-import {WrappedValue, _, TaintValue} from './values/wrapped-values.js'
-import {TaintInfo, TaintPropOperation} from './values/taint-info.js'
+import { WrappedValue, _, TaintValue } from './values/wrapped-values.js'
+import { TaintInfo, TaintPropOperation } from './values/taint-info.js'
 import { Utils } from './utils/util.js';
 
 
@@ -96,14 +96,18 @@ export class TaintSinkRules {
     if (base instanceof WrappedValue) { base = base.getConcrete(); }
 
     if (base instanceof Element) {
-      if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'src') {
-        return "SINK-TO-SCRIPT-SRC";
-      } else if (offset === 'innerHTML' || offset === 'outerHTML') {
-        return `SINK-TO-DOM-ELEMENT-${offset.toUpperCase()}`;
-      } else if (offset === 'srcdoc') {
-        return "SINK-TO-DOM-ELEMENT-SRCDOC";
-      } else if (base.tagName && base.tagName.toUpperCase() === 'LINK' && offset === 'href') {
-        return "SINK-TO-LINK-HREF";
+      try {
+        if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'src') {
+          return "SINK-TO-SCRIPT-SRC";
+        } else if (offset === 'innerHTML' || offset === 'outerHTML') {
+          return `SINK-TO-DOM-ELEMENT-${offset.toUpperCase()}`;
+        } else if (offset === 'srcdoc') {
+          return "SINK-TO-DOM-ELEMENT-SRCDOC";
+        } else if (base.tagName && base.tagName.toUpperCase() === 'LINK' && offset === 'href') {
+          return "SINK-TO-LINK-HREF";
+        }
+      } catch (e) {
+        // Have seen exceptions where base.tagName will cause Illegal invocation error
       }
     }
 
@@ -122,6 +126,8 @@ export class TaintSinkRules {
     if (base === document && offset === 'domain') {
       return "SINK-TO-DOCUMENT-DOMAIN";
     }
+
+    return false;
   }
 
   /**

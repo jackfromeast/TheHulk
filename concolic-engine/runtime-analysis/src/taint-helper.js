@@ -1,5 +1,5 @@
 import { TaintValue, WrappedValue } from './values/wrapped-values.js';
-import { TaintInfo, TaintPropName } from './values/taint-info.js';
+import { TaintInfo, TaintPropName, TaintPropNameForDebug } from './values/taint-info.js';
 import { Utils } from './utils/util.js';
 
 /**
@@ -7,6 +7,11 @@ import { Utils } from './utils/util.js';
  * --------------------------------
  * This class defines the taint-related helper functions
  * This class help you check, add, merge, and remove taint information
+ * 
+ * @notes
+ * --------------------------------
+ * All the operation on the value that can be redefined by the user (e.g. get, set, in, ...)
+ * should use the functions provided by the utils to avoid recursive call 
  */
 export class TaintHelper {
   
@@ -36,21 +41,61 @@ export class TaintHelper {
         if (!Object.isExtensible(value)) {
           J$$.analysis.logger.debug("Cannot install taint to non-extensible object", value);
           return value;
+        } else if (TaintHelper.isInTaintBlacklist(value)) {
+          return value;
         }
 
         J$$.analysis.logger.reportTaintInstall(value);
+
         Object.defineProperty(value, TaintPropName, {
           value: taintInfo,
           enumerable: false,
           writable: true,
           configurable: true
         });
+
+        if (J$$.analysis.DCHECK) {
+          // Add a shadow property to store the actual taint value
+          Object.defineProperty(value, TaintPropNameForDebug, {
+            value: taintInfo,
+            enumerable: false,
+            writable: true,
+            configurable: true
+          });
+  
+          // Add a proxy property with a getter and setter
+          Object.defineProperty(value, TaintPropName, {
+            get() {
+              return this[TaintPropNameForDebug];
+            },
+            set(newValue) {
+              if (!(newValue instanceof TaintInfo)) {
+                debugger; // Trigger debugger if the value is not of type TaintInfo
+              }
+              this[TaintPropNameForDebug] = newValue;
+            },
+            enumerable: false,
+            configurable: true
+          });
+        }
+
         return value;
       }
       catch (e) {
         J$$.analysis.logger.debug("Failed to install taint to", value, " because ", e);
         return value;
       }
+    }
+  }
+
+  static isInTaintBlacklist(value) {
+    // Don't taint history, localStorage, sessionStorage, and indexedDB
+    if (value === window.history ||
+        value === window.localStorage ||
+        value === window.sessionStorage ||
+        value === window.indexedDB ||
+        value instanceof DOMStringMap) {
+      return true;
     }
   }
 
@@ -122,6 +167,8 @@ export class TaintHelper {
    * @returns {*} concreteValue
    */
   static concreteHard(value) {
+    if (Utils.isDOMNode(value)) { return value; }
+
     if (TaintHelper.isTainted(value)) {
       if (value instanceof TaintValue) {
         return value.getConcrete();
@@ -136,39 +183,45 @@ export class TaintHelper {
   }
   
   /**
-   * Concrete the value if it is tainted recursively
+   * Concrete the value if it is tainted recursively up to a specified depth.
    * 
-   * Note that at most time, we don't need to concrete the value recursively
+   * Note that at most time, we don't need to concrete the value recursively.
    * This function will strip the taint info in very level of the value and
-   * you will lose the taint information forever
+   * you will lose the taint information forever.
    * 
-   * - For the primitive types, we can just concrete them in one level
-   * - For the object types, we doesn't need to strip the taint as it 
-   *   shouldn't affect the execution at most time
+   * - For the primitive types, we can just concrete them in one level.
+   * - For the object types, we don't need to strip the taint as it 
+   *   shouldn't affect the execution at most time.
    * 
    * @param {*} value 
+   * @param {number} depth - The depth to which the concreting should be performed.
    * @returns {*} concreteValue
    */
-  static rconcreteHard(value) {
-
-    if (!TaintHelper.risTainted(value)) {
+  static rconcreteHard(value, depth=Infinity) {
+    if (depth < 0) {
       return value;
     }
+
+    if (Utils.isDOMNode(value)) { return value; }
 
     if (TaintHelper.isTainted(value)) {
       return TaintHelper.concreteHard(value);
     } else if (Array.isArray(value)) {
-      return value.map(item => TaintHelper.rconcreteHard(item));
+      return value.map(item => TaintHelper.rconcreteHard(item, depth - 1));
     } else if (value && typeof value === 'object' && value.constructor === Object) {
-      // This operation might be dangerous, because we will lose the keys that cannot be looped out
       return Object.keys(value).reduce((acc, key) => {
-        acc[key] = TaintHelper.rconcreteHard(value[key]);
+        let [item, isSafeLookup] = Utils.safeLookup(value, key, true);
+        if (isSafeLookup) {
+          acc[key] = TaintHelper.rconcreteHard(item, depth - 1);
+        }
+
         return acc;
       }, {});
     }
 
     return value;
   }
+
 
 
   /**
@@ -222,21 +275,22 @@ export class TaintHelper {
     } else if (Array.isArray(value)) {
       try{
         return value.some(item => TaintHelper.risTainted(item, depth + 1));
-      } catch (DOMException) {
-        J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+      } catch (e) {
+        if (e instanceof DOMException) { return false; }
+        J$$.analysis.logger.debug("Cannot check if the value is tainted because ", e);
         return false;
       }
-    } else if (value && typeof value === 'object' && value.constructor === Object) {
+    } else if (value && typeof value === 'object') {
+      // Don't traverse the DOM Node's properties
+      if (Utils.isDOMNode(value)) { return false; }
       return Object.keys(value).some(key => {
         try{
-          // Check if the property has a getter or is a function
-          const descriptor = Object.getOwnPropertyDescriptor(value, key);
-          if (descriptor && (descriptor.get || typeof descriptor.value === 'function')) {
-            return false;
-          }
-          return TaintHelper.risTainted(value[key], depth + 1);
-        } catch (DOMException) {
-          J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+          let [item, isSafeLookup] = Utils.safeLookup(value, key);
+          if (isSafeLookup) { return TaintHelper.risTainted(item, depth + 1); }
+          return false;
+        } catch (e) {
+          if (e instanceof DOMException) { return false; }
+          J$$.analysis.logger.debug("Cannot check if the value is tainted because ", e);
           return false;
         }
       });
@@ -262,15 +316,16 @@ export class TaintHelper {
       }
 
       // Ensure there is no user-defined getter on TaintPropName
-      const descriptor = Object.getOwnPropertyDescriptor(value, TaintPropName);
-      if (descriptor && descriptor.get && Utils.isUserDefinedFunction(descriptor.get)) {
-        // Avoid infinite recursion call
+      let [result, isSafeLookup] = Utils.safeLookup(value, TaintPropName);
+      if (!isSafeLookup) {
         return false;
+      } else {
+        return result !== undefined;
       }
 
-      return value[TaintPropName] !== undefined;
-    } catch (DOMException) {
-      J$$.analysis.logger.debug("Cannot check if the value is tainted because ", DOMException);
+    } catch (e) {
+      if (e instanceof DOMException) { return false; }
+      J$$.analysis.logger.debug("Cannot check if the value is tainted because ", e);
       return false;
     }
   }
@@ -300,7 +355,7 @@ export class TaintHelper {
     let clonedBase;
     try {
       if (base instanceof WrappedValue) {
-        clonedBase = Utils.safeToString(base);
+        clonedBase = base.toStringInternal();
       } else {
         clonedBase = structuredClone(base);
       }
@@ -366,7 +421,10 @@ export class TaintHelper {
     } else if (typeof value === 'object' && value !== null) {
       for (let key in value) {
         if (value.hasOwnProperty(key)) {
-          let taintInfo = TaintHelper.rgetTaintInfo(value[key]);
+          let [item, isSafeLookup] = Utils.safeLookup(value, key);
+          if (!isSafeLookup) { continue; }
+
+          let taintInfo = TaintHelper.rgetTaintInfo(item);
           if (taintInfo) return taintInfo;
         }
       }

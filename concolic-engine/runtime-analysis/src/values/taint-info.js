@@ -129,6 +129,9 @@ export class TaintPropOperation {
    * As far as I know, HTML elements are not cloneable
    * Therefore, we store its string representation
    * E.g. HTMLScriptElement is not cloneable and we store its HTMLScriptElement.toString()
+   * 
+   * Save the snapshot of the arguments and base is too slow, especially for large objects like window
+   * Therefore, we only store the string representation of the base and arguments
    */
   cloneable(args) {
     return args.map(arg => {
@@ -137,7 +140,10 @@ export class TaintPropOperation {
         if (arg instanceof WrappedValue) {
           return Utils.safeToString(arg);
         }
-        return structuredClone(arg);
+
+        // This is very slow
+        // return structuredClone(arg);
+        return Utils.safeToString(arg);
       } catch (e) {
         if (arg.toString) {
           return Utils.safeToString(arg);
@@ -154,7 +160,10 @@ export class TaintPropOperation {
       if (base instanceof WrappedValue) {
         return Utils.safeToString(base);
       }
-      return structuredClone(base);
+      
+      // This is very slow
+      // return structuredClone(base);
+      return Utils.safeToString(base);
     } catch (e) {
       if (base.toString) {
         return Utils.safeToString(base);
@@ -175,3 +184,4 @@ export class TaintPropOperation {
 }
 
 export const TaintPropName = "__TAINT__";
+export const TaintPropNameForDebug = "__TAINT_DEBUG__";

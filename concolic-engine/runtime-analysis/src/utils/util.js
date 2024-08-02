@@ -34,7 +34,7 @@ export class Utils {
   /**
    * @description
    * --------------------------------
-   * Safe tostring function that handles exceptions
+   * Safe toString function that handles exceptions
    * The value might doesn't inherited from Object.prototype and don't have toString method
    */
   static safeToString(value) {
@@ -49,7 +49,42 @@ export class Utils {
   }
 
   /**
+   * @description
+   * --------------------------------
+   * Safe lookup function is to access a property of an user-passed object
+   * 
+   * @notes
+   * --------------------------------
+   * If obj[prop] is a getter, and when executing the getter, the function uses obj itself again,
+   * We will likely get a recursive function call, if we check taint or concretize of the argument recursively (as it will 
+   * trigger the obj[prop] getter again)
+   * 
+   * @param {*} obj 
+   * @param {*} prop
+   * @returns {Array} [value, isSafe]
+   */
+  static safeLookup(obj, prop, skipGetter=false) {
+    if (skipGetter) {
+      const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+      if (descriptor && descriptor.get && Utils.isUserDefinedFunction(descriptor.get)) {
+        return [null, false];
+      }
+    }
+
+    try {
+      return [Reflect.get(obj, prop), true];
+    }
+    catch (e) {
+      // Have seen exceptions where base.tagName will cause Illegal invocation error
+      return [null, false];
+    }
+  }
+
+  /**
+   * @description
+   * --------------------------------
    * Safe toPrimitive function that handles exceptions
+   * 
    * @param {*} value 
    */
   static safeToPrimitive(value) {
@@ -97,6 +132,10 @@ export class Utils {
    * The f and value should be any type of value even without prototype
    * We should swallow any exceptions
    * 
+   * @TODO
+   * ------------------------------
+   * Now, this function is quite slow, we need to optimize it
+   * 
    * @param {*} f 
    * @returns 
    */
@@ -122,7 +161,7 @@ export class Utils {
         }
 
         if (typeof(value) === "function") {
-            return reNative.test(fnToString.call(value)); 
+            return reNative.test(fnToString.call(value)) && value.name !== 'bound '; 
         } else if (typeof(value) === "object") {
             return reHostCtor.test(toString.call(value));
         } else {
@@ -177,6 +216,21 @@ export class Utils {
    */
   static isString(value) {
     return Utils.realTypeOf(value) === 'string' || TaintHelper.concreteWrappedOnly(value) instanceof String;
+  }
+
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/Node
+   * @param {*} value 
+   * @returns {Boolean}
+   */
+  static isDOMNode(value) {
+    try{
+      if (value instanceof Node || value.prototype instanceof Node) {
+        return true;
+      }
+    } catch(e){
+      return false;
+    }
   }
 
   /**

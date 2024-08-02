@@ -22,6 +22,10 @@ class WrappedValue {
   }
 
   toString() {
+    return Utils.safeToString(this.concrete);
+  }
+
+  toStringInternal() {
     return "Wrapped(" + Utils.safeToString(this.concrete) + ", " + (this.rider ? this.rider.toString() : "") + ")";
   }
 
@@ -51,7 +55,11 @@ class ConcolicValue extends WrappedValue {
   }
 
   toString() {
-      return "Concolic(" + Utils.safeToString(this.concrete) + ", " + this.symbolic + ")";
+    return Utils.safeToString(this.concrete);
+  }
+
+  toStringInternal() {
+    return "Concolic(" + Utils.safeToString(this.concrete) + ", " + this.symbolic + ")";
   }
 
   clone() {
@@ -112,6 +120,14 @@ class TaintValue extends WrappedValue {
     });
   }
 
+  /**
+   * This function should only be called by the analysis engine but not the user program
+   * 
+   * There is no way to make sure that the user program will not call this function, so we
+   * will return the concrete value to make sure it will not break the program
+   * 
+   * @returns 
+   */
   toString() {
     if (J$$.analysis.DCHECK) {
       try {
@@ -119,12 +135,16 @@ class TaintValue extends WrappedValue {
         const stack = error.stack.split('\n');
   
         const topFrames = stack.slice(2, 6); // 2,3,4,5
-        const hasvalidCallSite = topFrames.some(frame => frame.includes('addTaintPropOperation') ||
-                                                         frame.includes('checkTaintAtSinkInvokeFun'));
-  
-        if (!hasvalidCallSite) {
-          // debugger; 
+        const hasValidCallSite = topFrames.some(frame => frame.includes('addTaintPropOperation') ||
+                                                         frame.includes('checkTaintAtSinkInvokeFun') ||
+                                                         frame.includes('checkTaintAtSinkPutField'));
+                                                        //  frame.includes('CustomElementRegistry.value')                                                 
+        if (!hasValidCallSite) {
+          // Although we will concretize the base and args before running runOriginFunc
+          // But there are cases where the tainted valued is not stored in base or args and will be processed by the callback function
+          // passed in the runOriginFunc
           // J$$.analysis.logger.debug('Unkown caller of TaintValue.toString.');
+          // debugger;
           return this.concrete;
         }
       } catch (e) {
@@ -132,6 +152,11 @@ class TaintValue extends WrappedValue {
       }
     }
 
+    return Utils.safeToString(this.concrete);
+    // return "TaintValue(" + Utils.safeToString(this.concrete) + ")";
+  }
+
+  toStringInternal() {
     return "TaintValue(" + Utils.safeToString(this.concrete) + ")";
   }
 
