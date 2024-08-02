@@ -3,6 +3,7 @@ import { TaintInfo, TaintPropOperation } from '../../values/taint-info.js'
 import { RuleBuilder } from '../rule-builder.js'
 import { TaintPropRules } from '../rules.js'
 import { TaintHelper } from '../../taint-helper.js'
+import { Utils } from '../../utils/util.js'
 
 
 /**
@@ -56,22 +57,11 @@ export class PutFieldTaintPropRules {
    * @returns {Function|null} The rule function if found, otherwise null.
    */
   getRule(base, offset) {
-    if (this.isDOMNodes(base)) {
+    if (Utils.isDOMNode(base)) {
       return this.ruleDict.find(x => x.base === 'DOMNodes').rule;
     }else{
       return this.ruleDict.find(x => x.base === 'default').rule;
     }
-  }
-
-  /**
-   * Value assigned to Node might have addtional semantics defined by browser or DOM standard.
-   * Now, we skip putting taint on the value.
-   * 
-   * https://developer.mozilla.org/en-US/docs/Web/API/Node
-   * @param {*} base 
-   */
-  isDOMNodes(base) {
-    if (base instanceof Node) { return true; } else { return false; }
   }
 
   /**
@@ -89,7 +79,7 @@ export class PutFieldTaintPropRules {
       throw new Error('DOMNodesPutFieldModel: base is not an Element');
     }
 
-    val = TaintHelper.concreteHard(val);
+    val = TaintHelper.concreteWrappedOnly(val);
 
     let offset_c = TaintHelper.concreteWrappedOnly(offset);
     if (TaintHelper.isTainted(base)) {
