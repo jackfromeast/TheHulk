@@ -10,6 +10,7 @@ export class ProxyBuiltinsTaintPropRules {
   constructor() {
     this.ruleDict = [];
     this.buildRules();
+    this.proxyTag = Symbol('proxy');
 
     if (!Utils) {
       J$$.analysis.logger.error('Utils is not defined');
@@ -22,7 +23,9 @@ export class ProxyBuiltinsTaintPropRules {
    * Define Proxy traps that are affected by taint and need custom handling.
    * 
    */
-  supportedProxyBuiltins = {};
+  supportedProxyBuiltins = {
+    // 'Proxy': [Proxy, this.ProxyConstructorModel, 'ALL'],
+  };
 
   /**
    * @description
@@ -45,7 +48,12 @@ export class ProxyBuiltinsTaintPropRules {
     }
 
     for (const [fName, fGroup_0] of Object.entries(this.noneAffectBuiltins)) {
-      const rule = RuleBuilder.makeNoneRule(fGroup_0);
+      if (fName === "Proxy") {
+        const rule = RuleBuilder.makeNoneRuleForConstructor(fGroup_0);
+        this.addRule(fGroup_0, rule);
+        continue;
+      }
+      const rule = RuleBuilder.makeRule(fGroup_0);
       this.addRule(fGroup_0, rule);
     }
   }
@@ -58,4 +66,5 @@ export class ProxyBuiltinsTaintPropRules {
     const found = this.ruleDict.find(x => x.func === func);
     return found ? found.rule : null;
   }
+
 }
