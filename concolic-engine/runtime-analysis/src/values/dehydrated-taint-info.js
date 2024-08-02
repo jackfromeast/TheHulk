@@ -64,7 +64,7 @@ export class DehydratedTaintValue {
           return concreteItem;
         });
         return [concreteArray, { self: taintInfo, children: taintInfoArray }];
-      } else if (typeof concreteValue === 'object') {
+      } else if (concreteValue !== null && typeof concreteValue === 'object') {
         let taintInfoObj = {};
         let concreteObj = {};
         for (let key in concreteValue) {

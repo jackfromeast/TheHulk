@@ -334,6 +334,30 @@ export class RuleBuilder {
   /**
    * @description
    * --------------------------------
+   * Creates a new rule for the constructor.
+   * 
+   * @param {Function} f - f is the constructor should be invoked through new keyword.
+  */
+  static makeNoneRuleForConstructor(constructor, condition, modelF, concretize = true, featureDisabled = false) {
+    let newRule = (base, args, iid, reflected) => {
+      let result, thrown;
+      [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(constructor, base, args);
+
+      [result, thrown, args] = this.runOriginFuncAsConstructor(constructor, args, concretize=false);
+
+      if (thrown) {
+          throw thrown;
+      }
+
+      return result;
+    };
+    Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
+    return newRule;
+  }
+
+  /**
+   * @description
+   * --------------------------------
    * Executes a function with the provided base and arguments, optionally concretizing them.
    * 
    * The runOriginFunc will make sure that
@@ -362,7 +386,7 @@ export class RuleBuilder {
         // we can dehydrate the taint information with depth > 1
         if (f === JSON.stringify) {
           dehydratedBase = new DehydratedTaintValue(base);
-          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg, 5));
+          dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg, Infinity));
         } else if (f === Array.prototype.join) {
           dehydratedBase = new DehydratedTaintValue(base, 5);
           dehydratedArgs = Array.from(args).map(arg => new DehydratedTaintValue(arg));
