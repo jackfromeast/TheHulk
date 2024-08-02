@@ -315,14 +315,8 @@ export class TaintHelper {
         return false;
       }
 
-      // Ensure there is no user-defined getter on TaintPropName
-      let [result, isSafeLookup] = Utils.safeLookup(value, TaintPropName);
-      if (!isSafeLookup) {
-        return false;
-      } else {
-        return result !== undefined;
-      }
-
+      // Avoid using the lookup which might trigger getter unexpectedly
+      return Utils.hasOwnKey(value, TaintPropName);
     } catch (e) {
       if (e instanceof DOMException) { return false; }
       J$$.analysis.logger.debug("Cannot check if the value is tainted because ", e);
@@ -357,7 +351,9 @@ export class TaintHelper {
       if (base instanceof WrappedValue) {
         clonedBase = base.toStringInternal();
       } else {
-        clonedBase = structuredClone(base);
+        clonedBase = Utils.safeToString(base);
+        // The following line will be slow, and will trigger getter unexpectedly
+        // clonedBase = structuredClone(base);
       }
     } catch (e) {
       clonedBase = base;
@@ -369,7 +365,8 @@ export class TaintHelper {
         if (arg instanceof WrappedValue) {
           return arg.toString();
         }
-        return structuredClone(arg);
+        // return structuredClone(arg);
+        return Utils.safeToString(arg);
       } catch (e) {
         return arg;
       }

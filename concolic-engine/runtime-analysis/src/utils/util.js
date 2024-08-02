@@ -10,6 +10,11 @@ export class Utils {
   // Get a safe version of Object.prototype.toString and Function.prototype.toString
   static safeObjectToString = Object.prototype.toString;
   static safeFunctionToString = Function.prototype.toString;
+  static reHostCtor = /^\[object .+?Constructor\]$/;
+  static staticNativeFuncPattern = "function toString() { [native code] }"
+  static reNative = new RegExp("^" + Utils.staticNativeFuncPattern
+                                    .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
+                                    .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
 
   static reportDangerousFlow(sourceReason, sourceLoc, sinkReason, sinkLoc, taintedValue, iid) {
     J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
@@ -41,7 +46,8 @@ export class Utils {
     try {
       // value.toString shouldn't be overwritten by developer
       // If it is overwritten, we will get recursive function
-      if (!Utils.isNativeFunction(value.toString)) { throw new Error('toString is not native'); }
+      // Change the new Error to return the string directly to save performance
+      if (!Utils.isNativeFunction(value.toString)) { return '[Unable to convert to string]'; }
       return value.toString();
     } catch (e) {
       return '[Unable to convert to string]';
@@ -72,11 +78,32 @@ export class Utils {
     }
 
     try {
-      return [Reflect.get(obj, prop), true];
+      // Set receiver to obj to avoid getter recursion
+      // In case, the get function uses Reflect.get(obj, prop, receiver) in its body
+      return [Reflect.get(obj, prop, obj), true];
     }
     catch (e) {
       // Have seen exceptions where base.tagName will cause Illegal invocation error
       return [null, false];
+    }
+  }
+
+  /**
+   * This function helps to check if the object has the property and avoid triggering any getter
+   * As long as the proxy doesn't define the [[OwnPropertyKeys]] method
+   * 
+   * @param {*} obj 
+   * @param {*} prop 
+   * @returns 
+   */
+  static hasOwnKey(obj, prop) {
+    try{
+      // Quite slow, need proxy doesn't define [[OwnPropertyKeys]]
+      // return Reflect.ownKeys(obj).some(key => key === prop);
+      // Faster, need proxy doesn't define getOwnPropertyDescriptor 
+      return Object.prototype.hasOwnProperty.call(obj, prop);
+    } catch(e){
+      return false;
     }
   }
 
@@ -140,19 +167,6 @@ export class Utils {
    * @returns 
    */
   static isNativeFunction(f) {
-    // Need to make sure that Object.prototype.toString and Function.prototype.toString are not overwritten
-    const toString = Utils.safeObjectToString;
-    const fnToString = Utils.safeFunctionToString;
-    const reHostCtor = /^\[object .+?Constructor\]$/;
-    
-    // We need to make sure String() is not overwritten by developer
-    // If String() is instrumented, we will get recursive function call 
-    const staticPattern = "function toString() { [native code] }"
-    const reNative = RegExp("^" + staticPattern
-            .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
-            .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
-    );
-
     function isNativeCore(value) {
         if (!value.hasOwnProperty || value.hasOwnProperty('toString')) {
           // isNativeFunction will not work on custom toString methods. 
@@ -161,9 +175,9 @@ export class Utils {
         }
 
         if (typeof(value) === "function") {
-            return reNative.test(fnToString.call(value)) && value.name !== 'bound '; 
+            return Utils.reNative.test(Utils.safeFunctionToString.call(value)) && value.name !== 'bound '; 
         } else if (typeof(value) === "object") {
-            return reHostCtor.test(toString.call(value));
+            return Utils.reHostCtor.test(Utils.safeObjectToString.call(value));
         } else {
             return false;
         }
