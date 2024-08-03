@@ -51,8 +51,8 @@ export class BindValueChecker {
     // For the array.filter, we need to make sure the return value of the first f needs to be concretized
     if (f === Array.prototype.filter) {
       const original_f = args[0];
-      function wrapped_f (element) {
-        return TaintHelper.concreteWrappedOnly(original_f.call(this, element));
+      function wrapped_f (...wrappedArgs) {
+        return TaintHelper.concreteWrappedOnly(original_f.call(this, ...wrappedArgs));
       }
       args[0] = wrapped_f;
     }
