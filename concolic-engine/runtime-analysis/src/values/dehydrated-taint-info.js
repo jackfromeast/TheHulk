@@ -65,13 +65,16 @@ export class DehydratedTaintValue {
         });
         return [concreteArray, { self: taintInfo, children: taintInfoArray }];
       } else if (concreteValue !== null && typeof concreteValue === 'object') {
-        let taintInfoObj = {};
-        let concreteObj = {};
-        for (let key in concreteValue) {
-          let [concreteItem, itemTaint] = this.dehydrateTaint(concreteValue[key], depth + 1);
+        const taintInfoObj = {};
+        const concreteObj = {};
+  
+        // Use Object.keys to avoid traversing the prototype chain
+        Object.keys(concreteValue).forEach((key) => {
+          const [concreteItem, itemTaint] = this.dehydrateTaint(concreteValue[key], depth + 1);
           concreteObj[key] = concreteItem;
           taintInfoObj[key] = itemTaint;
-        }
+        });
+  
         return [concreteObj, { self: taintInfo, children: taintInfoObj }];
       }
     }
