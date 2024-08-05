@@ -42,25 +42,25 @@
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement('script').src
+ * @SinkCode: document.createElement(&apos;script&apos;).src
  */
 (function() {
   // Check if J$$ exists
-  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValues = J$$.wrapTaint("HELLOWORLD");
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
+    let taintedValues = J$$.wrapTaint(&quot;HELLOWORLD&quot;);
 
-    let scriptEle = document.createElement('script');
+    let scriptEle = document.createElement(&apos;script&apos;);
 
     let taintedSrc = new String(taintedValues);
 
-    if (taintedSrc.includes("TaintValue")) {
-      throw new Error("Tainted value found in src");
+    if (taintedSrc.includes(&quot;TaintValue&quot;)) {
+      throw new Error(&quot;Tainted value found in src&quot;);
     }
     // Set the src of the new script element
     scriptEle.src = `https://example.com/${taintedSrc}`;
 
   } else {
-    console.error("J$$ is not defined or does not have wrapTaint method.");
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
   }
 })();
 </pre>
@@ -70,7 +70,7 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../string/fromCharCode-1.html">Next Test: fromCharCode-1</a></li>
+    <li><a href="../string/string-constructor-2.html">Next Test: string-constructor-2</a></li>
   </ul>
 </section>
 

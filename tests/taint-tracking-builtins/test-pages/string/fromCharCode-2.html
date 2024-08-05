@@ -42,17 +42,17 @@
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement('script').src
+ * @SinkCode: document.createElement(&apos;script&apos;).src
  */
 (function() {
   // Check if J$$ exists
-  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
     let taintedValue_1 = J$$.wrapTaint(74);
     let taintedValue_2 = J$$.wrapTaint(36);
     let taintedValue_3 = J$$.wrapTaint(49);
 
     // Create a new script element
-    let scriptEle = document.createElement('script');
+    let scriptEle = document.createElement(&apos;script&apos;);
 
     // Use fromCharCode to convert tainted values to a string
     let taintedSrc = String.fromCharCode.apply(null, [taintedValue_1, taintedValue_2, taintedValue_3]);
@@ -61,7 +61,7 @@
     scriptEle.src = `https://example.com/${taintedSrc}`;;
 
   } else {
-    console.error("J$$ is not defined or does not have wrapTaint method.");
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
   }
 })();
 </pre>

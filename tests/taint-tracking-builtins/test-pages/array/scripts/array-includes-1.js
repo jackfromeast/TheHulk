@@ -8,11 +8,12 @@
 (function() {
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
     let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    let taintedResult = arr.includes(taintedValue);
+    let arr = ["ABCD", "tainted"];
 
-    let scriptEle = document.createElement('script');
-    scriptEle.src = `https://example.com/${taintedResult}`;
+    if (arr.includes(taintedValue)){
+      let scriptEle = document.createElement('script');
+      scriptEle.src = `https://example.com/${taintedValue}`;
+    }
   } else {
     console.error("J$$ is not defined or does not have wrapTaint method.");
   }

@@ -42,15 +42,15 @@
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement('script').src
+ * @SinkCode: document.createElement(&apos;script&apos;).src
  */
 (function() {
-  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = { a: J$$.wrapTaint('tainted') };
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
+    let taintedValue = { a: J$$.wrapTaint(&apos;tainted&apos;) };
     const handler = {
       get(target, prop, receiver) {
-        if (prop === 'b') {
-          return Reflect.get(target, 'a');
+        if (prop === &apos;b&apos;) {
+          return Reflect.get(target, &apos;a&apos;);
         }
         return Reflect.get(...arguments);
       },
@@ -59,10 +59,10 @@
     let proxy = new Proxy(taintedValue, handler);
     let taintedResult = proxy.a;
 
-    let scriptEle = document.createElement('script');
+    let scriptEle = document.createElement(&apos;script&apos;);
     scriptEle.src = `https://example.com/${taintedResult}`;
   } else {
-    console.error("J$$ is not defined or does not have wrapTaint method.");
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
   }
 })();
 </pre>
@@ -72,7 +72,7 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../regexp/regexp-exec-1.html">Next Test: regexp-exec-1</a></li>
+    <li><a href="../proxy/proxy-getter-3.html">Next Test: proxy-getter-3</a></li>
   </ul>
 </section>
 

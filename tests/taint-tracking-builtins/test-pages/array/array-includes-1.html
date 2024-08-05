@@ -42,18 +42,19 @@
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement('script').src
+ * @SinkCode: document.createElement(&apos;script&apos;).src
  */
 (function() {
-  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedValue = J$$.wrapTaint('tainted');
-    let arr = [taintedValue];
-    let taintedResult = arr.includes(taintedValue);
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
+    let taintedValue = J$$.wrapTaint(&apos;tainted&apos;);
+    let arr = [&quot;ABCD&quot;, &quot;tainted&quot;];
 
-    let scriptEle = document.createElement('script');
-    scriptEle.src = `https://example.com/${taintedResult}`;
+    if (arr.includes(taintedValue)){
+      let scriptEle = document.createElement(&apos;script&apos;);
+      scriptEle.src = `https://example.com/${taintedValue}`;
+    }
   } else {
-    console.error("J$$ is not defined or does not have wrapTaint method.");
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
   }
 })();
 </pre>
@@ -63,7 +64,7 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../string/fromCharCode-1.html">Next Test: fromCharCode-1</a></li>
+    <li><a href="../array/array-concat-1.html">Next Test: array-concat-1</a></li>
   </ul>
 </section>
 

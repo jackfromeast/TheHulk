@@ -42,18 +42,18 @@
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement('script').src
+ * @SinkCode: document.createElement(&apos;script&apos;).src
  */
 (function() {
-  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedJSON = J$$.wrapTaint('{"outer": {"inner": {"key": "taintedValue"}}}');
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
+    let taintedJSON = J$$.wrapTaint(&apos;{&quot;outer&quot;: {&quot;inner&quot;: {&quot;key&quot;: &quot;taintedValue&quot;}}}&apos;);
     let parsedObject = JSON.parse(taintedJSON);
     let taintedResult = parsedObject.outer.inner.key;
 
-    let scriptEle = document.createElement('script');
+    let scriptEle = document.createElement(&apos;script&apos;);
     scriptEle.src = `https://example.com/${taintedResult}`;
   } else {
-    console.error("J$$ is not defined or does not have wrapTaint method.");
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
   }
 })();
 </pre>

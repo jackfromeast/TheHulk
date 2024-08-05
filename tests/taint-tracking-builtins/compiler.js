@@ -11,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const { Command } = require('commander');
+const { encode } = require('html-entities');
 
 const program = new Command();
 program
@@ -43,7 +44,7 @@ function generateHTML(testUnit, name, scriptRelPath, nextPage) {
   const sourceCode = sourceCodeMatch[1].trim();
   const sinkType = sinkTypeMatch[1].trim();
   const sinkCode = sinkCodeMatch[1].trim();
-  const code = codeMatch[2].trim();
+  const code = encode(codeMatch[2].trim());
 
   const navLinks = nextPage ? `<li><a href="../${nextPage.path}">Next Test: ${nextPage.name}</a></li>` : '';
 

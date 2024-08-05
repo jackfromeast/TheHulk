@@ -42,19 +42,19 @@
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement('script').src
+ * @SinkCode: document.createElement(&apos;script&apos;).src
  */
 (function() {
   // Check if J$$ exists
-  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
-    let taintedString = J$$.wrapTaint('exampleJ$1');
-    let taintedIncludes = taintedString.includes('J$1');
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
+    let taintedString = J$$.wrapTaint(&apos;exampleJ$1&apos;);
+    let taintedIncludes = taintedString.includes(&apos;J$1&apos;);
 
     // Create a new script element
-    let scriptEle = document.createElement('script');
+    let scriptEle = document.createElement(&apos;script&apos;);
     scriptEle.src = `https://example.com/${taintedIncludes}`;
   } else {
-    console.error("J$$ is not defined or does not have wrapTaint method.");
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
   }
 })();
 </pre>
