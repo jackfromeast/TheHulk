@@ -89,6 +89,16 @@ export class TaintInfo {
       operation: operation
     }
   }
+
+  toJSON() {
+    return {
+        taintID: this.taintID,
+        taintPropOperations: this.taintPropOperations.map(op => {
+          if(op.toJSON){return op.toJSON()}else{ return op}}),
+        taintSink: this.taintSink,
+        taintSource: this.taintSource,
+    };
+  }
 }
 
 /**
@@ -179,6 +189,15 @@ export class TaintPropOperation {
 
   getArguments() {
     return this.arguments;
+  }
+
+  toJSON() {
+    return {
+      operation: this.operation,
+      base: this.base,
+      arguments: this.arguments,
+      location: this.location,
+    };
   }
 
 }
