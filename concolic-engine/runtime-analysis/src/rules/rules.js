@@ -13,6 +13,7 @@ import { ProxyBuiltinsTaintPropRules } from './js-builtins/proxy-builtins.js';
 import { SymbolBuiltinsTaintPropRules } from './js-builtins/symbol-builtins.js';
 import { BooleanBuiltinsTaintPropRules } from './js-builtins/boolean-builtins.js';
 import { NumberBuiltinsTaintPropRules } from './js-builtins/number-builtins.js';
+import { TrustedTypesTaintPropRules } from './browser/trust-types.js';
 
 export class TaintPropRules {
   constructor() {
@@ -32,39 +33,47 @@ export class TaintPropRules {
     this.booleanBuiltinsRules = new BooleanBuiltinsTaintPropRules();
     this.numberBuiltinsRules = new NumberBuiltinsTaintPropRules();
 
+    this.trustedTypesTaintPropRules = new TrustedTypesTaintPropRules();
 
     this.invokeFunRules = this.aggregateRules([
-      this.stringBuiltinsRules.ruleDict,
-      this.arrayBuiltinsRules.ruleDict,
-      this.jsonBuiltinsRules.ruleDict,
-      this.regexpBuiltinsRules.ruleDict,
-      this.objectBuiltinsRules.ruleDict,
-      this.reflectBuiltinsRules.ruleDict,
-      this.proxyBuiltinsRules.ruleDict,
-      this.symbolBuiltinsRules.ruleDict,
-      this.booleanBuiltinsRules.ruleDict,
-      this.numberBuiltinsRules.ruleDict,
+      this.stringBuiltinsRules,
+      this.arrayBuiltinsRules,
+      this.jsonBuiltinsRules,
+      this.regexpBuiltinsRules,
+      this.objectBuiltinsRules,
+      this.reflectBuiltinsRules,
+      this.proxyBuiltinsRules,
+      this.symbolBuiltinsRules,
+      this.booleanBuiltinsRules,
+      this.numberBuiltinsRules,
+      this.trustedTypesTaintPropRules
     ]);
   }
 
    /**
-   * Aggregates rules from the provided rule dictionaries.
+   * Aggregates rules from the provided rule instances.
    * 
-   * @param {Array} ruleDicts - An array of rule dictionaries to aggregate.
-   * @returns {Array} - The aggregated array of rules.
+   * @param {Array} ruleInstances - An array of rule class instances to aggregate.
+   * @returns {Object} - An object with methods to get rules.
    */
-   aggregateRules(ruleDicts) {
-    const rules = ruleDicts.flat();
-    
+  aggregateRules(ruleInstances) {
     return {
-      rules,
+      ruleInstances,
       getRule(fn) {
-        const found = rules.find(x => x.func === fn);
-        return found ? found.rule : null;
+        for (const ruleInstance of ruleInstances) {
+          const rule = ruleInstance.getRule(fn);
+          if (rule) { return rule; }
+        }
+        return null;
       },
       getRuleForConstructor(fn) {
-        const found = rules.find(x => x.constructor === fn);
-        return found ? found.rule : null;
+        for (const ruleInstance of ruleInstances) {
+          if (ruleInstance.getRuleForConstructor) {
+            const rule = ruleInstance.getRuleForConstructor(fn);
+            if (rule) { return rule; }
+          }
+        }
+        return null;
       }
     };
   }

@@ -122,6 +122,11 @@ export class StringBuiltinsTaintPropRules {
     return found ? found.rule : null;
   }
 
+  getRuleForConstructor(func) {
+    const found = this.ruleDict.find(x => x.constructor === func);
+    return found ? found.rule : null;
+  }
+
   /**
    * @description
    * --------------------------------

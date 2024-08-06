@@ -15,6 +15,15 @@ export class Utils {
   static reNative = new RegExp("^" + Utils.staticNativeFuncPattern
                                     .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
                                     .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
+  static reCreateScript = new RegExp("^" + Utils.staticNativeFuncPattern
+                                              .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
+                                              .replace(/toString/g, "createScript") + "$");
+  static reCreateScriptURL = new RegExp("^" + Utils.staticNativeFuncPattern
+                                              .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
+                                              .replace(/toString/g, "createScriptURL") + "$");                                        
+  static reCreateHTML = new RegExp("^" + Utils.staticNativeFuncPattern
+                                              .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
+                                              .replace(/toString/g, "createHTML") + "$");                             
 
   static reportDangerousFlow(sourceReason, sourceLoc, sinkReason, sinkLoc, taintedValue, iid) {
     J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
@@ -42,7 +51,7 @@ export class Utils {
    * Safe toString function that handles exceptions
    * - The value might doesn't inherited from Object.prototype and don't have toString method
    * - The value can have user-defined toString method, we need to check if it is native
-   * - The value may be proixied, and calling toString will trigger the getter
+   * - The value may be proixied, and calling toString will trigger its getter function
    */
   static safeToString(value) {
     try {
@@ -53,6 +62,10 @@ export class Utils {
       if (Utils.isPrimitive(value)) {
         return value.toString();
       } else {
+        // Hopefully this will not trigger any getter or user-defined toString
+        if (value instanceof RegExp) {
+          return value.toString();
+        }
         return Object.prototype.toString.call(value);
       }
       
@@ -219,6 +232,25 @@ export class Utils {
         // isNativeFunction called on non-function/non-object;
         return false;
     }
+  }
+
+  /**
+   * This function is used by TrustTypesTaintPropRules class
+   * We assume that the f has been checked by isNativeFunction
+   * 
+   * @param {*} f
+   * @param {*} fName
+   */
+  static isTrustedTypeFunction(f, fName) {
+    if (fName === 'createScript') {
+      return Utils.reCreateScript.test(Utils.safeFunctionToString.call(f));
+    } else if (fName === 'createScriptURL') {
+      return Utils.reCreateScriptURL.test(Utils.safeFunctionToString.call(f));
+    }
+    else if (fName === 'createHTML') {
+      return Utils.reCreateHTML.test(Utils.safeFunctionToString.call(f));
+    }
+    return false;
   }
 
   static isUserDefinedFunction(f) {

@@ -96,7 +96,10 @@ export class TaintHelper {
 
   static isInTaintBlacklist(value) {
     // Don't taint history, localStorage, sessionStorage, and indexedDB
-    if (value === window.history ||
+    if (value === document ||
+        value === window ||
+        value === window.document ||
+        value === window.history ||
         value === window.localStorage ||
         value === window.sessionStorage ||
         value === window.indexedDB ||

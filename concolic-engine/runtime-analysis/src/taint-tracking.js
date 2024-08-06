@@ -42,8 +42,8 @@ export class TaintTracking {
 
     this.taintConfig = {
       TAINT_VALUE:{
-        Number: false,
-        Boolean: false,
+        Number: true,
+        Boolean: true,
       },
       
       TAINT_SOURCE: {
@@ -271,11 +271,11 @@ export class TaintTracking {
     try {
       let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
       if (reason) {
-        taintedArg.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
+        TaintHelper.getTaintInfo(taintedArg).addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
         // TODO: Handle multiple tainted arguments here
         Utils.reportDangerousFlow(
-          taintedArg.getTaintInfo().getTaintSource().reason,
-          taintedArg.getTaintInfo().getTaintSource().location,
+          TaintHelper.getTaintInfo(taintedArg).getTaintSource().reason,
+          TaintHelper.getTaintInfo(taintedArg).getTaintSource().location,
           reason,
           iid,
           taintedArg,
@@ -311,6 +311,10 @@ export class TaintTracking {
           rule = this.taintPropRules.invokeFunRules.getRuleForConstructor(fTobeCheck);
         } else {
           rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
+        }
+
+        if (rule && rule.type && rule.type === "DynamicRuleFunction") {
+          rule = rule.install(fTobeCheck);
         }
         
         if (rule) {
@@ -546,8 +550,7 @@ export class TaintTracking {
       val = this.taintPropRules.getFieldRules.getRule(base, offset)(base, offset, iid)
       
       let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
-      if (!TaintHelper.isTainted(val) && reason) {
-        // The taint introduced from taintSourceRules has more priority
+      if (reason && !TaintHelper.isTainted(val)) {
         if (val instanceof WrappedValue) {
           val = val.getConcrete();
         }
@@ -615,10 +618,10 @@ export class TaintTracking {
 
       let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
       if (reason) {
-        val.getTaintInfo().addtaintSink(iid, reason, new TaintPropOperation("putField", base, [offset], iid));
+        TaintHelper.getTaintInfo(val).addtaintSink(iid, reason, new TaintPropOperation("putField", base, [offset], iid));
         Utils.reportDangerousFlow(
-          val.taintInfo.getTaintSourceReason(),
-          val.taintInfo.getTaintSourceLocation(),
+          TaintHelper.getTaintInfo(val).getTaintSourceReason(),
+          TaintHelper.getTaintInfo(val).getTaintSourceLocation(),
           reason,
           iid,
           val,

@@ -1,7 +1,7 @@
 import { WrappedValue, _, TaintValue } from './values/wrapped-values.js'
 import { TaintInfo, TaintPropOperation } from './values/taint-info.js'
 import { Utils } from './utils/util.js';
-
+import { TaintHelper } from './taint-helper.js';
 
 export class TaintSinkRules {
 
@@ -92,13 +92,15 @@ export class TaintSinkRules {
    */
   checkTaintAtSinkPutField(base, offset, val) {
 
-    if (!this.isTainted(val)) { return false; }
+    if (!TaintHelper.isTainted(val)) { return false; }
     if (base instanceof WrappedValue) { base = base.getConcrete(); }
 
     if (base instanceof Element) {
       try {
         if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'src') {
           return "SINK-TO-SCRIPT-SRC";
+        } else if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'text') {
+          return "SINK-TO-SCRIPT-TEXT";
         } else if (offset === 'innerHTML' || offset === 'outerHTML') {
           return `SINK-TO-DOM-ELEMENT-${offset.toUpperCase()}`;
         } else if (offset === 'srcdoc') {
@@ -144,15 +146,15 @@ export class TaintSinkRules {
   checkTaintAtSinkInvokeFun(f, base, args) {
 
     if (f.name === 'eval') {
-      if (args.length && this.isTainted(args[0])) {
+      if (args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-EVAL", args[0]];
       }
     }
 
     if (f.name === 'Function') {
-      if (args.length && Array.from(args).some(arg => this.isTainted(arg))) {
+      if (args.length && Array.from(args).some(arg => TaintHelper.isTainted(arg))) {
         for (let arg of Array.from(args)) {
-          if (this.isTainted(arg)) {
+          if (TaintHelper.isTainted(arg)) {
             return ["SINK-TO-FUNCTION", arg];
           }
         }
@@ -160,33 +162,33 @@ export class TaintSinkRules {
     }
 
     if (f.name === 'setTimeout' || f.name === 'setInterval') {
-      if (args.length && this.isTainted(args[0])) {
+      if (args.length && TaintHelper.isTainted(args[0])) {
         return [`SINK-TO-${f.name.toUpperCase()}`, args[0]];
       }
     }
 
     if (base === document) {
       if (f.name === 'write' || f.name === 'writeln') {
-        if (args.length && this.isTainted(args[0])) {
+        if (args.length && TaintHelper.isTainted(args[0])) {
           return [`SINK-TO-DOCUMENT-${f.name.toUpperCase()}`, args[0]];
         }
       }
     }
 
     if (f.name === 'insertAdjacentHTML' && this.isDOMElement(base)) {
-      if (args.length >= 2 && this.isTainted(args[1])) {
+      if (args.length >= 2 && TaintHelper.isTainted(args[1])) {
         return ["SINK-TO-INSERTADJACENTHTML", args[1]];
       }
     }
 
     if (f.name === 'setAttribute' && base && base.tagName && base.tagName.toUpperCase() === 'SCRIPT') {
-      if (args.length >= 2 && this.isTainted(args[1])) {
+      if (args.length >= 2 && TaintHelper.isTainted(args[1])) {
         return ["SINK-TO-SETATTRIBUTE-SCRIPT-SRC", args[1]];
       }
     }
 
     if (f.name === 'fetch') {
-      if (args.length && this.isTainted(args[0])) {
+      if (args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-FETCH", args[0]];
       }
     }
@@ -194,34 +196,30 @@ export class TaintSinkRules {
     // Assume the base's toString shouldn't be overwritten
     // If it is overwritten, we will get recursive function call
     if (Utils.safeToString(base) === '[object XMLHttpRequest]' && f.name === 'open') {
-      if (args.length && this.isTainted(args[1])) {
+      if (args.length && TaintHelper.isTainted(args[1])) {
         return ["SINK-TO-XMLHTTPREQUEST-OPEN", args[1]];
       }
     }
 
     if (this.isLocationObject(base) && (f.name === 'replace' || f.name === 'assign')) {
-      if (args.length && this.isTainted(args[0])) {
+      if (args.length && TaintHelper.isTainted(args[0])) {
         return [`SINK-TO-LOCATION-${f.name.toUpperCase()}`, args[0]];
       }
     }
 
     if (base === JSON && f.name === 'parse') {
-      if (args.length && this.isTainted(args[0])) {
+      if (args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-JSON-PARSE", args[0]];
       }
     }
 
     if ((base === window.localStorage || base === window.sessionStorage) && f.name === 'setItem') {
-      if (args.length && this.isTainted(args[1])) {
+      if (args.length && TaintHelper.isTainted(args[1])) {
         return [`SINK-TO-${base === window.localStorage ? 'LOCALSTORAGE' : 'SESSIONSTORAGE'}-SETITEM`, args[1]];
       }
     }
 
     return [false, null];
-  }
-
-  isTainted(value) {
-    return value instanceof TaintValue;
   }
 
   isDOMElement(element) {

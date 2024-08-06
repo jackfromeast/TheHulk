@@ -43,6 +43,16 @@ function RuleFunctionPrototype() {
   this.type = 'RuleFunction';
 }
 
+function DynamicRuleFunctionPrototype() {
+  this.type = 'DynamicRuleFunction';
+  this.installed = false;
+
+  this.install = function(f) {
+    this.installed = true;
+    return RuleBuilder.makeRule(f, this.condition, this.model, this.concretize, this.featureDisabled);
+  }
+}
+
 export class RuleBuilder {
 
   /**
@@ -353,6 +363,36 @@ export class RuleBuilder {
     };
     Object.setPrototypeOf(newRule, new RuleFunctionPrototype());
     return newRule;
+  }
+
+  /**
+   * @description
+   * --------------------------------
+   * Create a dynamic function rule.
+   * 
+   * There are cases that we cannot get the reference to the builtin function during the rule creation time.
+   * These builtins are implemented as the interface, e.g. TrustedTypes. And user can define their own functions.
+   * 
+   * To handle these cases, we create a dynamic rule that first return an object with condition and model function.
+   * And during the function invoke time, we install the original function and return the real rule function.
+   * 
+   * @param {*} placeHolder 
+   * @param {*} condition 
+   * @param {*} modelF 
+   * @param {*} concretize 
+   * @param {*} featureDisabled 
+   */
+  static makeDynamicRule(placeHolder, condition, modelF, concretize = true, featureDisabled = false) {
+    let dynamicRule = {
+      condition: condition,
+      model: modelF,
+      concretize: concretize,
+      featureDisabled: featureDisabled  
+    };
+
+    Object.setPrototypeOf(dynamicRule, new DynamicRuleFunctionPrototype());
+
+    return dynamicRule;
   }
 
   /**
