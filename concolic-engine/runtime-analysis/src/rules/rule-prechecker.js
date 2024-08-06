@@ -18,8 +18,17 @@ export class BindValueChecker {
 
   static handleUserDefinedValueOf(left, operator) {
     if (left && Utils.realTypeOf(left) === 'object') {
-      if (Utils.isUserDefinedFunction(left["valueOf"]) && ["+", "-", "~", "!"].includes(operator)) {
-        left = left.valueOf();
+      try {
+        if (Utils.isUserDefinedFunction(left["valueOf"]) && ["+", "-", "~", "!"].includes(operator)) {
+          left = left.valueOf();
+        }
+      } catch (e) {
+        // Reading valueOf property on cross-origin objects might throw an error
+        if (e.name === "SecurityError") {
+          J$$.analysis.logger.warn("SecurityError: Might because of reading valueOf property on cross-origin objects.");
+        }else{
+          throw e;
+        }
       }
     }
     return left;
@@ -27,8 +36,17 @@ export class BindValueChecker {
   
   static handleUserDefinedToString(left, operator) {
     if (left && Utils.realTypeOf(left) === 'object') {
-      if (Utils.isUserDefinedFunction(left["toString"]) && operator === "+") {
-        left = left.toString();
+      try {
+        if (Utils.isUserDefinedFunction(left["toString"]) && operator === "+") {
+          left = left.toString();
+        }
+      } catch (e) {
+        // Reading toString property on cross-origin objects might throw an error
+        if (e.name === "SecurityError") {
+          J$$.analysis.logger.warn("SecurityError: Might because of reading toString property on cross-origin objects.");
+        }else{
+          throw e;
+        }
       }
     }
     return left;
@@ -49,7 +67,7 @@ export class BindValueChecker {
     // We prepare the arguments for runOriginFunc to make it won't call the user-defined function and surprise us
     // We handle all the implicit bind operations here
     // For the array.filter, we need to make sure the return value of the first f needs to be concretized
-    if (f === Array.prototype.filter) {
+    if (f === Array.prototype.filter || f === Array.prototype.find || f === Array.prototype.findIndex || f === Array.prototype.findLastIndex) {
       const original_f = args[0];
       function wrapped_f (...wrappedArgs) {
         return TaintHelper.concreteWrappedOnly(original_f.call(this, ...wrappedArgs));

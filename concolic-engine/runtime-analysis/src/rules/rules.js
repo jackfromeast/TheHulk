@@ -61,6 +61,10 @@ export class TaintPropRules {
       getRule(fn) {
         const found = rules.find(x => x.func === fn);
         return found ? found.rule : null;
+      },
+      getRuleForConstructor(fn) {
+        const found = rules.find(x => x.constructor === fn);
+        return found ? found.rule : null;
       }
     };
   }

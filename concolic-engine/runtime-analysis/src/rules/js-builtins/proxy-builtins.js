@@ -53,7 +53,7 @@ export class ProxyBuiltinsTaintPropRules {
         this.addRule(fGroup_0, rule);
         continue;
       }
-      const rule = RuleBuilder.makeRule(fGroup_0);
+      const rule = RuleBuilder.makeNoneRule(fGroup_0);
       this.addRule(fGroup_0, rule);
     }
   }

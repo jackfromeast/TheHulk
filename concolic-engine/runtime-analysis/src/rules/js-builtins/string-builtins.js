@@ -75,11 +75,11 @@ export class StringBuiltinsTaintPropRules {
    */
   buildRules() {
     for (const [fName, fGroup] of Object.entries(this.supportedStringBuiltins)) {
+      // Make two rules for the String constructor
       if (fName === 'String') {
         const condition = ConditionBuilder.makeCondition(fGroup[2]);
         const rule = RuleBuilder.makeRuleForConstructor(fGroup[0], condition, fGroup[1]);
-        this.addRule(fGroup[0], rule);
-        continue;
+        this.addRule(fGroup[0], rule, true);
       }
 
       const condition = ConditionBuilder.makeCondition(fGroup[2]);
@@ -97,8 +97,12 @@ export class StringBuiltinsTaintPropRules {
    * @param {Function} function - The builtin function.
    * @param {Function} rule - The rule function to be added.
    */
-  addRule(func, rule) {
-    this.ruleDict.push({func, rule});
+  addRule(func, rule, isConstructor=false) {
+    if (isConstructor) {
+      this.ruleDict.push({constructor: func, rule: rule});
+    } else {
+      this.ruleDict.push({func, rule});
+    }
   }
 
 

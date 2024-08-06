@@ -52,6 +52,22 @@ export class ArrayBuiltinsTaintPropRules {
   /**
    * @description
    * --------------------------------
+   * Here is a list of builtins that will concretize the base and arguments if they are tainted but no taint propagation.
+   * 
+   * We have this list because we
+   * 1/ don't want to lose the taint on base and arguments
+   * 2/ don't want to propagate the taint to the return value.
+   * 3/ and it will change the logic if we run the builtin with tainted arguments.
+   * 
+   */
+  noneTaintNonePropagationBuiltins = {
+    'includes': Array.prototype.includes,
+    'indexOf': Array.prototype.indexOf,
+  }
+
+  /**
+   * @description
+   * --------------------------------
    * Here is a list of builtins that uses none affected taint propagation rules.
    * 
    * This means, even the arguments are tainted or the return value is tainted,
@@ -76,15 +92,16 @@ export class ArrayBuiltinsTaintPropRules {
     'concat': Array.prototype.concat,
     'splice': Array.prototype.splice,
     'values': Array.prototype.values,
-    'includes': Array.prototype.includes,
     'filter': Array.prototype.filter,
     'reduce': Array.prototype.reduce,
     'every': Array.prototype.every,
     'flatMap': Array.prototype.flatMap,
-    'findIndex': Array.prototype.findIndex,
     'reduceRight': Array.prototype.reduceRight,
     'keys': Array.prototype.keys,
-    'fill': Array.prototype.fill
+    'fill': Array.prototype.fill,
+    'find': Array.prototype.find,
+    'findIndex': Array.prototype.findIndex,
+    'findLastIndex': Array.prototype.findLastIndex,
   }
 
   buildRules() {
@@ -96,6 +113,12 @@ export class ArrayBuiltinsTaintPropRules {
 
     for (const [fName, fGroup_0] of Object.entries(this.noneAffectBuiltins)) {
       const rule = RuleBuilder.makeNoneRule(fGroup_0);
+      this.addRule(fGroup_0, rule);
+    }
+
+    for (const [fName, fGroup_0] of Object.entries(this.noneTaintNonePropagationBuiltins)) {
+      const condition = ConditionBuilder.makeCondition("NONE");
+      const rule = RuleBuilder.makeRule(fGroup_0, condition, ()=>{});
       this.addRule(fGroup_0, rule);
     }
   }
