@@ -34,6 +34,12 @@ export class TaintHelper {
 
     if (Utils.isPrimitive(value)) {
       J$$.analysis.logger.reportTaintInstall(value);
+
+      if ((!J$$.analysis.taintConfig.TAINT_VALUE.Number && typeof value === 'number') || 
+          (!J$$.analysis.taintConfig.TAINT_VALUE.Boolean && typeof value === 'boolean')) {
+        return value;
+      }
+      
       return new TaintValue(value, taintInfo);
     }
     else {
@@ -54,7 +60,7 @@ export class TaintHelper {
           configurable: true
         });
 
-        if (J$$.analysis.DCHECK) {
+        if (J$$.analysis.DCHECK && J$$.analysis.DCHECK_SHADOW_TAINT) {
           // Add a shadow property to store the actual taint value
           Object.defineProperty(value, TaintPropNameForDebug, {
             value: taintInfo,

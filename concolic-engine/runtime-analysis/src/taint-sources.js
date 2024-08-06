@@ -68,7 +68,7 @@ export class TaintSourceRules {
    * --------------------------------
    * This function will be invoked during the invokeFun operation hook
    * 
-   * SOURCE-TYPE-3:
+   * SOURCE-TYPE-3 (Inactive):
    * - SOURCE-FROM-BROWSER-API
    * - Value flows from the browser APIs as taint sources
    * - E.g. exampleAttr = div1.getAttribute("id");
@@ -85,6 +85,10 @@ export class TaintSourceRules {
    * @param {number} iid - The instruction id.
    */
   shouldTaintSourceAtInvokeFun(f, base, args, result, iid) {
+    if (!J$$.analysis.taintConfig.TAINT_SOURCE["SOURCE-FROM-BROWSER-API"]) {
+      return false;
+    }
+
     if (this.isBuiltInFunction(f) && 
        (this.isDOMElement(base) || this.isDocumentObject(base)) &&
        !this.isBuiltInFunction(result) &&

@@ -40,6 +40,19 @@ export class TaintTracking {
       logTaintInstall: false
     });
 
+    this.taintConfig = {
+      TAINT_VALUE:{
+        Number: false,
+        Boolean: false,
+      },
+      
+      TAINT_SOURCE: {
+        "SOURCE-FROM-BROWSER-API": false,
+      },
+
+      TAINT_SINK: {}
+    };
+
     this.taintPropRules = new TaintPropRules();
     this.taintSourceRules = new TaintSourceRules();
     this.taintSinkRules = new TaintSinkRules();
@@ -293,7 +306,13 @@ export class TaintTracking {
       }
 
       if (Utils.isNativeFunction(fTobeCheck)) {
-        let rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
+        let rule;
+        if (isConstructor) {
+          rule = this.taintPropRules.invokeFunRules.getRuleForConstructor(fTobeCheck);
+        } else {
+          rule = this.taintPropRules.invokeFunRules.getRule(fTobeCheck);
+        }
+        
         if (rule) {
           // Push the function to the stack
           // this.taintStackHelper.pushStackFrame(rule, iid);
@@ -549,7 +568,7 @@ export class TaintTracking {
    * This callback is called before a property of an object is written.
    * 
    * @steps
-   * 1/ We always skip the original putFieldPre operation and let putField handle the operation.
+   * 1/ We will instrument the code if it has been set to .innerHTML
    * 
    * @param {number} iid - Static unique instruction identifier of this callback
    * @param {*} base - Base object
