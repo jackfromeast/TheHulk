@@ -11,6 +11,11 @@ pip install -r requirements.txt
 npm install
 popd
 
+### 3/ Install concolic execution engin
+pushd $THEHULK_PATH/concolic-engine
+npm install
+popd
+
 ### 3/ Install the dependencies: Jalangi2
 pushd $THEHULK_PATH/libs/jalangi2
 npm install
