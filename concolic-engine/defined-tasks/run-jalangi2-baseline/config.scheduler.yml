@@ -5,7 +5,7 @@ scheduler:
 
   # Option: "seed" or "list"
   MODE: "seed"
-  SEED_URL: "http://localhost:8001"
+  SEED_URL: "http://localhost:8001/index.html"
   URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: 1

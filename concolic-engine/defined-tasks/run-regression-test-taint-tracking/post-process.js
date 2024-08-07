@@ -8,8 +8,12 @@ function findLatestOutputFolder(outputDir, type) {
 
 function readJsonFile(filePath) {
     if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath);
-        return JSON.parse(content);
+        try {
+            const content = fs.readFileSync(filePath);
+            return JSON.parse(content);
+        } catch (error) {
+            console.error(`Could not read ${filePath}: ${error}`);
+        }
     }
     return null;
 }

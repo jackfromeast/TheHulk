@@ -63,7 +63,7 @@ callbacks:
       function_name: "installJalangi2AndAnalysisCb"
   
   PAGE_ACTIONS_CBS:
-      - file: /home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
+      - file: /home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-regression-test-taint-tracking/callbacks/wait-for-five-sec-callbacks.js
         function_name: "waitForFiveSecCb"
 
   AFTER_LOAD_CBS:
