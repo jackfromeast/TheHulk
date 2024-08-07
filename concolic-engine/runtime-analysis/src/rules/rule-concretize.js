@@ -1,4 +1,5 @@
 import { TaintHelper } from "../taint-helper.js";
+import { SafeBuiltins } from "../utils/safe-builtins.js";
 
 /**
  * This class contains the list of functions that we know how to concretize its base and args.
@@ -14,9 +15,6 @@ import { TaintHelper } from "../taint-helper.js";
 export class DefinedConcretizeBuiltinHelper {
   constructor() {
     this.prepare();
-    // Incase the Array.prototype.filter is overwritten
-    this.array_prototype_filter = Array.prototype.filter;
-    this.object_entries = Object.entries;
   }
 
   /**
@@ -137,7 +135,7 @@ export class DefinedConcretizeBuiltinHelper {
 
     // Parse the strategyString and build a function that applies it
     const strategyFunction = (base, args) => {
-      const tokens = this.array_prototype_filter.call(strategyString.split(/\s*(&&|\|\|)\s*/), Boolean);
+      const tokens = SafeBuiltins.ArrayFilter.call(strategyString.split(/\s*(&&|\|\|)\s*/), Boolean);
       let result = [base, args, false];
       let skipNext = false;
 
@@ -177,7 +175,7 @@ export class DefinedConcretizeBuiltinHelper {
     let concretizationStrategy = "ARGS_SELF";
 
     // Determine the concretization strategy for the function
-    for (const [key, value] of this.object_entries.call(null, this.concretizedDict)) {
+    for (const [key, value] of SafeBuiltins.ObjectEntries.call(null, this.concretizedDict)) {
       if (value[0] === f) {
         concretizationStrategy = value[1];
         break;

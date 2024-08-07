@@ -29,6 +29,7 @@ import { UnaryOpsTaintPropRules } from './operations/unary-ops.js';
 import { BaseClobberableBuiltins, ArgumentsClobberableBuiltins } from './rule-builtin-dict.js';
 import { BindValueChecker } from './rule-prechecker.js';
 import { Utils } from '../utils/util.js';
+import { SafeBuiltins } from '../utils/safe-builtins.js';
 
 /**
  * @description
@@ -54,7 +55,6 @@ function DynamicRuleFunctionPrototype() {
 }
 
 export class RuleBuilder {
-
   /**
    * @description
    * --------------------------------
@@ -450,11 +450,11 @@ export class RuleBuilder {
         if (dehydratedBase) {
           base = dehydratedBase.moisturizeTaint(dehydratedBase.concrete, dehydratedBase.DehydratedTaintInfo);
         }
-        Array.from(args).forEach((item, index) => {
+        SafeBuiltins.ArrayForEach.call(Array.from(args), (item, index) => {
           if (dehydratedArgs[index]) {
             args[index] = dehydratedArgs[index].moisturizeTaint(dehydratedArgs[index].concrete, dehydratedArgs[index].DehydratedTaintInfo);
           }
-        });
+        })
       }
     }
   
@@ -478,11 +478,11 @@ export class RuleBuilder {
     } finally {
       // Restore taint information
       if (concretize) {
-        Array.from(args).forEach((item, index) => {
+        SafeBuiltins.ArrayForEach.call(Array.from(args), (item, index) => {
           if (dehydratedArgs[index]) {
             args[index] = dehydratedArgs[index].moisturizeTaint(dehydratedArgs[index].concrete, dehydratedArgs[index].DehydratedTaintInfo);
           }
-        });
+        })
       }
     }
   
