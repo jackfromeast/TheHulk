@@ -202,7 +202,7 @@ Visitor.prototype.visitPage = async function(){
 		*/
 		// If we arrive here, the navigation succeeded
 		this.logger.debug("Successfully loading the website: " + this.curURL);
-		await page.evaluate(() => console.log('[CRAWLER] Page loaded successfully!'));
+		// await page.evaluate(() => console.log('[CRAWLER] Page loaded successfully!'));
 
 		/**
 		 * ----------------------------------------------
@@ -423,7 +423,11 @@ Visitor.prototype.setupInterception = function(page) {
 
 Visitor.prototype.collectConsoleLogs = async function(page){
 	page.on('console', consoleObj => {
-		this.collected.curURLHash.consoleLogs.push(consoleObj.text());
+		if (consoleObj.type() === 'error'){
+			this.collected.curURLHash.consoleLogs.push(`[!] ERROR: "${consoleObj.text()}"`);
+		} else {
+			this.collected.curURLHash.consoleLogs.push(consoleObj.text());
+		}
 	})
 
 	page.on("pageerror", (err) => {
