@@ -9,6 +9,4 @@ SCRIPT_PATH=$(realpath "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
 # Export PYTHONPATH with the absolute path
-export PYTHONPATH=$SCRIPT_DIR/../libs/mitmproxy:$PYTHONPATH
-
-$ENV_PATH/bin/mitmdump --set stream_large_bodies=500m --anticache --quiet -p 8899 -s "$SCRIPT_DIR/proxy.py"
+mitmdump --set stream_large_bodies=500m --anticache --quiet -p 8899 -s "$SCRIPT_DIR/proxy.py"
