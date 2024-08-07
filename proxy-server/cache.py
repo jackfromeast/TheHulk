@@ -37,7 +37,15 @@ class Cache:
       os.makedirs(self.cache_dir)
     
     self.clean_cache()
+    self.clean_localhost_cache()
     self.load_cache_map()
+
+  def clean_localhost_cache(self):
+    for entry in os.listdir(self.cache_dir):
+      # Check if the entry is a directory and starts with 'localhost'
+      if entry.startswith('localhost') and os.path.isdir(os.path.join(self.cache_dir, entry)):
+        localhost_dir = os.path.join(self.cache_dir, entry)
+        shutil.rmtree(localhost_dir)
 
   def clean_cache(self):
     shutil.rmtree(self.cache_dir, ignore_errors=True)

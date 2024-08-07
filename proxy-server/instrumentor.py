@@ -29,16 +29,17 @@ class Instrumentor:
   def run_instrument_command(self, url, original_file_output_path, instrumented_file_output_path):
     sub_env = { 'JALANGI_URL': url }
     jalangi_args = ' '.join(self.jalangi_args)
-    command = f"node {self.instrument_script_path} {jalangi_args} {original_file_output_path} --out {instrumented_file_output_path} --outDir {os.path.dirname(instrumented_file_output_path)}"
+    command = f"node --max-old-space-size=32768 {self.instrument_script_path} {jalangi_args} {original_file_output_path} --out {instrumented_file_output_path} --outDir {os.path.dirname(instrumented_file_output_path)}"
 
     try:
-      result = subprocess.run(command, shell=True, env=sub_env, check=True, timeout=20,
+      result = subprocess.run(command, shell=True, env=sub_env, check=True, timeout=80,
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
       
       if result.returncode == 0:
         return True
       else:
         logger.error("Instrumentation failed: %s", str(url))
+        logger.error("Command: %s", command)
         if (self.save_failed_instrumentation):
           self.save_failed_instrumentation(command)
 

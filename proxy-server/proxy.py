@@ -145,7 +145,7 @@ class JalangiResponseHandler:
 
     except Exception as e:
       logger.error("Exception raised when handling %s", flow.request.url)
-      
+      logger.error(e)
       # return
       raise e
     
