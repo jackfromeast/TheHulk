@@ -216,7 +216,13 @@ if (typeof J$$ === 'undefined') {
                * That said, args (in callFun) -> args (in XXXModel).
                */
               if (f.type && f.type === "RuleFunction") {
-                result = f(base, args, iid, reflected);
+                try{
+                    result = f(base, args, iid, reflected);
+                }
+                catch(e){
+                    J$$.analysis.logger.warn("(Can be ignored)", e);
+                    throw e;
+                }
               }else {
                 result = Function.prototype.apply.call(f, base, args);
               }
@@ -240,6 +246,7 @@ if (typeof J$$ === 'undefined') {
               args = aret.args;
               skip = aret.skip;
               reflected = aret.reflected || "";
+              isConstructor = aret.isConstructor !== undefined ? aret.isConstructor : isConstructor;
           }
       }
       if (!skip) {

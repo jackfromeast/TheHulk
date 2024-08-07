@@ -303,7 +303,8 @@ const babel = require('@babel/standalone');
           }
       };
 //        StatCollector.resumeTimer("internalParse");
-      var ast = acorn.parse(code);
+      var ast = acorn.parse(code, {locations: true, ecmaVersion: 11, sourceType: 'script'});  
+    //   var ast = acorn.parse(code, {locations: true, ecmaVersion: "latest", sourceType: 'module', allowImportExportEverywhere: true});
 //        StatCollector.suspendTimer("internalParse");
 //        StatCollector.resumeTimer("replace");
       var newAst = astUtil.transformAst(ast, visitorReplaceInExpr, undefined, undefined, true);
@@ -1908,7 +1909,8 @@ const babel = require('@babel/standalone');
 //         StatCollector.resumeTimer("parse");
 //        console.time("parse")
 //        var newAst = esprima.parse(code, {loc:true, range:true});
-      var newAst = acorn.parse(code, {locations: true, ecmaVersion: 11, sourceType: 'module', allowImportExportEverywhere: true});
+      var newAst = acorn.parse(code, {locations: true, ecmaVersion: 11, sourceType: 'script'});  
+    //   var newAst = acorn.parse(code, {locations: true, ecmaVersion: "latest", sourceType: 'module', allowImportExportEverywhere: true});
 //        console.timeEnd("parse")
 //        StatCollector.suspendTimer("parse");
 //        StatCollector.resumeTimer("transform");
@@ -1937,7 +1939,7 @@ const babel = require('@babel/standalone');
 
 
   function instrumentEvalCode(code, iid, isDirect) {
-      return instrumentCode({
+    return instrumentCode({
           code: code,
           thisIid: iid,
           isEval: true,
