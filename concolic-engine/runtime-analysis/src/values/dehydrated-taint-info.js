@@ -74,7 +74,9 @@ export class DehydratedTaintValue {
           concreteObj[key] = concreteItem;
           taintInfoObj[key] = itemTaint;
         });
-  
+        
+        Object.setPrototypeOf(concreteObj, Object.getPrototypeOf(concreteValue));
+
         return [concreteObj, { self: taintInfo, children: taintInfoObj }];
       }
     }
