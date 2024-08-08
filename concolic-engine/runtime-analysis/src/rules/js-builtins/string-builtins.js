@@ -155,9 +155,12 @@ export class StringBuiltinsTaintPropRules {
    */
   StringConstructorModel(base, args, reflected, result, iid) {
     let taintInfo = TaintHelper.getTaintInfo(args[0]);
+    let taintInfoPairs = [];
+    taintInfo ? taintInfoPairs.push(['arg0', taintInfo]) : null;
+
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:constructor', base, argsArray, iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:constructor', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -182,6 +185,10 @@ export class StringBuiltinsTaintPropRules {
    * String.fromCharCode(TAINTED(65), 66)
    * -> TAINTED("AB")
    * 
+   * TYPE-2:
+   * String.fromCharCode.call(this, T([65,65,66]))
+   * -> TAINTED("AAB")
+   * 
    * @param {Function} f - The string built-in function.
    * @param {Array} args - The arguments to the function.
    * @param {String} reflected - The reflected function name.
@@ -191,10 +198,21 @@ export class StringBuiltinsTaintPropRules {
    */
   fromCharCodeStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCharCode', base, argsArray, iid);
+    // TYPE-2: String.fromCharCode.call(this, T([65,65,66]))
+    if (TaintHelper.isTainted(args[1])) {
+      let taintInfo = TaintHelper.getTaintInfo(args[1]);
+      taintInfo ? taintInfoPairs.push([`arg_1`, taintInfo]): null;
+    }
+
+    for (let i = 0; i < argsArray.length; i++) {
+      let taintInfo = TaintHelper.getTaintInfo(argsArray[i]);
+      taintInfo ? taintInfoPairs.push([`arg${i}`, taintInfo]): null;
+    }
+
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:fromCharCode', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -233,10 +251,13 @@ export class StringBuiltinsTaintPropRules {
    */
   atStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:at', base, argsArray, iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
+
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:at', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -270,10 +291,21 @@ export class StringBuiltinsTaintPropRules {
    */
   fromCodePointStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:fromCodePoint', base, argsArray, iid);
+    // TYPE-2: String.fromCodePoint.call(this, T([65,65,66]))
+    if (TaintHelper.isTainted(args[1])) {
+      let taintInfo = TaintHelper.getTaintInfo(args[1]);
+      taintInfo ? taintInfoPairs.push([`arg_1`, taintInfo]): null;
+    }
+
+    for (let i = 0; i < argsArray.length; i++) {
+      let taintInfo = TaintHelper.getTaintInfo(argsArray[i]);
+      taintInfo ? taintInfoPairs.push([`arg${i}`, taintInfo]): null;
+    }
+
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:fromCodePoint', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -311,10 +343,15 @@ export class StringBuiltinsTaintPropRules {
    */
   rawStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:raw', base, argsArray, iid);
+    for (let i = 0; i < argsArray.length; i++) {
+      let taintInfo = TaintHelper.getTaintInfo(argsArray[i]);
+      taintInfo ? taintInfoPairs.push([`arg${i}`, taintInfo]): null;
+    }
+
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:raw', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -352,10 +389,13 @@ export class StringBuiltinsTaintPropRules {
    */
   charAtStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charAt', base, argsArray, iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
+
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:charAt', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -392,11 +432,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   charCodeAtStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:charCodeAt', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:charCodeAt', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -433,11 +474,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   codePointAtStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:codePointAt', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:codePointAt', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -476,14 +518,18 @@ export class StringBuiltinsTaintPropRules {
    */
   concatStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-    if (!taintInfo) {
-      taintInfo = TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
+  
+    let baseTaintInfo = TaintHelper.getTaintInfo(base);
+    if (baseTaintInfo) taintInfoPairs.push(['base', baseTaintInfo]);
+  
+    for (let i = 0; i < argsArray.length; i++) {
+      let argTaintInfo = TaintHelper.getTaintInfo(argsArray[i]);
+      if (argTaintInfo) taintInfoPairs.push([`arg${i}`, argTaintInfo]);
     }
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:concat', base, argsArray, iid);
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:concat', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -520,10 +566,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   endsWithStringModel(base, args, reflected, result, iid) {
-    if (TaintHelper.rgetTaintInfo(base)) {
-      const taintInfo = TaintHelper.rgetTaintInfo(base);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:endsWith', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:endsWith', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -560,10 +608,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   includesStringModel(base, args, reflected, result, iid) {
-    if (TaintHelper.rgetTaintInfo(base)) {
-      const taintInfo = TaintHelper.rgetTaintInfo(base);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:includes', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:includes', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -600,10 +650,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   indexOfStringModel(base, args, reflected, result, iid) {
-    if (TaintHelper.rgetTaintInfo(base)) {
-      const taintInfo = TaintHelper.rgetTaintInfo(base);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:indexOf', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:indexOf', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -636,10 +688,11 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   isWellFormedStringModel(base, args, reflected, result, iid) {
-    if (TaintHelper.rgetTaintInfo(base)) {
-      const taintInfo = TaintHelper.rgetTaintInfo(base);
-      let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:isWellFormed', base, argsArray, iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:isWellFormed', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -676,10 +729,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   lastIndexOfStringModel(base, args, reflected, result, iid) {
-    if (TaintHelper.rgetTaintInfo(base)) {
-      const taintInfo = TaintHelper.rgetTaintInfo(base);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:lastIndexOf', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:lastIndexOf', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -717,10 +772,16 @@ export class StringBuiltinsTaintPropRules {
    */
   localeCompareStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:localeCompare', base, argsArray, iid);
+    let taintInfoPairs = [];
+  
+    let baseTaintInfo = TaintHelper.getTaintInfo(base);
+    if (baseTaintInfo) taintInfoPairs.push(['base', baseTaintInfo]);
+  
+    let argTaintInfo = TaintHelper.getTaintInfo(argsArray[0]);
+    if (argTaintInfo) taintInfoPairs.push(['arg0', argTaintInfo]);
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:localeCompare', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -758,10 +819,16 @@ export class StringBuiltinsTaintPropRules {
    */
   matchStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:match', base, argsArray, iid);
+    let taintInfoPairs = [];
+  
+    let baseTaintInfo = TaintHelper.getTaintInfo(base);
+    if (baseTaintInfo) taintInfoPairs.push(['base', baseTaintInfo]);
+  
+    let argTaintInfo = TaintHelper.getTaintInfo(argsArray[0]);
+    if (argTaintInfo) taintInfoPairs.push(['arg0', argTaintInfo]);
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:match', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -799,10 +866,16 @@ export class StringBuiltinsTaintPropRules {
    */
   matchAllStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray[0]);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:matchAll', base, argsArray, iid);
+    let taintInfoPairs = [];
+  
+    let baseTaintInfo = TaintHelper.getTaintInfo(base);
+    if (baseTaintInfo) taintInfoPairs.push(['base', baseTaintInfo]);
+  
+    let argTaintInfo = TaintHelper.getTaintInfo(argsArray[0]);
+    if (argTaintInfo) taintInfoPairs.push(['arg0', argTaintInfo]);
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:matchAll', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -839,11 +912,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   normalizeStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:normalize', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:normalize', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -880,11 +954,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   padEndStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padEnd', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:padEnd', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -921,11 +996,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   padStartStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
 
-    if (taintInfo) {
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:padStart', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:padStart', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -962,11 +1038,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   repeatStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:repeat', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:repeat', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1008,14 +1085,23 @@ export class StringBuiltinsTaintPropRules {
    */
   replaceStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replace', base, argsArray, iid);
+    let taintInfoPairs = [];
+  
+    let baseTaintInfo = TaintHelper.getTaintInfo(base);
+    if (baseTaintInfo) taintInfoPairs.push(['base', baseTaintInfo]);
+  
+    for (let i = 0; i < argsArray.length; i++) {
+      let argTaintInfo = TaintHelper.getTaintInfo(argsArray[i]);
+      if (argTaintInfo) taintInfoPairs.push([`arg${i}`, argTaintInfo]);
+    }
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:replace', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
+
 
   /**
    * @description
@@ -1053,10 +1139,18 @@ export class StringBuiltinsTaintPropRules {
    */
   replaceAllStringModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.rgetTaintInfo(base) || TaintHelper.rgetTaintInfo(argsArray);
+    let taintInfoPairs = [];
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:replaceAll', base, argsArray, iid);
+    let baseTaintInfo = TaintHelper.getTaintInfo(base);
+    if (baseTaintInfo) taintInfoPairs.push(['base', baseTaintInfo]);
+
+    for (let i = 0; i < argsArray.length; i++) {
+      let argTaintInfo = TaintHelper.getTaintInfo(argsArray[i]);
+      if (argTaintInfo) taintInfoPairs.push([`arg${i}`, argTaintInfo]);
+    }
+
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:replaceAll', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1093,11 +1187,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   searchStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:search', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:search', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1134,11 +1229,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   sliceStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:slice', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:slice', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1170,16 +1266,15 @@ export class StringBuiltinsTaintPropRules {
    */
   substrStringModel(base, args, reflected, result, iid) {
     let taintInfo = TaintHelper.getTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:substr', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:substr', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
-
-
 
   /**
    * @description
@@ -1207,10 +1302,11 @@ export class StringBuiltinsTaintPropRules {
    */
   substringStringModel(base, args, reflected, result, iid) {
     let taintInfo = TaintHelper.getTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:substring', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:substring', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1248,11 +1344,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   splitStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:split', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:split', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1289,11 +1386,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   startsWithStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:startsWith', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:startsWith', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1330,11 +1428,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLocaleLowerCaseStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleLowerCase', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:toLocaleLowerCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1371,11 +1470,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLocaleUpperCaseStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLocaleUpperCase', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:toLocaleUpperCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1412,11 +1512,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLowerCaseStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toLowerCase', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:toLowerCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1453,11 +1554,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toStringStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toString', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:toString', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1494,11 +1596,12 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toUpperCaseStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
       let argsArray = Utils.getArrayLikeArguments(args, reflected);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toUpperCase', base, argsArray, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:toUpperCase', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1535,10 +1638,11 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toWellFormedStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:toWellFormed', base, [], iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:toWellFormed', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1572,10 +1676,11 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   trimStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trim', base, [], iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:trim', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1608,10 +1713,11 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   trimEndStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimEnd', base, [], iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:trimEnd', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -1644,14 +1750,16 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   trimStartStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:trimStart', base, [], iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:trimStart', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
+  
 
   /**
    * @description
@@ -1680,13 +1788,13 @@ export class StringBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   valueOfStringModel(base, args, reflected, result, iid) {
-    let taintInfo = TaintHelper.rgetTaintInfo(base);
-
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'String:valueOf', base, [], iid);
+    let taintInfo = TaintHelper.getTaintInfo(base);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:valueOf', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
   }
-
 }

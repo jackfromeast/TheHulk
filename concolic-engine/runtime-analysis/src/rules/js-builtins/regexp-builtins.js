@@ -69,13 +69,15 @@ export class RegExpBuiltinsRules {
    */
   execRegExpModel(base, args, reflected, result, iid) {
     let taintInfo = null;
+    let taintInfoPairs = [];
 
     if (args.length > 0 && TaintHelper.isTainted(args[0])) {
       taintInfo = TaintHelper.getTaintInfo(args[0]);
+      taintInfoPairs.push(['arg0', taintInfo]);
     }
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'RegExp:exec', null, args, iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'RegExp:exec', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -106,13 +108,15 @@ export class RegExpBuiltinsRules {
    */
   testRegExpModel(base, args, reflected, result, iid) {
     let taintInfo = null;
+    let taintInfoPairs = [];
 
     if (args.length > 0 && TaintHelper.isTainted(args[0])) {
       taintInfo = TaintHelper.getTaintInfo(args[0]);
+      taintInfoPairs.push(['arg0', taintInfo]);
     }
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'RegExp:test', null, args, iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'RegExp:test', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

@@ -80,18 +80,19 @@ export class ObjectBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
    assignObjectModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = null;
     
     // Skip the first argument which is the target object
     for (let i = 1; i < args.length; i++) {
       if (TaintHelper.isTainted(args[i])) {
         taintInfo = TaintHelper.getTaintInfo(args[i]);
-        break;
+        taintInfoPairs.push([`arg${i}`, taintInfo]);
       }
     }
 
     if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:assign', null, args, iid);
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Object:assign', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -120,9 +121,13 @@ export class ObjectBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   fromEntriesObjectModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = []; 
+
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:fromEntries', null, args, iid);
+      taintInfoPairs.push(['arg0', taintInfo]);
+
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Object:fromEntries', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -151,9 +156,12 @@ export class ObjectBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   entriesObjectModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:entries', null, args, iid);
+      taintInfoPairs.push(['arg0', taintInfo]);
+
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Object:entries', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;
@@ -182,9 +190,12 @@ export class ObjectBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   valuesObjectModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Object:values', null, args, iid);
+      taintInfoPairs.push(['arg0', taintInfo]);
+
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Object:values', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;

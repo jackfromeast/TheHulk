@@ -52,12 +52,14 @@ export class BindValueChecker {
     return left;
   }
   
-  // TODO: This logic is not correct. For the + operator, if valueOf is defined by user, even if toString is defined, it should only call valueOf
   static handleUserDefinedFunctionsForBinaryOps(left, right, operator) {
     if (["+", "-", "~", "!"].includes(operator)) {
       left = BindValueChecker.handleUserDefinedValueOf(left);
       right = BindValueChecker.handleUserDefinedValueOf(right);
-    } else if (operator === "+") {
+    } 
+    
+     // TODO: This logic is not correct. For the + operator, if valueOf is defined by user, even if toString is defined, it should only call valueOf
+    if (operator === "+") {
       left = BindValueChecker.handleUserDefinedToString(left);
       right = BindValueChecker.handleUserDefinedToString(right);
     }

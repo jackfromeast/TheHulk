@@ -69,10 +69,12 @@ export class JSONBuiltinsRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   parseJSONModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = TaintHelper.getTaintInfo(args[0]);
+    taintInfo ? taintInfoPairs.push(['arg0', taintInfo]) : null;
 
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'JSON:parse', null, args, iid);
+    if (taintInfoPairs.length > 0) { 
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'JSON:parse', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -105,13 +107,15 @@ export class JSONBuiltinsRules {
    */
   stringifyJSONModel(base, args, reflected, result, iid) {
     let taintInfo = null;
+    let taintInfoPairs = [];
     
     if (TaintHelper.risTainted(args[0])) {
       taintInfo = TaintHelper.rgetTaintInfo(args[0]);
+      taintInfoPairs.push(['arg0', taintInfo]);
     }
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'JSON:stringify', null, args, iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'JSON:stringify', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

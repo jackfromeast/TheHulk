@@ -76,9 +76,12 @@ export class ReflectBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   getReflectModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     if (TaintHelper.isTainted(args[0])) {
       let taintInfo = TaintHelper.getTaintInfo(args[0]);
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Proxy:get', property, [target, property, receiver], iid);
+      taintInfoPairs.push(['arg0', taintInfo]);
+
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Proxy:get', property, [target, property, receiver], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     return result;

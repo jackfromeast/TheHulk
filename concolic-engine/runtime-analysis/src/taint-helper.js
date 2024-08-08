@@ -340,49 +340,27 @@ export class TaintHelper {
    * This function can be seen a wrapper of taintInfo.addTaintPropOperation()
    * which will handle the clone part automatically
    * 
-   * @param {TaintInfo} oldTaintInfo
+   * @param {Array<[indicator, TaintInfo]>} oldTaintInfos
    * @param {String} operationName
    * @param {*} base
    * @param {Array[*]|Argruments} args
    * @param {Number} iid
    */
-  static addTaintPropOperation(oldTaintInfo, operationName, base, args, iid) {
+  static addTaintPropOperation(oldTaintInfoPairs, operationName, base, args, iid) {
     if (!structuredClone) {
       throw new Error("structuredClone is not defined");
     }
     
-    // A workaround to clone the object with the same prototype
-    // The following line will be slow
-    let newTaintInfo = Object.create(Object.getPrototypeOf(oldTaintInfo));
-    Object.assign(newTaintInfo, structuredClone(Object.assign({}, oldTaintInfo)));
-
-    let clonedBase;
-    try {
-      if (base instanceof WrappedValue) {
-        clonedBase = base.toStringInternal();
-      } else {
-        clonedBase = Utils.safeToString(base);
-        // The following line will be slow, and will trigger getter unexpectedly
-        // clonedBase = structuredClone(base);
-      }
-    } catch (e) {
-      clonedBase = base;
-    }
-    
-    if (Utils.isArguments(args)) { args = Array.from(args); }
-    let clonedArgs = args.map(arg => {
-      try {
-        if (arg instanceof WrappedValue) {
-          return arg.toStringInternal();
-        }
-        // return structuredClone(arg);
-        return Utils.safeToString(arg);
-      } catch (e) {
-        return arg;
-      }
+    const oldTaintInfos = oldTaintInfoPairs.map(([indicator, taintInfo]) => {
+      return taintInfo;
     });
+        
+    // Clone the taint sources, sink, taint IDs, and existing taint operations
+    let newTaintInfo = Object.create(TaintInfo.prototype).deriveFrom(oldTaintInfos);
 
-    newTaintInfo.addTaintPropOperation(operationName, clonedBase, clonedArgs, iid);
+    // Add the new taint prop operation
+    let [clonedBase, clonedArgs] = Utils.clonebaseAndArgsForTaintProp(base, args);
+    newTaintInfo.addTaintPropOperation(operationName, clonedBase, clonedArgs, iid, oldTaintInfoPairs);
 
     return newTaintInfo;
   }

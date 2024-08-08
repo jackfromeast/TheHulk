@@ -191,6 +191,37 @@ export class Utils {
     return argsArray;
   }
 
+
+  static clonebaseAndArgsForTaintProp(base, args) {
+    let clonedBase;
+    try {
+      if (base instanceof WrappedValue) {
+        clonedBase = base.toStringInternal();
+      } else {
+        clonedBase = Utils.safeToString(base);
+        // The following line will be slow, and will trigger getter unexpectedly
+        // clonedBase = structuredClone(base);
+      }
+    } catch (e) {
+      clonedBase = base;
+    }
+    
+    if (Utils.isArguments(args)) { args = Array.from(args); }
+    let clonedArgs = args.map(arg => {
+      try {
+        if (arg instanceof WrappedValue) {
+          return arg.toStringInternal();
+        }
+        // return structuredClone(arg);
+        return Utils.safeToString(arg);
+      } catch (e) {
+        return arg;
+      }
+    });
+
+    return [clonedBase, clonedArgs];
+  }
+
   /**
    * isNativeFunction should free from any side effects
    * 

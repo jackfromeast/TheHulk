@@ -1,5 +1,6 @@
 import { WrappedValue } from "./wrapped-values.js";
 import { Utils } from "../utils/util.js";
+
 /**
  * @description
  * --------------------------------
@@ -12,6 +13,16 @@ import { Utils } from "../utils/util.js";
  * The taint identifier is a unique identifier for the taint source. The derived
  * values will have the same taint identifier as value from which they are derived.
  * However, the taint propagation operations will differ.
+ * 
+ * The taintPropOperations is the flatted tree structure of taint propagation operations. 
+ * Each taint operation constains the operation name, base, argument, location
+ * and also the tainted operands (e.g. base or argument). 
+ * The tainted operands save its own taintInfo, which is the parent tree of current operation node.
+ * 
+ * In the most cases, the taint comes from one taint source, then each node in the tree has only one parent and one child.
+ * Then, we can save it in a flat array, instead of a nested object for better usability.
+ * However, in some cases, the taint may come from multiple sources, then some nodes may have multiple parents, but only one child.
+ * In this case, we will flat the nodes which only have one child, and keep the nodes which have multiple parents as a nested object.
  * 
  * @example
  * --------------------------------
@@ -29,7 +40,7 @@ import { Utils } from "../utils/util.js";
  * 
  * b is derived from a, so we have
  * =>
- * b.taintInfo = a.taintInfo
+ * b.taintInfo = clone(a.taintInfo)
  * b.taintInfo.addTaintPropOperation("replace", ["/[&<>n, 0=\/]/g", ""])
  */
 export class TaintInfo {
@@ -40,46 +51,130 @@ export class TaintInfo {
    * @param {TaintPropOperation} operation: The operation that introduced the taint
    */
   constructor(iid, reason, operation) {
-    this.taintID = J$$.analysis.taintID++ || 0;
-    this.taintSource = {
+    this.taintIDs = [J$$.analysis.taintID++ || 0];
+    
+    this.taintSources = [{
       location: iid,
-      // sourceLocation: undefined, // J$$.iidToLocation(iid)
       reason: reason,
       operation: operation
-    }
-    this.taintSink = {
-      location: undefined,
-      reason: undefined,
-      operation: operation
-    }
+    }];
 
+    this.addEmptyTaintSink();
     this.taintPropOperations = [];
     if (operation) this.taintPropOperations = [operation];
   }
 
+  /**
+   * @description
+   * --------------------------------
+   * We can create a new taintInfo by first new a empty object with prototype set to TaintInfo.prototype
+   * Then we can call deriveFrom set its fields based on the taintInfos
+   * 
+   * If we have multiple taintInfos to derive from,
+   * we have left this.taintPropOperations empty and add all the operations to the MultiTaintPropOperation
+   * 
+   * @param {Array<TaintInfo>} taintInfos
+   */
+  deriveFrom(taintInfos) {
+    // this.taintIDs, this.taintSources
+    for (let taintInfo of taintInfos) {
+      this.addTaintSource(taintInfo.taintIDs, taintInfo.taintSources);
+    }
+
+    // this.taintSink
+    this.addEmptyTaintSink();
+
+    // this.taintPropOperations
+    if (taintInfos.length > 1) {
+      this.taintPropOperations = [];
+    } else {
+      this.taintPropOperations = this.cloneOperation(taintInfos[0].taintPropOperations);
+    }
+
+    return this;
+  }
+
+  /**
+   * 
+   * @param {Array<TaintPropOperation|MultiTaintPropOperation>} taintPropOperations 
+   * @returns 
+   */
+  cloneOperation(taintPropOperations) {
+    return taintPropOperations.map(op => { return this.cloneWithPrototype(op); });
+  }
+
+  cloneWithPrototype(taintPropOperation) {
+    try {
+      let cloned = structuredClone(taintPropOperation);
+      Object.setPrototypeOf(cloned, taintPropOperation.__proto__);
+      return cloned;
+    } 
+    catch (e) {
+      J$$.analysis.logger.error("Error in cloning taintPropOperation: ", e);
+      return taintPropOperation;
+    }
+  }
+
   getTaintID() {
-    return this.taintID;
+    return this.taintIDs;
   }
 
   getTaintSource() {
-    return this.taintSource;
+    return this.taintSources;
   }
 
   getTaintSourceReason() {
-    return this.taintSource.reason;
+    let reasons = [];
+    this.taintSources.map(source => { reasons.push(source.reason); });
+    if ( reasons.length === 1 ) { return reasons[0]; }
+    else return reasons.join(", ");
   }
 
   getTaintSourceLocation() {
-    return this.taintSource.location;
+    return this.taintSources.location;
   }
 
   getTaintPropOperations() {
     return this.taintPropOperations;
   }
 
-  addTaintPropOperation(operation, base, argument, location) {
-    this.taintPropOperations.push(
-      new TaintPropOperation(operation, base, argument, location));
+  addEmptyTaintSink() {
+    this.taintSink = {
+      location: undefined,
+      reason: undefined,
+      operation: undefined
+    }
+  }
+
+  addTaintSource(taintIds, taintSources) {
+    if (!this.taintSources) {
+      this.taintSources = [];
+    }
+    if (!this.taintIDs) {
+      this.taintIDs = [];
+    }
+    this.taintSources.push(...taintSources);
+    this.taintIDs.push(...taintIds);
+  }
+
+  /**
+   * 
+   * @param {*} operation 
+   * @param {*} base 
+   * @param {*} argument 
+   * @param {*} location 
+   * @param {Array<[indicator, TaintInfo]>} operandTaintInfoPairs 
+   */
+  addTaintPropOperation(operation, base, argument, location, operandTaintInfoPairs) {
+    if (operandTaintInfoPairs.length > 1) {
+      this.taintPropOperations.unshift(
+        new MultiTaintPropOperation(operation, base, argument, location, operandTaintInfoPairs));
+    } else {
+      let indicator = operandTaintInfoPairs[0][0];
+      this.taintPropOperations.unshift(
+        new TaintPropOperation(operation, base, argument, location, indicator));
+    }
+
   }
 
   addtaintSink(location, reason, operation) {
@@ -118,19 +213,18 @@ export class TaintPropOperation {
   /**
    * TaintPropOperation constructor
    * 
-   * @TODO
-   * Concrete the arguments here, like toString, etc.
-   * 
    * @param {String} operation
    * @param {*} base
    * @param {Array<*>} argument
    * @param {Number} location
+   * @param {String} indicator: specify which argument is tainted or base is tainted. e.g. arg0, arg1, base
    */
-  constructor(operation, base, argument, location) {
+  constructor(operation, base, argument, location, indicator=null) {
     this.operation = operation;
     this.base = this.cloneableOne(base);
     this.arguments = this.cloneable(argument);
     this.location = location;
+    if (indicator) this.indicator = indicator;
   }
 
   /**
@@ -148,7 +242,7 @@ export class TaintPropOperation {
       try {
         // If the argument itself is a TaintValue
         if (arg instanceof WrappedValue) {
-          return Utils.safeToString(arg);
+          return arg.toStringInternal();
         }
 
         // This is very slow
@@ -168,7 +262,7 @@ export class TaintPropOperation {
     try {
       // If the argument itself is a TaintValue
       if (base instanceof WrappedValue) {
-        return Utils.safeToString(base);
+        return base.toStringInternal();
       }
       
       // This is very slow
@@ -182,6 +276,28 @@ export class TaintPropOperation {
       }
     }
   }
+
+  /**
+   * 
+   * @param {Array<TaintPropOperation|MultiTaintPropOperation>} taintPropOperations 
+   * @returns 
+   */
+  cloneOperation(taintPropOperations) {
+    return taintPropOperations.map(op => { return this.cloneWithPrototype(op); });
+  }
+
+  cloneWithPrototype(taintPropOperation) {
+    try {
+      let cloned = structuredClone(taintPropOperation);
+      Object.setPrototypeOf(cloned, taintPropOperation.__proto__);
+      return cloned;
+    } 
+    catch (e) {
+      J$$.analysis.logger.error("Error in cloning taintPropOperation: ", e);
+      return taintPropOperation;
+    }
+  }
+
 
   getOperation() {
     return this.operation;
@@ -197,10 +313,39 @@ export class TaintPropOperation {
       base: this.base,
       arguments: this.arguments,
       location: this.location,
+      indicator: this.indicator
     };
   }
-
 }
+
+/**
+ * @description
+ * --------------------------------
+ * Taint propagation operation for multiple tainted base or arguments.
+ * 
+ */
+export class MultiTaintPropOperation extends TaintPropOperation {
+  constructor(operation, base, argument, location, operandTaintInfoPairs) {
+    super(operation, base, argument, location);
+    this.indicators = operandTaintInfoPairs.map(([indicator, taintInfo]) => { return indicator });
+    this.taintPropOperations = operandTaintInfoPairs.map(([indicator, taintInfo]) => { return this.cloneOperation(taintInfo.getTaintPropOperations()); });
+  }
+
+  toJSON() {
+    return {
+      operation: this.operation,
+      base: this.base,
+      arguments: this.arguments,
+      location: this.location,
+      indicator: this.indicator,
+      taintPropOperations: this.taintPropOperations.map(op => {
+        if(op.toJSON){return op.toJSON()}else{ return op}
+      })
+    };
+  }
+}
+
+
 
 export const TaintPropName = "__TAINT__";
 export const TaintPropNameForDebug = "__TAINT_DEBUG__";

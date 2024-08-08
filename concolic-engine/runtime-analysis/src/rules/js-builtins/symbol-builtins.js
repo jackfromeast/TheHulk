@@ -88,12 +88,13 @@ export class SymbolBuiltinsTaintPropRules {
    */
   toStringSymbolModel(base, args, reflected, result, iid) {
     let taintInfo = TaintHelper.getTaintInfo(base);
-
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Symbol:toString', base, [], iid);
+    let taintInfoPairs = taintInfo ? [['base', taintInfo]] : [];
+  
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Symbol:toString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
-
+  
     return result;
   }
 }

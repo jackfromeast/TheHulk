@@ -70,10 +70,12 @@ export class TrustedTypesTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   createScriptTrustedTypesModel(base, args, reflected, result, iid) {
-    const taintInfo = TaintHelper.getTaintInfo(args[0]);
+    let taintInfoPairs = [];
+    let taintInfo = TaintHelper.getTaintInfo(args[0]);
+    taintInfo ? taintInfoPairs.push(['arg0', taintInfo]) : null;
 
-    if (taintInfo) {
-      const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'TrustedTypes:createScript', null, args, iid);
+    if (taintInfoPairs.length > 0) {
+      const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'TrustedTypes:createScript', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -103,10 +105,12 @@ export class TrustedTypesTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   createScriptURLTrustedTypesModel(base, args, reflected, result, iid) {
-    const taintInfo = TaintHelper.getTaintInfo(args[0]);
+    let taintInfoPairs = [];
+    let taintInfo = TaintHelper.getTaintInfo(args[0]);
+    taintInfo ? taintInfoPairs.push(['arg0', taintInfo]) : null;
 
-    if (taintInfo) {
-      const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'TrustedTypes:createScriptURL', null, args, iid);
+    if (taintInfoPairs.length > 0) {
+      const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'TrustedTypes:createScriptURL', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -136,10 +140,13 @@ export class TrustedTypesTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   createHTMLTrustedTypesModel(base, args, reflected, result, iid) {
-    const taintInfo = TaintHelper.getTaintInfo(args[0]);
+    let taintInfoPairs = [];
+    let taintInfo = TaintHelper.getTaintInfo(args[0]);
+    taintInfo ? taintInfoPairs.push(['arg0', taintInfo]) : null;
 
-    if (taintInfo) {
-      const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'TrustedTypes:createHTML', null, args, iid);
+
+    if (taintInfoPairs.length > 0) {
+      const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'TrustedTypes:createHTML', null, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

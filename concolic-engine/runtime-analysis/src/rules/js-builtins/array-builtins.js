@@ -170,25 +170,28 @@ export class ArrayBuiltinsTaintPropRules {
    * @param {number} iid - The instruction id.
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    * 
-   * //TODO: FORGET TO ADD THE NEW TAINT OPERATION
+   * // TODO: FORGET TO ADD THE NEW TAINT OPERATION
    */
   fromArrayModel(base, args, reflected, result, iid) {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
-    let taintInfo = TaintHelper.getTaintInfo(argsArray[0]);
+    let taintInfoPairs = [];
+    taintInfoPairs.push(['arg0', TaintHelper.getTaintInfo(argsArray[0])]);
 
-    if (!taintInfo) { return result; }
+    if (taintInfoPairs.length == 0) { return result; }
 
     // TYPE-1
     if (Utils.isString(argsArray[0])) {
       for (let i = 0; i < result.length; i++) {
-        result[i] = TaintHelper.createTaintValue(result[i], taintInfo);
+        let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:from', base, argsArray, iid);
+        result[i] = TaintHelper.createTaintValue(result[i], newTaintInfo);
       }
     }
 
     // TYPE-2
     else if (Utils.isRegExpStringIterator(argsArray[0])) {
       for (let i = 0; i < result.length; i++) {
-        result[i][0] = TaintHelper.createTaintValue(result[i][0], taintInfo);
+        let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:from', base, argsArray, iid);
+        result[i][0] = TaintHelper.createTaintValue(result[i][0], newTaintInfo);
       }
     }
 
@@ -231,26 +234,27 @@ export class ArrayBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   joinArrayModel(base, args, reflected, result, iid) {
-    let taintInfo = null;
+    let taintInfoPairs = [];
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
 
     // TYPE-1
     if (base instanceof TaintValue) {
-      taintInfo = TaintHelper.getTaintInfo(base);
+      taintInfoPairs.push(['base', TaintHelper.getTaintInfo(base)]);
     }
 
     // TYPE-2
-    if (!taintInfo && argsArray.length > 0 && argsArray[0] instanceof TaintValue) {
-      taintInfo = TaintHelper.getTaintInfo(argsArray[0]);
+    if (argsArray.length > 0 && argsArray[0] instanceof TaintValue) {
+      taintInfoPairs.push(['arg0', TaintHelper.getTaintInfo(argsArray[0])])
     }
 
     // TYPE-3
-    if (!taintInfo) {
-      taintInfo = TaintHelper.rgetTaintInfo(base);
+    if (taintInfoPairs.length === 0) {
+      let taintInfo = TaintHelper.rgetTaintInfo(base);
+      taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
     }
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Array:join', base, argsArray, iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:join', base, argsArray, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -285,18 +289,17 @@ export class ArrayBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toStringArrayModel(base, args, reflected, result, iid) {
-    let taintInfo = null;
+    let taintInfoPairs = [];
     if (Utils.isArray(base)) {
-      for (let element of base) {
-        if (element instanceof TaintValue) {
-          taintInfo = element.getTaintInfo();
-          break;
+      for (let i=0; i < base.length; i++) {
+        if (base[i] instanceof TaintValue) {
+          taintInfoPairs.push([`arg${i}`, base[i].getTaintInfo()]);
         }
       }
     }
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Array:toString', base, [], iid);
+    if (taintInfoPairs) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:toString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     
@@ -330,18 +333,17 @@ export class ArrayBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toLocaleStringArrayModel(base, args, reflected, result, iid) {
-    let taintInfo = null;
+    let taintInfoPairs = [];
     if (Utils.isArray(base)) {
-      for (let element of base) {
-        if (element instanceof TaintValue) {
-          taintInfo = element.getTaintInfo();
-          break;
+      for (let i=0; i < base.length; i++) {
+        if (base[i] instanceof TaintValue) {
+          taintInfoPairs.push([`arg${i}`, base[i].getTaintInfo()]);
         }
       }
     }
 
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Array:toLocaleString', base, [], iid);
+    if (taintInfoPairs) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:toLocaleString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     

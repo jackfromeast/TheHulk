@@ -89,10 +89,12 @@ export class NumberBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toStringNumberModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
 
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Number:toString', base, [], iid);
+    if (taintInfoPairs.length > 0) { 
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Number:toString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -126,10 +128,12 @@ export class NumberBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   valueOfNumberModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
 
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Number:valueOf', base, [], iid);
+    if (taintInfoPairs.length > 0) { 
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Number:valueOf', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -163,10 +167,12 @@ export class NumberBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toFixedNumberModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
 
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Number:toFixed', base, [], iid);
+    if (taintInfoPairs.length > 0) { 
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Number:toFixed', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

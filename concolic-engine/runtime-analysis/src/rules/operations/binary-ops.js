@@ -101,19 +101,22 @@ export class BinaryOpsTaintPropRules {
    * @param {*} val 
    */
   defaultBinaryModel(operator, left, right, result, iid) {
-    let taintInfo;
+    let taintInfoPairs = [];
 
     if (["===", "!==", "instanceof", "in", "!=", "==", "<", ">", "<=", ">=", "delete"].includes(operator)) {
       return result;
     }
 
-    if (TaintHelper.isTainted(left) || TaintHelper.isTainted(right)) {
-      if (TaintHelper.isTainted(left)) taintInfo = TaintHelper.getTaintInfo(left);
-      if (TaintHelper.isTainted(right)) taintInfo = TaintHelper.getTaintInfo(right);
+    if (TaintHelper.isTainted(left)) {
+      taintInfoPairs.push(['arg0', TaintHelper.getTaintInfo(left)]);
+    }
+
+    if (TaintHelper.isTainted(right)) {
+      taintInfoPairs.push(['arg1', TaintHelper.getTaintInfo(right)]);
     }
     
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `BinaryOps:${operator}`, null, [left, right], iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, `BinaryOps:${operator}`, null, [left, right], iid);
       result = TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

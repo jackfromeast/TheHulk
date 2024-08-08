@@ -88,10 +88,12 @@ export class BooleanBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   toStringBooleanModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
 
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Boolean:toString', base, [], iid);
+    if (taintInfoPairs.length > 0) { 
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Boolean:toString', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
@@ -125,10 +127,12 @@ export class BooleanBuiltinsTaintPropRules {
    * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
    */
   valueOfBooleanModel(base, args, reflected, result, iid) {
+    let taintInfoPairs = [];
     let taintInfo = TaintHelper.getTaintInfo(base);
+    taintInfo ? taintInfoPairs.push(['base', taintInfo]) : null;
 
-    if (taintInfo) { 
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, 'Boolean:valueOf', base, [], iid);
+    if (taintInfoPairs.length > 0) { 
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Boolean:valueOf', base, [], iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
 

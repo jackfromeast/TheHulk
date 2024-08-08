@@ -81,14 +81,14 @@ export class UnaryOpsTaintPropRules {
    * @param {*} val 
    */
   defaultUnaryModel(operator, left, result, iid) {
-    let taintInfo;
+    let taintInfoPairs = [];
 
     if (TaintHelper.isTainted(left)) {
-      taintInfo = TaintHelper.getTaintInfo(left);
+      taintInfoPairs.push(['arg0', TaintHelper.getTaintInfo(left)]);
     }
     
-    if (taintInfo) {
-      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfo, `UnaryOps:${operator}`, null, [left], iid);
+    if (taintInfoPairs.length > 0) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, `UnaryOps:${operator}`, null, [left], iid);
       result = TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
