@@ -42,8 +42,8 @@ export class TaintTracking {
 
     this.taintConfig = {
       TAINT_VALUE:{
-        Number: false,
-        Boolean: false,
+        Number: true,
+        Boolean: true,
       },
       
       TAINT_SOURCE: {

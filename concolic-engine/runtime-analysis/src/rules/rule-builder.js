@@ -81,7 +81,7 @@ export class RuleBuilder {
       // See whether the unary operation will call the user-defined function
       // If so, we call the function and replace the left with the result
       // Only valueOf is considered for unary operations
-      left = BindValueChecker.handleUserDefinedValueOf(left, operator);
+      [left] = BindValueChecker.handleUserDefinedValueOf(left, operator);
 
       function unaryOpsOrigin(operator, left_c) {
         return UnaryOpsTaintPropRules.UnaryJumpTable[operator](left_c);

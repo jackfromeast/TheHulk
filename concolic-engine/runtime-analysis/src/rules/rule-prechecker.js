@@ -17,10 +17,12 @@ import { TaintHelper } from '../taint-helper.js';
 export class BindValueChecker {
 
   static handleUserDefinedValueOf(left) {
+    let carriedOut = false;
     if (left && Utils.realTypeOf(left) === 'object') {
       try {
         if (Utils.isUserDefinedFunction(left["valueOf"])) {
           left = left.valueOf();
+          carriedOut = true;
         }
       } catch (e) {
         // Reading valueOf property on cross-origin objects might throw an error
@@ -31,14 +33,16 @@ export class BindValueChecker {
         }
       }
     }
-    return left;
+    return [left, carriedOut];
   }
 
   static handleUserDefinedToString(left) {
+    let carriedOut = false;
     if (left && Utils.realTypeOf(left) === 'object') {
       try {
         if (Utils.isUserDefinedFunction(left["toString"])) {
           left = left.toString();
+          carriedOut = true;
         }
       } catch (e) {
         // Reading toString property on cross-origin objects might throw an error
@@ -49,19 +53,24 @@ export class BindValueChecker {
         }
       }
     }
-    return left;
+    return [left, carriedOut];
   }
   
   static handleUserDefinedFunctionsForBinaryOps(left, right, operator) {
+    let carriedOutValueOfLeft = false;
+    let carriedOutValueOfRight = false;
+
     if (["+", "-", "~", "!"].includes(operator)) {
-      left = BindValueChecker.handleUserDefinedValueOf(left);
-      right = BindValueChecker.handleUserDefinedValueOf(right);
+      [left, carriedOutValueOfLeft]  = BindValueChecker.handleUserDefinedValueOf(left);
+      [right, carriedOutValueOfRight] = BindValueChecker.handleUserDefinedValueOf(right);
     } 
     
-     // TODO: This logic is not correct. For the + operator, if valueOf is defined by user, even if toString is defined, it should only call valueOf
-    if (operator === "+") {
-      left = BindValueChecker.handleUserDefinedToString(left);
-      right = BindValueChecker.handleUserDefinedToString(right);
+    if (operator === "+" && !carriedOutValueOfLeft) {
+      [left] = BindValueChecker.handleUserDefinedToString(left);
+    }
+
+    if (operator === "+" && !carriedOutValueOfRight) {
+      [right] = BindValueChecker.handleUserDefinedToString(right);
     }
 
     return [left, right];
@@ -86,7 +95,7 @@ export class BindValueChecker {
       }
       args[1] = wrapped_f;
     } else if (f === String && typeof args[0] === 'object') {
-      args[0] = BindValueChecker.handleUserDefinedToString(args[0]);
+      [args[0]] = BindValueChecker.handleUserDefinedToString(args[0]);
     }
     return [base, args];
   }
