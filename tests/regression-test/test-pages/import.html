@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>Jalangi2 Instrumentation & Runtime Test Websites - Micro Benchmarks - import</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test robustness of Jalangi2 framework.
+    </p>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+/**
+ * @Name: instrument-import-1
+ * @File: import1.js
+ * @Import: Yes
+ */
+(async function () {
+  console.log('Executing import1.js');
+  try {
+    await import('./import2.js');
+    console.log('Successfully imported import2.js');
+  } catch (error) {
+    console.error('Failed to import import2.js:', error);
+  }
+})();
+
+</pre>
+</div>
+</section>
+
+<script src="./import/scripts/import1.js"></script>
+
+</body>
+</html>

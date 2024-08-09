@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>Jalangi2 Instrumentation & Runtime Test Websites - Micro Benchmarks - dynamic-instr-dom</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test robustness of Jalangi2 framework.
+    </p>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+/**
+ * @Name: innerHTML-instrument-1
+ * @File: dynamic-instr-dom.js
+ * @Import: Yes
+ * @Refer:
+ *  - URL: https://canva.com/ 
+ */
+(function() {
+  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
+    var a;
+    document.taintedStr = "TAINTED!";
+    let code = "console.log('Hello World!');a=document.taintedStr;";
+
+    let scriptEle1 = document.createElement('script');
+    scriptEle1.innerHTML = code;
+    document.body.appendChild(scriptEle1);
+
+    let scriptEle = document.createElement('script');
+    scriptEle.src = `https://example.com/${a}`;
+  } else {
+    console.error("J$$ is not defined or does not have wrapTaint method.");
+  }
+})();
+
+
+/**
+ * @Name: innerHTML-instrument-2
+ * @File: dynamic-instr-dom.js
+ * @Import: Yes
+ * @Refer:
+ *  - URL: https://canva.com/ 
+ */
+(function() {
+  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
+    var a;
+    document.taintedStr = "TAINTED!";
+    let code = "<div><script>console.log('Hello World!');a=document.taintedStr;</script></div>";
+
+    let divEle1 = document.createElement('div');
+    divEle1.innerHTML = code;
+    document.body.appendChild(divEle1);
+
+    let scriptEle = document.createElement('script');
+    scriptEle.src = `https://example.com/${a}`;
+  } else {
+    console.error("J$$ is not defined or does not have wrapTaint method.");
+  }
+})();
+
+</pre>
+</div>
+</section>
+
+<script src="./dynamic-instr-dom/scripts/dynamic-instr-dom.js"></script>
+
+</body>
+</html>

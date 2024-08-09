@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>Jalangi2 Instrumentation & Runtime Test Websites - Micro Benchmarks - dehydrate-object-with-type</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test robustness of Jalangi2 framework.
+    </p>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+/**
+ * @Name: dehydrate-object-with-type
+ * @File: dehydrate-object-with-type.js
+ * @Import: Yes
+ * @Refer:
+ *  - URL: https://canva.com/ 
+ */
+(function() {
+  if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
+    class MyType {
+      constructor() {
+        this.a = 1;
+        this.b = 2;
+      }
+
+      toString() {
+        return "MyType";
+      }
+    }
+
+    let obj = new MyType();
+    let obj2 = { obj:  J$$.wrapTaint(obj) };  
+
+    let stringified = JSON.stringify(obj2);
+
+    if (obj2.obj.toString() !== 'MyType') {
+      throw new Error('Error: obj.toString() !== MyType');
+    }
+
+  } else {
+    console.error("J$$ is not defined or does not have wrapTaint method.");
+  }
+})();
+
+</pre>
+</div>
+</section>
+
+<script src="./dehydrate-object-with-type/scripts/dehydrate-object-with-type.js"></script>
+
+</body>
+</html>

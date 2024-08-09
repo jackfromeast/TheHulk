@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-with": "^1.0.0"
+  }
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>Jalangi2 Instrumentation & Runtime Test Websites - Micro Benchmarks - dynamic-instr-eval-2</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test robustness of Jalangi2 framework.
+    </p>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+/**
+ * @Name: instrument-dynamic-2
+ * @File: dynamic-instr-eval.js
+ * @Import: Yes
+ */
+(async function () {
+  const codeToInstrument = `
+    (function foo(x) {
+      with (this) {
+        console.log(x+1);
+      }
+    })(2); // Provide an argument for the function call
+  `;
+
+  eval(codeToInstrument);
+})();
+
+/**
+ * @Name: instrument-dynamic-3
+ * @File: dynamic-instr-eval.js
+ * @Import: Yes
+ */
+(async function () {
+  with ({a: 1}) {
+    console.log(a);
+  }
+})();
+
+</pre>
+</div>
+</section>
+
+<script src="./dynamic-instr-eval-2/scripts/dynamic-instr-eval.js"></script>
+
+</body>
+</html>
