@@ -53,7 +53,7 @@
 
     if (!found) {
       let scriptEle = document.createElement(&apos;script&apos;);
-      scriptEle.src = `https://example.com/${taintedValue}`;
+      scriptEle.src = `https://example.com/${J$$.wrapTaint(&apos;tainted&apos;)}`;
     }
 
   } else {

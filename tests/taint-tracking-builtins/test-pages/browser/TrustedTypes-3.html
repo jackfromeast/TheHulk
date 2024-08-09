@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Taint Tracking Test Websites - Micro Benchmarks - Add-Custom-toString-1</h1>
+<h1>Taint Tracking Test Websites - Micro Benchmarks - TrustedTypes-3</h1>
 
 <section>
     <p>
@@ -29,7 +29,7 @@
         <p><span class="label">Sink:</span><br><br>
             <span class="indent">Type: XSS</span><br><br>
             <span class="indent">Code:</span>
-            <pre class="indent">document.createElement('script').src</pre>
+            <pre class="indent">element.innerHTML</pre>
         </p>
     </div>
 </section>
@@ -38,31 +38,29 @@
 <div class="column">
 <p><span class="label">Testing Code:</span><br><br>
 <pre>
-* @Name: Add-Custom-toString-1
+* @Name: TrustedTypes-3
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement(&apos;script&apos;).src
- * @Refer: https://www.google.com/
+ * @SinkCode: element.innerHTML
  */
 (function() {
-  // Check if J$$ exists
   if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
-    let taintedValues = {oa: J$$.wrapTaint(&quot;TAINT&quot;)};
-    taintedValues.toString = customToString;
+    // Create a policy for TrustedHTML
+    const htmlPolicy = trustedTypes.createPolicy(&apos;default&apos;, {
+      createHTML: (htmlContent) =&gt; {
+        return htmlContent; // Original implementation
+      }
+    });
 
-    let taintedSrc = taintedValues + &quot;.js&quot;;
-    
-    // Create a new script element
-    let scriptEle = document.createElement(&apos;script&apos;);
-    scriptEle.src = `https://example.com/${taintedSrc}`;
+    const taintedHtmlContent = J$$.wrapTaint(&quot;&lt;img src=&apos;x&apos; onerror=&apos;alert(\&quot;XSS via TrustedHTML\&quot;)&apos;&gt;&quot;);
+    const sanitizedHtml = htmlPolicy.createHTML(taintedHtmlContent);
 
+    let divEle = document.createElement(&apos;div&apos;);
+    divEle.innerHTML = sanitizedHtml; // Assign sanitized HTML content
+    document.body.appendChild(divEle); // Append to the document
   } else {
     console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
-  }
-
-  function customToString() {
-    return this.oa;
   }
 })();
 </pre>
@@ -72,11 +70,11 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../binary/Add-two-taints.html">Next Test: Add-two-taints</a></li>
+    <li><a href="../json/json-parse-multi-layer-1.html">Next Test: json-parse-multi-layer-1</a></li>
   </ul>
 </section>
 
-<script src="scripts/Add-Custom-toString-1.js"></script>
+<script src="scripts/TrustedTypes-3.js"></script>
 
 </body>
 </html>

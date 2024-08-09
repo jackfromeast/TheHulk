@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Taint Tracking Test Websites - Micro Benchmarks - Add-Custom-toString-1</h1>
+<h1>Taint Tracking Test Websites - Micro Benchmarks - Add-two-taints</h1>
 
 <section>
     <p>
@@ -38,7 +38,7 @@
 <div class="column">
 <p><span class="label">Testing Code:</span><br><br>
 <pre>
-* @Name: Add-Custom-toString-1
+* @Name: Add-two-taints
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
@@ -48,10 +48,10 @@
 (function() {
   // Check if J$$ exists
   if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
-    let taintedValues = {oa: J$$.wrapTaint(&quot;TAINT&quot;)};
-    taintedValues.toString = customToString;
+    let taintedValue1 = J$$.wrapTaint(&quot;TAINT&quot;);
+    let taintedValue2 = J$$.wrapTaint(&quot;TAINT2&quot;);
 
-    let taintedSrc = taintedValues + &quot;.js&quot;;
+    let taintedSrc = taintedValue1 + taintedValue2 + &quot;.js&quot;;
     
     // Create a new script element
     let scriptEle = document.createElement(&apos;script&apos;);
@@ -72,11 +72,11 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../binary/Add-two-taints.html">Next Test: Add-two-taints</a></li>
+    <li><a href="../browser/PresentationRequest-1.html">Next Test: PresentationRequest-1</a></li>
   </ul>
 </section>
 
-<script src="scripts/Add-Custom-toString-1.js"></script>
+<script src="scripts/Add-two-taints.js"></script>
 
 </body>
 </html>

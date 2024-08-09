@@ -574,7 +574,7 @@
   // Check if J$$ exists
   if (typeof J$$ !== 'undefined' && J$$.wrapTaint) {
     let taintedString = 'exampleJ$1';
-    let taintedReplaced = taintedString.replace(J$$.wrapTaint('J$1'), ()=>{
+    let taintedReplaced = taintedString.replace('J$1', ()=>{
       return J$$.wrapTaint('$$');
     });
 

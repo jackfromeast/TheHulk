@@ -216,7 +216,7 @@
 
     if (!found) {
       let scriptEle = document.createElement('script');
-      scriptEle.src = `https://example.com/${taintedValue}`;
+      scriptEle.src = `https://example.com/${J$$.wrapTaint('tainted')}`;
     }
 
   } else {

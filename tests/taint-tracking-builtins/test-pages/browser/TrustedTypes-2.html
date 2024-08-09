@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Taint Tracking Test Websites - Micro Benchmarks - Add-Custom-toString-1</h1>
+<h1>Taint Tracking Test Websites - Micro Benchmarks - TrustedTypes-2</h1>
 
 <section>
     <p>
@@ -29,7 +29,7 @@
         <p><span class="label">Sink:</span><br><br>
             <span class="indent">Type: XSS</span><br><br>
             <span class="indent">Code:</span>
-            <pre class="indent">document.createElement('script').src</pre>
+            <pre class="indent">script.text</pre>
         </p>
     </div>
 </section>
@@ -38,31 +38,30 @@
 <div class="column">
 <p><span class="label">Testing Code:</span><br><br>
 <pre>
-* @Name: Add-Custom-toString-1
+* @Name: TrustedTypes-2
  * @SourceType: ManuallyAdded
  * @SourceCode: J$$.wrapTaint()
  * @SinkType: XSS
- * @SinkCode: document.createElement(&apos;script&apos;).src
- * @Refer: https://www.google.com/
+ * @SinkCode: script.text
  */
 (function() {
-  // Check if J$$ exists
   if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
-    let taintedValues = {oa: J$$.wrapTaint(&quot;TAINT&quot;)};
-    taintedValues.toString = customToString;
+    // Create a policy for TrustedScript
+    const scriptPolicy = trustedTypes.createPolicy(&apos;default&apos;, {
+      createScript: (scriptContent) =&gt; {
+        return scriptContent; // Original implementation
+      }
+    });
 
-    let taintedSrc = taintedValues + &quot;.js&quot;;
-    
-    // Create a new script element
+    const taintedScriptContent = J$$.wrapTaint(&quot;alert(&apos;XSS via TrustedScript&apos;);&quot;);
+    const sanitizedScript = scriptPolicy.createScript(taintedScriptContent);
+
     let scriptEle = document.createElement(&apos;script&apos;);
-    scriptEle.src = `https://example.com/${taintedSrc}`;
-
+    scriptEle.type = &apos;application/javascript&apos;;
+    scriptEle.text = sanitizedScript; 
+    document.body.appendChild(scriptEle); // Append to the document
   } else {
     console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
-  }
-
-  function customToString() {
-    return this.oa;
   }
 })();
 </pre>
@@ -72,11 +71,11 @@
 <section>
   <h2>Next Test</h2>
   <ul>
-    <li><a href="../binary/Add-two-taints.html">Next Test: Add-two-taints</a></li>
+    <li><a href="../browser/TrustedTypes-3.html">Next Test: TrustedTypes-3</a></li>
   </ul>
 </section>
 
-<script src="scripts/Add-Custom-toString-1.js"></script>
+<script src="scripts/TrustedTypes-2.js"></script>
 
 </body>
 </html>
