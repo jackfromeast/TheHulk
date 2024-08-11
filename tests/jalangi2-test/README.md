@@ -1,1 +1,0 @@
-This folder contains the micro-benchmark test suite for testing the Jalangi2 (runtime&instrumentation) on modern web pages. 
