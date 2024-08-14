@@ -126,6 +126,7 @@ export class TaintInfo {
   getTaintSourceReason() {
     let reasons = [];
     this.taintSources.map(source => { reasons.push(source.reason); });
+    reasons = Array.from(new Set(reasons));
     if ( reasons.length === 1 ) { return reasons[0]; }
     else return reasons.join(", ");
   }
@@ -187,11 +188,11 @@ export class TaintInfo {
 
   toJSON() {
     return {
-        taintID: this.taintID,
-        taintPropOperations: this.taintPropOperations.map(op => {
-          if(op.toJSON){return op.toJSON()}else{ return op}}),
-        taintSink: this.taintSink,
-        taintSource: this.taintSource,
+      taintID: this.taintID,
+      taintPropOperations: this.taintPropOperations.map(op => {
+        if(op.toJSON){return op.toJSON()}else{ return op}}),
+      taintSink: this.taintSink,
+      taintSource: this.taintSource,
     };
   }
 }

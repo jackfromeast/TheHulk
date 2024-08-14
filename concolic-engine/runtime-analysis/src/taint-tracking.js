@@ -274,8 +274,8 @@ export class TaintTracking {
         TaintHelper.getTaintInfo(taintedArg).addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
         // TODO: Handle multiple tainted arguments here
         Utils.reportDangerousFlow(
-          TaintHelper.getTaintInfo(taintedArg).getTaintSource().reason,
-          TaintHelper.getTaintInfo(taintedArg).getTaintSource().location,
+          TaintHelper.getTaintInfo(taintedArg).getTaintSourceReason(),
+          TaintHelper.getTaintInfo(taintedArg).getTaintSourceLocation(),
           reason,
           iid,
           taintedArg,
