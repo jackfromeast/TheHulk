@@ -77,31 +77,20 @@ async function spawnCrawler(url) {
       if (crawlerProcess.stderr) crawlerProcess.stderr.destroy();
 
       if (queue.length > 0) {
+        completeURL++;
         logger.info(`Current progress: ${completeURL}/${totalURL}`);
         spawnCrawler(queue.shift()).then(resolve).catch(reject);
       } else {
-
-        // Ensure there are no remaining handles
-        setTimeout(() => {
-          console.log('Node is still running for the following reasons:');
-          import('why-is-node-running').then((whyIsNodeRunning) => {
-            whyIsNodeRunning.default();
-            process.exit(0);
-          });
-        }, 5000);  // Adjust the timeout as necessary
         logger.info(`No more URLs to process. Resolving the crawler promise.`);
-
         resolve();
       }
     };
 
     crawlerProcess.on('error', (code) => {
-      completeURL++;
       cleanupAndContinue();
     });
 
     crawlerProcess.on('exit', (code) => {
-      completeURL++;
       cleanupAndContinue();
     });
   }); 
@@ -149,28 +138,5 @@ async function spawnCrawler(url) {
 
   await Promise.all(initialCrawlers);
   logger.info('Done. All crawlers have finished.');
-
-  // Ensure there are no remaining handles
-  setTimeout(() => {
-    console.log('Node is still running for the following reasons:');
-    import('why-is-node-running').then((whyIsNodeRunning) => {
-      whyIsNodeRunning.default();
-      process.exit(0);
-    });
-  }, 1000);  // Adjust the timeout as necessary
-
   process.exit(0);
 })();
-
-
-// Global handler for unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
-
-// Global handler for uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
-});
