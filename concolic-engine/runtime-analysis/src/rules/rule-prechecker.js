@@ -76,7 +76,7 @@ export class BindValueChecker {
     return [left, right];
   }
 
-  static handleUserDefinedFunctionsForBuiltins(f, base, args) {
+  static handleUserDefinedFunctionsForBuiltins(f, base, args, iid) {
     // Before calling the original function,
     // We prepare the arguments for runOriginFunc to make it won't call the user-defined function and surprise us
     // We handle all the implicit bind operations here
@@ -90,10 +90,22 @@ export class BindValueChecker {
     }
     else if (f === String.prototype.replace && typeof args[1] === 'function') {
       const original_f = args[1];
-      function wrapped_f (...wrappedArgs) {
-        return TaintHelper.concreteWrappedOnly(original_f.call(this, ...wrappedArgs));
+      
+      // Test Case:string-replace-3
+      if (TaintHelper.isTainted(base)) {
+        let taintInfoPairs = [['base', TaintHelper.getTaintInfo(base)]];
+        const newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'String:replace(callback)', base, args, iid);
+        function wrapped_f_taint (...wrappedArgs) {
+          wrappedArgs[0] = TaintHelper.createTaintValue(wrappedArgs[0] , newTaintInfo);
+          return TaintHelper.concreteWrappedOnly(original_f.call(this, ...wrappedArgs));
+        }
+        args[1] = wrapped_f_taint
+      } else{
+        function wrapped_f (...wrappedArgs) {
+          return TaintHelper.concreteWrappedOnly(original_f.call(this, ...wrappedArgs));
+        }
+        args[1] = wrapped_f;
       }
-      args[1] = wrapped_f;
     } else if (f === String && typeof args[0] === 'object') {
       [args[0]] = BindValueChecker.handleUserDefinedToString(args[0]);
     }
