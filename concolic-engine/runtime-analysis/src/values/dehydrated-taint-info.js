@@ -18,7 +18,7 @@ import { TaintHelper } from '../taint-helper.js';
  *    we will not be able to moisturize the taint information back. The best way is to leave the concretize=false when
  *    calling the runOriginFunc.
  * 
- *  - For ["TAINT"].join, we need to recursively dehydrate the taint information of the array and moisturize the taint information back.
+ *  - For ["TAINTED"].join, we need to recursively dehydrate the taint information of the array and moisturize the taint information back.
  *    otherwise, the taint's toString method will be called and ruin the original result.
  * 
  * Therefore, you should only call DehydratedTaintValue.maxDepth>1 when you are sure that the value will not be clobbered by running
@@ -52,7 +52,13 @@ export class DehydratedTaintValue {
     let taintInfo = null;
     let concreteValue = value;
     if (TaintHelper.isTainted(value)) {
-      [concreteValue, taintInfo] = TaintHelper.concrete(value);
+      // KNOWN ISSUE:
+      // [concreteValue, taintInfo] = TaintHelper.concrete(value);
+      // We currently only concrete the wrapped value but not object
+      // This is because once we delete the __TAINT__ from the original object, we delete it from all th references in the caller scope
+      // Even though we add it back afterwards, we cannot change the reference in the caller scope but only the reference in the callee scope
+      concreteValue = TaintHelper.concreteWrappedOnly(value);
+      taintInfo = TaintHelper.getTaintInfo(value);
     }
 
     if (this.maxDepth > 1) {
