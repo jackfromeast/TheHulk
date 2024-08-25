@@ -6,7 +6,7 @@ import { TaintPropRules } from '../rules.js';
 import { TaintHelper } from '../../taint-helper.js';
 import { Utils } from '../../utils/util.js';
 
-export class TrustedTypesTaintPropRules {
+export class TrustedTypesBuiltinsTaintPropRules {
   constructor() {
     this.ruleDict = [];
     this.buildRules();
@@ -24,14 +24,14 @@ export class TrustedTypesTaintPropRules {
    * Different from other builtins, the first element in the array is the function name, e.g. 'createScript'.
    * We will use Utils.isTrustedTypeFunction(f, fName) to check if the function is a TrustedType function.
    */
-  supportedArrayBuiltins = {
+  supportedTrustedTypesBuiltins = {
     'createScript': ["createScript", this.createScriptTrustedTypesModel, 'FIRST_ARG_TAINTED'],
     'createScriptURL': ["createScriptURL", this.createScriptURLTrustedTypesModel, 'FIRST_ARG_TAINTED'],
     'createHTML': ["createHTML", this.createHTMLTrustedTypesModel, 'FIRST_ARG_TAINTED'],
   };
 
   buildRules() {
-    for (const [fName, fGroup] of Object.entries(this.supportedArrayBuiltins)) {
+    for (const [fName, fGroup] of Object.entries(this.supportedTrustedTypesBuiltins)) {
       const condition = ConditionBuilder.makeCondition(fGroup[2]);
       const rule = RuleBuilder.makeDynamicRule(null, condition, fGroup[1]);
       this.addRule(fGroup[0], rule);
