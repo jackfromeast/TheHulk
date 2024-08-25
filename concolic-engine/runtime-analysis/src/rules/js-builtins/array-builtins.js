@@ -47,6 +47,9 @@ export class ArrayBuiltinsTaintPropRules {
     'join': [Array.prototype.join, this.joinArrayModel, 'BASE_TAINTED_RECURSIVE || FIRST_ARG_TAINTED_RECURSIVE'],
     'toString': [Array.prototype.toString, this.toStringArrayModel, 'BASE_TAINTED'],
     'toLocaleString': [Array.prototype.toLocaleString, this.toLocaleStringArrayModel, 'BASE_TAINTED'],
+
+    'pop': [Array.prototype.pop, this.popArrayModel, 'BASE_TAINTED'],
+    'shift': [Array.prototype.shift, this.shiftArrayModel, 'BASE_TAINTED'],
   };
 
   /**
@@ -80,8 +83,6 @@ export class ArrayBuiltinsTaintPropRules {
    */
   noneAffectBuiltins = {
     'push': Array.prototype.push,
-    'pop': Array.prototype.pop,
-    'shift': Array.prototype.shift,
     'unshift': Array.prototype.unshift,
     'slice': Array.prototype.slice,
     'reverse': Array.prototype.reverse,
@@ -238,12 +239,12 @@ export class ArrayBuiltinsTaintPropRules {
     let argsArray = Utils.getArrayLikeArguments(args, reflected);
 
     // TYPE-1
-    if (base instanceof TaintValue) {
+    if (TaintHelper.getTaintInfo(base)) {
       taintInfoPairs.push(['base', TaintHelper.getTaintInfo(base)]);
     }
 
     // TYPE-2
-    if (argsArray.length > 0 && argsArray[0] instanceof TaintValue) {
+    if (argsArray.length > 0 && TaintHelper.getTaintInfo(argsArray[0])) {
       taintInfoPairs.push(['arg0', TaintHelper.getTaintInfo(argsArray[0])])
     }
 
@@ -292,7 +293,7 @@ export class ArrayBuiltinsTaintPropRules {
     let taintInfoPairs = [];
     if (Utils.isArray(base)) {
       for (let i=0; i < base.length; i++) {
-        if (base[i] instanceof TaintValue) {
+        if (TaintHelper.isTainted(base[i])) {
           taintInfoPairs.push([`arg${i}`, base[i].getTaintInfo()]);
         }
       }
@@ -336,7 +337,7 @@ export class ArrayBuiltinsTaintPropRules {
     let taintInfoPairs = [];
     if (Utils.isArray(base)) {
       for (let i=0; i < base.length; i++) {
-        if (base[i] instanceof TaintValue) {
+        if (TaintHelper.isTainted(base[i])) {
           taintInfoPairs.push([`arg${i}`, base[i].getTaintInfo()]);
         }
       }
@@ -344,6 +345,82 @@ export class ArrayBuiltinsTaintPropRules {
 
     if (taintInfoPairs) {
       let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:toLocaleString', base, [], iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
+    }
+    
+    return result;
+  }
+
+    /**
+   * @description
+   * --------------------------------
+   * Apply the taint propagation rule for the pop function.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * Array.prototype.pop()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED(["a", "b", "c"]).pop()
+   * -> TAINTED("c")
+   * 
+   * @param {Function} f - The array built-in function.
+   * @param {Array} args - The arguments to the function.
+   * @param {String} reflected - The reflected function name.
+   * @param {*} result - The result of the function.
+   * @param {number} iid - The instruction id.
+   * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
+   */
+  popArrayModel(base, args, reflected, result, iid) {
+    if (TaintHelper.isTainted(base)) {
+      let taintInfoPairs = [];
+      taintInfoPairs.push(['base', TaintHelper.getTaintInfo(base)]);
+      
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:pop', base, args, iid);
+      return TaintHelper.createTaintValue(result, newTaintInfo);
+    }
+    
+    return result;
+  }
+
+  /**
+   * @description
+   * --------------------------------
+   * Apply the taint propagation rule for the shift function.
+   * 
+   * @condition
+   * --------------------------------
+   * Condition Barrier: BASE_TAINTED
+   * 
+   * @usage
+   * --------------------------------
+   * Array.prototype.shift()
+   * 
+   * @example
+   * --------------------------------
+   * TYPE-1:
+   * TAINTED(["a", "b", "c"]).shift()
+   * -> TAINTED("a")
+   * 
+   * @param {Function} f - The array built-in function.
+   * @param {Array} args - The arguments to the function.
+   * @param {String} reflected - The reflected function name.
+   * @param {*} result - The result of the function.
+   * @param {number} iid - The instruction id.
+   * @returns {TaintValue | *} - The tainted result or the original result if no taint is present.
+   */
+  shiftArrayModel(base, args, reflected, result, iid) {
+    if (TaintHelper.isTainted(base)) {
+      let taintInfoPairs = [];
+      taintInfoPairs.push(['base', TaintHelper.getTaintInfo(base)]);
+      
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:shift', base, args, iid);
       return TaintHelper.createTaintValue(result, newTaintInfo);
     }
     
