@@ -255,7 +255,7 @@ export class RuleBuilder {
   static makeRule(f, condition, modelF, concretize = true, featureDisabled = false) {
     let newRule = (base, args, iid, reflected) => {
       let result, thrown;
-      [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(f, base, args);
+      [base, args] = BindValueChecker.handleUserDefinedFunctionsForBuiltins(f, base, args, iid);
 
       [result, thrown, base, args] = this.runOriginFunc(f, base, args, concretize, reflected);
 

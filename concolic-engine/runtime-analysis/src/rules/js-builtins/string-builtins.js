@@ -203,7 +203,7 @@ export class StringBuiltinsTaintPropRules {
     // TYPE-2: String.fromCharCode.call(this, T([65,65,66]))
     if (TaintHelper.isTainted(args[1])) {
       let taintInfo = TaintHelper.getTaintInfo(args[1]);
-      taintInfo ? taintInfoPairs.push([`arg_1`, taintInfo]): null;
+      taintInfo ? taintInfoPairs.push([`arg1`, taintInfo]): null;
     }
 
     for (let i = 0; i < argsArray.length; i++) {
