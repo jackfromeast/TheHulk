@@ -13,7 +13,10 @@ import { ProxyBuiltinsTaintPropRules } from './js-builtins/proxy-builtins.js';
 import { SymbolBuiltinsTaintPropRules } from './js-builtins/symbol-builtins.js';
 import { BooleanBuiltinsTaintPropRules } from './js-builtins/boolean-builtins.js';
 import { NumberBuiltinsTaintPropRules } from './js-builtins/number-builtins.js';
-import { TrustedTypesTaintPropRules } from './browser/trust-types.js';
+import { PromiseBuiltinsTaintPropRules } from './js-builtins/promise-builtins.js';
+import { TrustedTypesBuiltinsTaintPropRules } from './browser/trust-types-builtins.js';
+import { DOMElementBuiltinsTaintPropRules } from './browser/dom-element-builtins.js';
+import { URLBuiltinsTaintPropRules} from './browser/url-builtins.js';
 
 export class TaintPropRules {
   constructor() {
@@ -32,8 +35,11 @@ export class TaintPropRules {
     this.symbolBuiltinsRules = new SymbolBuiltinsTaintPropRules();
     this.booleanBuiltinsRules = new BooleanBuiltinsTaintPropRules();
     this.numberBuiltinsRules = new NumberBuiltinsTaintPropRules();
+    this.promiseBuiltinsRules = new PromiseBuiltinsTaintPropRules();
 
-    this.trustedTypesTaintPropRules = new TrustedTypesTaintPropRules();
+    this.trustedTypesBuiltinsTaintPropRules = new TrustedTypesBuiltinsTaintPropRules();
+    this.domElementBuiltinsRules = new DOMElementBuiltinsTaintPropRules();
+    this.urlBuiltinsRules = new URLBuiltinsTaintPropRules();
 
     this.invokeFunRules = this.aggregateRules([
       this.stringBuiltinsRules,
@@ -46,7 +52,10 @@ export class TaintPropRules {
       this.symbolBuiltinsRules,
       this.booleanBuiltinsRules,
       this.numberBuiltinsRules,
-      this.trustedTypesTaintPropRules
+      this.promiseBuiltinsRules,
+      this.trustedTypesBuiltinsTaintPropRules,
+      this.domElementBuiltinsRules,
+      this.urlBuiltinsRules
     ]);
   }
 
