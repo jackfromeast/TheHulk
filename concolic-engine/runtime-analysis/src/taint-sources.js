@@ -136,13 +136,21 @@ export class TaintSourceRules {
 
 
   reportClobberableSource(val, sourceType) {
-    if (!J$$.analysis.logger.clobberableSources) {
+    if (!J$$.analysis.logger.logClobberableSource) {
       return;
     }
     if (sourceType === "SOURCE-FROM-WINDOW" && val === undefined) {
-      J$$.analysis.clobberableSources[sourceType] += 1;
+      if (J$$.analysis.clobberableSources[sourceType]) {
+        J$$.analysis.clobberableSources[sourceType] += 1;
+      }else {
+        J$$.analysis.clobberableSources[sourceType] = 1;
+      }
     } else {
-      J$$.analysis.clobberableSources[sourceType] += 1;
+      if (J$$.analysis.clobberableSources[sourceType]) {
+        J$$.analysis.clobberableSources[sourceType] += 1;
+      }else {
+        J$$.analysis.clobberableSources[sourceType] = 1;
+      }
     }
   }
 }

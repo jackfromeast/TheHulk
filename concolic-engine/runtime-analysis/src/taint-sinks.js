@@ -91,7 +91,7 @@ export class TaintSinkRules {
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkPutField(base, offset, val) {
-    this.reportClobberableSinkPutField(base, offset);
+    this.reportClobberableSinkPutField(base, offset); 
     if (!TaintHelper.isTainted(val)) { return false; }
     if (base instanceof WrappedValue) { base = base.getConcrete(); }
 
@@ -241,17 +241,6 @@ export class TaintSinkRules {
     return obj === window.location || obj === location;
   }
 
-  reportClobberableSink(sinkType) {
-    if (!J$$.analysis.logger.logClobberableSink) {
-      return;
-    }
-    if (J$$.analysis.clobberableSinks[sinkType]) {
-      J$$.analysis.clobberableSinks[sinkType] += 1;
-    } else {
-      J$$.analysis.clobberableSinks[sinkType] = 1;
-    }
-  }
-
   reportClobberableSinkPutField(base, offset) {
     if (!J$$.analysis.logger.clobberableSinks) {
       return;
@@ -300,6 +289,17 @@ export class TaintSinkRules {
     if (base === document && offset === 'domain') {
       reportClobberableSink("SINK-TO-DOCUMENT-DOMAIN");
       return;
+    }
+  }
+
+  reportClobberableSink(sinkType) {
+    if (!J$$.analysis.logger.logClobberableSink) {
+      return;
+    }
+    if (J$$.analysis.clobberableSinks[sinkType]) {
+      J$$.analysis.clobberableSinks[sinkType] += 1;
+    } else {
+      J$$.analysis.clobberableSinks[sinkType] = 1;
     }
   }
 }

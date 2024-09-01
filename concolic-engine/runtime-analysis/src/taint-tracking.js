@@ -63,11 +63,8 @@ export class TaintTracking {
     this.taintSinkRules = new TaintSinkRules();
 
     this.dangerousFlows = [];
-    this.clobberableSources = {
-      "SOURCE-FROM-DOCUMENT": 0,
-      "SOURCE-FROM-WINDOW": 0
-    };
-    this.clobberableSinks = 0;
+    this.clobberableSources = {};
+    this.clobberableSinks = {};
 
     this.DCHECK = true;
     this.taintStackHelper = new TaintStackHelper();
