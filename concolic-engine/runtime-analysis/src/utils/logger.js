@@ -11,6 +11,8 @@ export class Logger {
     this.level = config.level;
     this.logUnsupportBuiltin = config.logUnsupportBuiltin;
     this.logTaintInstall = config.logTaintInstall;
+    this.logClobberableSource = config.logClobberableSource;
+    this.logClobberableSink = config.logClobberableSink;
 
     this.levels = ['debug', 'info', 'warn', 'error'];
     this.levelIndex = this.levels.indexOf(this.level);
@@ -57,6 +59,12 @@ export class Logger {
     console.log("%c[TheHulk] Found a dangerous flow from %s to %s: \n%o",
                 'background: #222; color: #bada55',            
                 sourceReason, sinkReason, taintedValue);
+  }
+
+  reportVerifedFlow(sinkReason, payload, url) {
+    console.log("%c[TheHulk] Verified a dangerous flow to %s: %o",
+                'background: #222; color: #bada55',            
+                sinkReason, payload);
   }
 
   /**

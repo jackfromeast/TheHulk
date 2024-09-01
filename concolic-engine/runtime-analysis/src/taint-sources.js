@@ -42,21 +42,26 @@ export class TaintSourceRules {
     // SOURCE-TYPE-1:
     // Check if the base is a DOM element
     if (this.isDOMElement(base) && 
-        !this.isFunction(val)) {
+        !this.isFunction(val) &&
+        J$$.analysis.taintConfig.TAINT_SOURCE["SOURCE-FROM-DOM-ELEMENT"]) {
       return "SOURCE-FROM-DOM-ELEMENT";
     }
 
     // SOURCE-TYPE-2:
     // Check if the base is the document object
     if (this.isDocumentObject(base) &&
-        !this.isFunction(val)) {
+        !this.isFunction(val) && 
+        J$$.analysis.taintConfig.TAINT_SOURCE["SOURCE-FROM-DOCUMENT"]) {
+      this.reportClobberableSource(val, "SOURCE-FROM-DOCUMENT");
       return "SOURCE-FROM-DOCUMENT";
     }
 
     // SOURCE-TYPE-3:
     // Check if the base is the window object
     if (this.isWindowObject(base) &&
-        !this.isFunction(val)) {
+        !this.isFunction(val) &&
+        J$$.analysis.taintConfig.TAINT_SOURCE["SOURCE-FROM-WINDOW"]) {
+      this.reportClobberableSource(val, "SOURCE-FROM-WINDOW");
       return "SOURCE-FROM-WINDOW";
     }
 
@@ -128,4 +133,16 @@ export class TaintSourceRules {
     'insertAdjacentText',
     'insertAdjacentElement',
   ];
+
+
+  reportClobberableSource(val, sourceType) {
+    if (!J$$.analysis.logger.clobberableSources) {
+      return;
+    }
+    if (sourceType === "SOURCE-FROM-WINDOW" && val === undefined) {
+      J$$.analysis.clobberableSources[sourceType] += 1;
+    } else {
+      J$$.analysis.clobberableSources[sourceType] += 1;
+    }
+  }
 }

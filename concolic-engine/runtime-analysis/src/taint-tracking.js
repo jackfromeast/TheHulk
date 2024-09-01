@@ -37,7 +37,9 @@ export class TaintTracking {
       level: 'info',
       name: 'TheHulk',
       logUnsupportBuiltin: false,
-      logTaintInstall: false
+      logTaintInstall: false,
+      logClobberableSource: true,
+      logClobberableSink: true
     });
 
     this.taintConfig = {
@@ -48,6 +50,9 @@ export class TaintTracking {
       
       TAINT_SOURCE: {
         "SOURCE-FROM-BROWSER-API": false,
+        "SOURCE-FROM-DOM-ELEMENT": false,
+        "SOURCE-FROM-DOCUMENT": true,
+        "SOURCE-FROM-WINDOW": true,
       },
 
       TAINT_SINK: {}
@@ -58,6 +63,11 @@ export class TaintTracking {
     this.taintSinkRules = new TaintSinkRules();
 
     this.dangerousFlows = [];
+    this.clobberableSources = {
+      "SOURCE-FROM-DOCUMENT": 0,
+      "SOURCE-FROM-WINDOW": 0
+    };
+    this.clobberableSinks = 0;
 
     this.DCHECK = true;
     this.taintStackHelper = new TaintStackHelper();

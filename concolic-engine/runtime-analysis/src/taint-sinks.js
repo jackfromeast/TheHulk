@@ -91,7 +91,7 @@ export class TaintSinkRules {
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkPutField(base, offset, val) {
-
+    this.reportClobberableSinkPutField(base, offset);
     if (!TaintHelper.isTainted(val)) { return false; }
     if (base instanceof WrappedValue) { base = base.getConcrete(); }
 
@@ -146,12 +146,14 @@ export class TaintSinkRules {
   checkTaintAtSinkInvokeFun(f, base, args) {
 
     if (f.name === 'eval') {
+      this.reportClobberableSink("SINK-TO-EVAL");
       if (args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-EVAL", args[0]];
       }
     }
 
     if (f.name === 'Function') {
+      this.reportClobberableSink("SINK-TO-FUNCTION");
       if (args.length && Array.from(args).some(arg => TaintHelper.isTainted(arg))) {
         for (let arg of Array.from(args)) {
           if (TaintHelper.isTainted(arg)) {
@@ -162,6 +164,7 @@ export class TaintSinkRules {
     }
 
     if (f.name === 'setTimeout' || f.name === 'setInterval') {
+      this.reportClobberableSink(`SINK-TO-${f.name.toUpperCase()}`);
       if (args.length && TaintHelper.isTainted(args[0])) {
         return [`SINK-TO-${f.name.toUpperCase()}`, args[0]];
       }
@@ -169,6 +172,7 @@ export class TaintSinkRules {
 
     if (base === document) {
       if (f.name === 'write' || f.name === 'writeln') {
+        this.reportClobberableSink(`SINK-TO-DOCUMENT-${f.name.toUpperCase()}`);
         if (args.length && TaintHelper.isTainted(args[0])) {
           return [`SINK-TO-DOCUMENT-${f.name.toUpperCase()}`, args[0]];
         }
@@ -176,18 +180,21 @@ export class TaintSinkRules {
     }
 
     if (f.name === 'insertAdjacentHTML' && this.isDOMElement(base)) {
+      this.reportClobberableSink("SINK-TO-INSERTADJACENTHTML");
       if (args.length >= 2 && TaintHelper.isTainted(args[1])) {
         return ["SINK-TO-INSERTADJACENTHTML", args[1]];
       }
     }
 
     if (f.name === 'setAttribute' && base && base.tagName && base.tagName.toUpperCase() === 'SCRIPT') {
+      this.reportClobberableSink("SINK-TO-SETATTRIBUTE-SCRIPT-SRC");
       if (args.length >= 2 && TaintHelper.isTainted(args[1])) {
         return ["SINK-TO-SETATTRIBUTE-SCRIPT-SRC", args[1]];
       }
     }
 
     if (f.name === 'fetch') {
+      this.reportClobberableSink("SINK-TO-FETCH");
       if (args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-FETCH", args[0]];
       }
@@ -196,24 +203,28 @@ export class TaintSinkRules {
     // Assume the base's toString shouldn't be overwritten
     // If it is overwritten, we will get recursive function call
     if (Utils.safeToString(base) === '[object XMLHttpRequest]' && f.name === 'open') {
+      this.reportClobberableSink("SINK-TO-XMLHTTPREQUEST-OPEN");
       if (args.length && TaintHelper.isTainted(args[1])) {
         return ["SINK-TO-XMLHTTPREQUEST-OPEN", args[1]];
       }
     }
 
     if (this.isLocationObject(base) && (f.name === 'replace' || f.name === 'assign')) {
+      this.reportClobberableSink(`SINK-TO-LOCATION-${f.name.toUpperCase()}`);
       if (args.length && TaintHelper.isTainted(args[0])) {
         return [`SINK-TO-LOCATION-${f.name.toUpperCase()}`, args[0]];
       }
     }
 
     if (base === JSON && f.name === 'parse') {
+      this.reportClobberableSink("SINK-TO-JSON-PARSE");
       if (args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-JSON-PARSE", args[0]];
       }
     }
 
     if ((base === window.localStorage || base === window.sessionStorage) && f.name === 'setItem') {
+      this.reportClobberableSink(`SINK-TO-${base === window.localStorage ? 'LOCALSTORAGE' : 'SESSIONSTORAGE'}-SETITEM`);
       if (args.length && TaintHelper.isTainted(args[1])) {
         return [`SINK-TO-${base === window.localStorage ? 'LOCALSTORAGE' : 'SESSIONSTORAGE'}-SETITEM`, args[1]];
       }
@@ -230,4 +241,65 @@ export class TaintSinkRules {
     return obj === window.location || obj === location;
   }
 
+  reportClobberableSink(sinkType) {
+    if (!J$$.analysis.logger.logClobberableSink) {
+      return;
+    }
+    if (J$$.analysis.clobberableSinks[sinkType]) {
+      J$$.analysis.clobberableSinks[sinkType] += 1;
+    } else {
+      J$$.analysis.clobberableSinks[sinkType] = 1;
+    }
+  }
+
+  reportClobberableSinkPutField(base, offset) {
+    if (!J$$.analysis.logger.clobberableSinks) {
+      return;
+    }
+
+    if (base instanceof WrappedValue) { base = base.getConcrete(); }
+
+    if (base instanceof Element) {
+      try {
+        if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'src') {
+          reportClobberableSink("SINK-TO-SCRIPT-SRC");
+          return;
+        } else if (base.tagName && base.tagName.toUpperCase() === 'SCRIPT' && offset === 'text') {
+          reportClobberableSink("SINK-TO-SCRIPT-TEXT");
+          return;
+        } else if (offset === 'innerHTML' || offset === 'outerHTML') {
+          reportClobberableSink(`SINK-TO-DOM-ELEMENT-${offset.toUpperCase()}`);
+          return;
+        } else if (offset === 'srcdoc') {
+          reportClobberableSink("SINK-TO-DOM-ELEMENT-SRCDOC");
+          return;
+        } else if (base.tagName && base.tagName.toUpperCase() === 'LINK' && offset === 'href') {
+          reportClobberableSink("SINK-TO-LINK-HREF");
+          return;
+        }
+      } catch (e) {
+        // Have seen exceptions where base.tagName will cause Illegal invocation error
+      }
+    }
+
+    if (base === window && offset === 'location') {
+      reportClobberableSink("SINK-TO-WINDOW-LOCATION");
+      return;
+    }
+
+    if (base === window.location && offset === 'href') {
+      reportClobberableSink("SINK-TO-LOCATION-HREF");
+      return;
+    }
+
+    if (base === document && offset === 'cookie') {
+      reportClobberableSink("SINK-TO-DOCUMENT-COOKIE");
+      return;
+    }
+
+    if (base === document && offset === 'domain') {
+      reportClobberableSink("SINK-TO-DOCUMENT-DOMAIN");
+      return;
+    }
+  }
 }
