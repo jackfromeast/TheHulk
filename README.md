@@ -1,6 +1,6 @@
-![TheHulk](https://anonymous.4open.science/r/TheHulk/icon.jpg)
+![TheHulk](icon.jpg/icon.jpg)
 
-For more info, please check out [wiki](https://anonymous.4open.science/r/TheHulk/doc)!
+For more info, please check out [wiki](./doc)!
 
 ### Install & Run
 
