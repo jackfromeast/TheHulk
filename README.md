@@ -1,4 +1,4 @@
-![TheHulk](icon.jpg/icon.jpg)
+![TheHulk](icon.jpg)
 
 For more info, please check out [wiki](./doc)!
 
