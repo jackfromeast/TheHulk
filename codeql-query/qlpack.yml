@@ -1,7 +1,7 @@
 ---
 library: false
 warnOnImplicitThis: false
-name: jackfromeast/dom-clobbering
+name: xxxxxxxxxxxx/dom-clobbering
 version: 0.0.1
 dependencies:
   codeql/javascript-all: "*"

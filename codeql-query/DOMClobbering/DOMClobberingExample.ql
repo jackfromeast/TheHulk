@@ -111,7 +111,7 @@ class IdentifiedClobberableSourceDOMAPI extends DataFlow::Node {
                   loc.getStartLine() = 2 and loc.getEndLine() = 2 and
                   loc.getStartColumn() <= 21112 and loc.getEndColumn() >= 21112
               ) or (
-                loc.getFile().getAbsolutePath().matches("%/home/jackfromeast/Desktop/SafeLookup/tmp/test-crawler/test-crawler-04-04-22-45/bilibili.com/69605160da/source/s1.hdslb.com/bfs/static/laputa-home/client/assets/index.6965ff6a.js") and
+                loc.getFile().getAbsolutePath().matches("%/home/xxxxxxxxxxxx/Desktop/SafeLookup/tmp/test-crawler/test-crawler-04-04-22-45/bilibili.com/69605160da/source/s1.hdslb.com/bfs/static/laputa-home/client/assets/index.6965ff6a.js") and
                 loc.getStartLine() = 01 and loc.getEndLine() = 01 and
                 loc.getStartColumn() <= 48270 and loc.getEndColumn() >= 48270
             )
