@@ -1,12 +1,12 @@
 scheduler:
   TEST_NAME: "FOXHOUND-DOM-TAINTFLOWS-ROUND1-TOP500"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/"
+  WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/"
 
   # Option: "seed" or "list"
   MODE: "list"
   SEED_URL: "https://google.com"
-  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  URL_LIST: "/home/xxxxxxxxxxxx/Desktop/TheHulk/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: 500
 

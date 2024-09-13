@@ -16,6 +16,8 @@ const path = require('path');
 async function collectResultPerPageCallbacks(visitor, page) {
 
   let allDangerousFlows = [];
+  let clobberableSources = {};
+  let clobberableSinks = {};
 
   const collectFlowsFromFrame = async (frame) => {
     return await frame.evaluate(() => {

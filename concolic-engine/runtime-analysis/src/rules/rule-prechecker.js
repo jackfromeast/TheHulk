@@ -10,7 +10,7 @@ import { TaintHelper } from '../taint-helper.js';
  * This can lead to several issues if the bind function returns a tainted value:
  * 1/ it might directly apply to the original operation without stripping, making the value taint-aware, or
  * 2/ it could alter the program logic. The following two cases illustrate these problems.
- * For more details, see the documentation: https://github.com/jackfromeast/TheHulk/wiki/Concolic-Execution-Bind-User-Functions
+ * For more details, see the documentation: https://github.com/xxxxxxxxxxxx/TheHulk/wiki/Concolic-Execution-Bind-User-Functions
  * 
  * Perchecker will handle these user-defined functions and ensure the runOriginalFun won't arrive at any user-defined functions.
  */

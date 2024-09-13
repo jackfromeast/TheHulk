@@ -67,7 +67,7 @@ function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActio
 	this.curURLHash = utils.hashURL(url);
 
 	// Allow visitor to retest the current URL
-	// This is useful when the page is not loaded correctly
+	// This is useful when the page is not loaded correctly and also the verifer can retest the page
 	this.retestCurURL = false;
 	this.retestMaxTimes = 1;
 
@@ -596,7 +596,7 @@ Visitor.prototype.saveCrawlerData = async function(){
 		}
 
 		if (this.config.collector.COLLECT_TAINTING_FLOWS && this.collected.curURLHash.taintflows){
-			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "taintflows.json"), JSON.stringify(this.collected.curURLHash.taintflows, null, 4));
+			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "taintflows.json"), JSON.stringify(this.collected.curURLHash.taintflows, null, 2));
 		}
 
 		if (this.config.collector.COLLECT_ERRORS){

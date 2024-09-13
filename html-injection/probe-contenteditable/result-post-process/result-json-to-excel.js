@@ -2,7 +2,7 @@ const fs = require("fs");
 const xlsx = require("xlsx");
 
 // Load JSON data
-const jsonData = JSON.parse(fs.readFileSync("/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/results/top-5k-contenteditable-html-elements-verifed.json", { encoding: 'utf8', flag: 'r' }));
+const jsonData = JSON.parse(fs.readFileSync("/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/results/top-5k-contenteditable-html-elements-verifed.json", { encoding: 'utf8', flag: 'r' }));
 
 // Group by domain
 const groupedByDomain = jsonData.reduce((acc, item) => {
@@ -32,6 +32,6 @@ const workbook = xlsx.utils.book_new();
 xlsx.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
 // Write the Excel file
-xlsx.writeFile(workbook, "/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/results/top-5k-contenteditable-html-elements-verifed.xlsx");
+xlsx.writeFile(workbook, "/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/results/top-5k-contenteditable-html-elements-verifed.xlsx");
 
 console.log("Excel file has been generated as output_collapsed.xlsx");

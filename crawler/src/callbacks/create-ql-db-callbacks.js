@@ -36,7 +36,7 @@ async function createCodeQLDatabaseCb(visitor, _){
 
 // let visitor = {};
 // visitor.logger = console;
-// visitor.webpageFolder = '/home/jackfromeast/Desktop/TheHulk/tmp/test.sink';
+// visitor.webpageFolder = '/home/xxxxxxxxxxxx/Desktop/TheHulk/tmp/test.sink';
 // createCodeQLDatabaseCb(visitor, null);
 
 

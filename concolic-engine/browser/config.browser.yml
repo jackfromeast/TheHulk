@@ -3,13 +3,14 @@
 ### This file holds the configuration to start the browser 
 ### and perform concolic execution analysis.
 
-WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/tmp/concolic"
+WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/tmp/concolic"
 
 chrome:
   CHROME_EXECUTABLE_PATH: "/usr/bin/google-chrome"
   CHROME_FLAGS: [
     # "--enable-blink-features=RecordDOMClobberingSitesAny,RecordDOMAccessAPIAny",
     # "-js-flags=--trace-document-lookup",
+    '--force-device-scale-factor=1.75',
     "--no-sandbox",
     '--disable-setuid-sandbox',
     '--disable-gpu'
@@ -38,7 +39,9 @@ collector:
 navigator:
   BROWSER: "chrome"
   WAIT_BEFORE_NEXT_URL: 1000
-  INITIAL_URL: "http://10.161.159.131:8001/index.html"
+  # INITIAL_URL: "https://www.facebook.com/"
+  # INITIAL_URL: "https://www.dropbox.com/"
+  INITIAL_URL: "http://localhost:8001/"  
   NAVIGATION_TIMEOUT: 0
   # For puppeteer, options:
   # ['load', 'domcontentloaded']
@@ -50,11 +53,11 @@ navigator:
 
 proxy:
   PROXY_SERVER: "localhost"
-  PROXY_PORT: 8899
+  PROXY_PORT: 8877
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
+    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
       function_name: "installJalangi2AndAnalysisCb"
   
   PAGE_ACTIONS_CBS:
@@ -68,5 +71,5 @@ callbacks:
 others:
   ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
   ANALYSIS_NAME: "TaintTracking"
-  ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
-  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
+  ANALYSIS_SCRIPT_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
+  JALANGI2_RUNTIME_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"

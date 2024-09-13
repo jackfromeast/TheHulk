@@ -15,7 +15,7 @@
  * 
  * Usage:
  * --------------------------------
- * node crawler.js --seedurl https://hackmd.io/ --configFile /home/jackfromeast/Desktop/TheHulk/crawler/config.yaml --maxurls 1 --browser chrome --basedir /home/jackfromeast/Desktop/TheHulk/tmp/test-webpage
+ * node crawler.js --seedurl https://hackmd.io/ --configFile /home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/config.yaml --maxurls 1 --browser chrome --basedir /home/xxxxxxxxxxxx/Desktop/TheHulk/tmp/test-webpage
  *
  */
 

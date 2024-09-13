@@ -1,12 +1,14 @@
 scheduler:
-  TEST_NAME: "probe-contenteditable-top5k-200-60"
+  TEST_NAME: "verify-contenteditable-top-5k"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/output/"
+  WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/"
 
   # Option: "seed" or "list"
-  MODE: "list"
-  SEED_URL: "https://www.tiny.cloud/"
-  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/tranco-5k-05-03.csv"
+  MODE: "seed"
+  SEED_URL: "https://admin.shopify.com/store/was0d1?from=accountSettings"
+  URL_LIST: "/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/dataset/top-5k-urls-contenteditable-elements.csv"
+  URL_LIST_FROM: 1
+  URL_LIST_TO: -1      # -1 for all urls
 
   # Format of the urls.csv file:
   #   1,google.com
@@ -23,7 +25,7 @@ scheduler:
   # Maximum number of workers to run in parallel
   MAX_WORKER: 32
   # Maximum number of urls to visit
-  MAX_URL: 500
+  MAX_URL: 1
   # Time budget for each worker to visit a single url
   TIMEOUT_PER_DOMAIN: 1800000
 

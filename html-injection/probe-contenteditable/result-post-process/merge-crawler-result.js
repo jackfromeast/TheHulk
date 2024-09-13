@@ -21,18 +21,18 @@ const path = require('path');
 const { parse } = require('csv-parse');
 
 
-const outputFile = "/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/results/bug-bounty-contenteditable-html-elements.json";
-const csvFilePath = "/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/dataset/tranco-5k-05-03.csv";
+const outputFile = "/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/results/bug-bounty-contenteditable-html-elements.json";
+const csvFilePath = "/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/dataset/tranco-5k-05-03.csv";
 const filePaths = [
-  "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-bug-bounty/probe-contenteditable-bug-bounty-05-07-19-24-1/contentEditableEleSiteMap.json",
-  "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-bug-bounty/probe-contenteditable-bug-bounty-05-07-21-01-2/contentEditableEleSiteMap.json"
+  "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-bug-bounty/probe-contenteditable-bug-bounty-05-07-19-24-1/contentEditableEleSiteMap.json",
+  "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-bug-bounty/probe-contenteditable-bug-bounty-05-07-21-01-2/contentEditableEleSiteMap.json"
 ]
 // const filePaths = [
-//   "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-05-05-11-31-2/contentEditableEleSiteMap.json",
-//   "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-05-04-20-35-1/contentEditableEleSiteMap.json",
-//   "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-2145--05-05-19-23-3/contentEditableEleSiteMap.json",
-//   "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-2145--05-06-23-30-4/contentEditableEleSiteMap.json",
-//   "/home/jackfromeast/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-2145--05-06-23-30-5/contentEditableEleSiteMap.json"
+//   "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-05-05-11-31-2/contentEditableEleSiteMap.json",
+//   "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-05-04-20-35-1/contentEditableEleSiteMap.json",
+//   "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-2145--05-05-19-23-3/contentEditableEleSiteMap.json",
+//   "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-2145--05-06-23-30-4/contentEditableEleSiteMap.json",
+//   "/home/xxxxxxxxxxxx/Desktop/TheHulk/output/probe-contenteditable-top5k/probe-contenteditable-top5k-200-60-2145--05-06-23-30-5/contentEditableEleSiteMap.json"
 // ]
 
 function readCsvFile(filePath, callback) {

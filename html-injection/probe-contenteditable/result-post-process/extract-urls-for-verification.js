@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Path to your JSON file
-const jsonFilePath = path.join("/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/results/top-5k-contenteditable-html-elements.json");
+const jsonFilePath = path.join("/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/results/top-5k-contenteditable-html-elements.json");
 // Output CSV file path
-const csvFilePath = path.join("/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/dataset/top-5k-urls-contenteditable-elements.csv");
+const csvFilePath = path.join("/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/dataset/top-5k-urls-contenteditable-elements.csv");
 
 // Read JSON data from file
 fs.readFile(jsonFilePath, 'utf8', (err, data) => {

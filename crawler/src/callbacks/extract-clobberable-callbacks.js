@@ -122,7 +122,7 @@ async function extractDOMCLookups(logs, startLine='') {
 
 
 
-// let rawLog = JSON.parse(fs.readFileSync("/home/jackfromeast/Desktop/TheHulk/output/jupyter-widgets-05-05-22-25/ipywidgets.readthedocs.io/db1b70993e/crawler/console-logs.json", { encoding: 'utf8', flag: 'r' }));
+// let rawLog = JSON.parse(fs.readFileSync("/home/xxxxxxxxxxxx/Desktop/TheHulk/output/jupyter-widgets-05-05-22-25/ipywidgets.readthedocs.io/db1b70993e/crawler/console-logs.json", { encoding: 'utf8', flag: 'r' }));
 // let startLine = "[extractDOMCLookupsCb] Start.";
 
 // extractDOMCLookups(rawLog, startLine).then((lookups) => {
@@ -130,7 +130,7 @@ async function extractDOMCLookups(logs, startLine='') {
 // });
 
 
-// let rawLog = JSON.parse(fs.readFileSync("/home/jackfromeast/Desktop/TheHulk/output/cocalc.com-06-11-21-46/cocalc.com/c0ce088e18/crawler/console-logs.json", { encoding: 'utf8', flag: 'r' }));
+// let rawLog = JSON.parse(fs.readFileSync("/home/xxxxxxxxxxxx/Desktop/TheHulk/output/cocalc.com-06-11-21-46/cocalc.com/c0ce088e18/crawler/console-logs.json", { encoding: 'utf8', flag: 'r' }));
 // let startLine = "Collect Start.";
 
 // extractDOMCLookups(rawLog, startLine).then((lookups) => {

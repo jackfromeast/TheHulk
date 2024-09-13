@@ -1,12 +1,12 @@
 scheduler:
   TEST_NAME: "TAINT-TRACKING-BUILTINS-TEST"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/output"
+  WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/output"
 
   # Option: "seed" or "list"
   MODE: "seed"
   SEED_URL: "http://localhost:8001/index.html"
-  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  URL_LIST: "/home/xxxxxxxxxxxx/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: 1
 

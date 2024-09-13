@@ -1,0 +1,300 @@
+{
+    "domainSummary": {
+        "a-msedge.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "aaplimg.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "adobe.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "akadns.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "akamai.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "akamaiedge.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "amazon.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "amazonaws.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "apple-dns.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "apple.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "azure.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "baidu.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "bilibili.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "bing.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "bit.ly": {
+            "total": 0,
+            "taintflows": []
+        },
+        "blogspot.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "cloudapp.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "cloudflare.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "dell.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "domaincontrol.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "doubleclick.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "edgekey.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "facebook.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "fastly.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "gandi.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "github.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "goo.gl": {
+            "total": 0,
+            "taintflows": []
+        },
+        "google.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "googledomains.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "googletagmanager.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "googlevideo.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "gtld-servers.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "instagram.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "intuit.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "l-msedge.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "linkedin.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "live.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "mail.ru": {
+            "total": 0,
+            "taintflows": []
+        },
+        "microsoft.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "microsoftonline.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "mozilla.org": {
+            "total": 0,
+            "taintflows": []
+        },
+        "msn.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "netflix.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "netflix.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "nflxso.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "office.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "office365.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "pinterest.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "qq.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "reddit.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "s-msedge.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "salesforce.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "sharepoint.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "t-msedge.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "t.co": {
+            "total": 0,
+            "taintflows": []
+        },
+        "taobao.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "tiktok.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "trafficmanager.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "twitter.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "vimeo.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "vk.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "webex.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "whatsapp.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "wikipedia.org": {
+            "total": 0,
+            "taintflows": []
+        },
+        "windows.net": {
+            "total": 0,
+            "taintflows": []
+        },
+        "windowsupdate.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "wordpress.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "wordpress.org": {
+            "total": 0,
+            "taintflows": []
+        },
+        "yahoo.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "yandex.ru": {
+            "total": 0,
+            "taintflows": []
+        },
+        "youtu.be": {
+            "total": 0,
+            "taintflows": []
+        },
+        "youtube.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "zhihu.com": {
+            "total": 0,
+            "taintflows": []
+        },
+        "zoom.us": {
+            "total": 0,
+            "taintflows": []
+        }
+    }
+}

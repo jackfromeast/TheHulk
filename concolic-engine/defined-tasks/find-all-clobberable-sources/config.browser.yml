@@ -4,7 +4,7 @@
 ### and perform concolic execution analysis.
 
 chrome:
-  CHROME_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
+  CHROME_EXECUTABLE_PATH: "/home/xxxxxxxxxxxx/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
   CHROME_FLAGS: [
     "--enable-blink-features=RecordDOMClobberingSitesAny",
     "-js-flags=--trace-document-lookup",
@@ -17,7 +17,7 @@ chrome:
   DEVTOOLS: false
 
 foxhound:
-  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_EXECUTABLE_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
   FOXHOUND_FLAGS: [
     "--no-sandbox",
     '--disable-setuid-sandbox',
@@ -64,11 +64,11 @@ callbacks:
   BEFORE_LOAD_CBS: []
   
   PAGE_ACTIONS_CBS:
-      - file: /home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
+      - file: /home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
         function_name: "waitForFiveSecCb"
 
   AFTER_LOAD_CBS: 
-    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
+    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
       function_name: "extractDOMCLookupsCb"
 
   POST_VISIT_CBS: []
@@ -76,5 +76,5 @@ callbacks:
 others:
   ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
   ANALYSIS_NAME: "Jalangi2Only"
-  # ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
-  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
+  # ANALYSIS_SCRIPT_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
+  JALANGI2_RUNTIME_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"

@@ -53,12 +53,12 @@ export class DehydratedTaintValue {
     let concreteValue = value;
     if (TaintHelper.isTainted(value)) {
       // KNOWN ISSUE:
-      // [concreteValue, taintInfo] = TaintHelper.concrete(value);
+      [concreteValue, taintInfo] = TaintHelper.concrete(value);
       // We currently only concrete the wrapped value but not object
       // This is because once we delete the __TAINT__ from the original object, we delete it from all th references in the caller scope
       // Even though we add it back afterwards, we cannot change the reference in the caller scope but only the reference in the callee scope
-      concreteValue = TaintHelper.concreteWrappedOnly(value);
-      taintInfo = TaintHelper.getTaintInfo(value);
+      // concreteValue = TaintHelper.concreteWrappedOnly(value);
+      // taintInfo = TaintHelper.getTaintInfo(value);
     }
 
     if (this.maxDepth > 1) {

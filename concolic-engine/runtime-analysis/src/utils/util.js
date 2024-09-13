@@ -31,6 +31,14 @@ export class Utils {
     try{
       // TODO: Think of a better way to take the snapshot of the tainted value
       // const clonedTaintedValue = structuredClone(taintedValue);
+
+      if (!TaintHelper.isWrappedValue(taintedValue)) {
+        taintedValue = {
+          concrete: Utils.safeToString(taintedValue),
+          taintInfo: TaintHelper.getTaint(taintedValue)
+        }
+      }
+      
       J$$.analysis.dangerousFlows.push({
         sourceReason: sourceReason,
         sourceLoc: sourceLoc,
@@ -39,6 +47,17 @@ export class Utils {
         taintedValue: taintedValue,
         iid: iid
       });
+
+      if (J$$.analysis.logger.exposeToPlaywright && __reportDangerousFlowPlaywright) {
+        __reportDangerousFlowPlaywright({
+          sourceReason: sourceReason,
+          sourceLoc: sourceLoc,
+          sinkReason: sinkReason,
+          sinkLoc: sinkLoc,
+          taintedValue: taintedValue,
+          iid: iid
+        });
+      }
     }
     catch(e){
       J$$.analysis.logger.debug("Failed to clone tainted value", taintedValue, " because ", e);

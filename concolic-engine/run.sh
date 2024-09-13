@@ -61,6 +61,7 @@ done
 if [ "$RUN_TEST" = true ]; then
   check_and_kill_port 8001
   pushd $CONCOLIC_PATH/../tests/taint-tracking-builtins > /dev/null 2>&1
+  # node compiler.js --test-scripts ./test-scripts --test-pages ./test-pages
   http-server test-pages -p 8001 -d false -c-1 > /dev/null 2>&1 &
   curl -s http://localhost:8001
   TEST_SERVER_PID=$!

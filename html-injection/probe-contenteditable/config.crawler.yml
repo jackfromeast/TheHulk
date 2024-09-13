@@ -5,7 +5,8 @@ chrome:
     '--disable-setuid-sandbox',
     '--disable-gpu'
   ]
-  HEADLESS: true
+  HEADLESS: false
+  DEVTOOLS: false
 
 collector:
   # Collectors configuration
@@ -23,6 +24,7 @@ collector:
   COLLECT_XHR_REQUESTS: false
   COLLECT_FETCH_REQUESTS: false
   EXTRACT_DOM_LOOKUPS: false
+  EXTRACT_UNDEF_LOOKUPS: true
 
 
 navigator:
@@ -31,9 +33,13 @@ navigator:
 
 callbacks:
   BEFORE_LOAD_CBS: []
+    # - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/set-cookies-callbacks.js"
+    #   function_name: "setCookiesCb"
   
   PAGE_ACTIONS_CBS:
-    - file: "/home/jackfromeast/Desktop/TheHulk/html-injection/probe-contenteditable/probe-contenteditable-callbacks.js"
+    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/callbacks/manually-actions-callbacks.js"
+      function_name: "manuallyInteractCb"
+    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/html-injection/probe-contenteditable/probe-contenteditable-callbacks.js"
       function_name: "probeContentEditableCb"
 
   AFTER_LOAD_CBS: []
@@ -41,6 +47,6 @@ callbacks:
   POST_VISIT_CBS: []
 
 others:
-  CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"
+  CODEQL_QUERY_SAVE_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/codeql-query/WebsiteSpecific"
   COLLECT_DOM_LOOKUP_HINTS: "[extractDOMCLookupsCb] Start." # or ''
   EDITABLE_SITEMAP_SAVE_PATH: 

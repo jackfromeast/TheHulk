@@ -1,12 +1,12 @@
 scheduler:
   TEST_NAME: "ALL-CLOBBERABLE-SOURCES"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/find-all-clobberable-sources/output"
+  WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/find-all-clobberable-sources/output"
 
   # Option: "seed" or "list"
   MODE: "seed"
   SEED_URL: "https://morning-discovery-e88.notion.site/fa4491f18f1f4d3aabb3dcfa4042d37c"
-  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  URL_LIST: "/home/xxxxxxxxxxxx/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: 1
 

@@ -39,7 +39,8 @@ export class TaintTracking {
       logUnsupportBuiltin: false,
       logTaintInstall: false,
       logClobberableSource: true,
-      logClobberableSink: true
+      logClobberableSink: true,
+      exposeToPlaywright: true
     });
 
     this.taintConfig = {
@@ -55,7 +56,9 @@ export class TaintTracking {
         "SOURCE-FROM-WINDOW": true,
       },
 
-      TAINT_SINK: {}
+      TAINT_SINK: {
+        "SINK-TO-JSON-PARSE": false,
+      }
     };
 
     this.taintPropRules = new TaintPropRules();
@@ -64,6 +67,7 @@ export class TaintTracking {
 
     this.dangerousFlows = [];
     this.clobberableSources = {};
+    this.clobberableSourcePool = {};
     this.clobberableSinks = {};
 
     this.DCHECK = true;

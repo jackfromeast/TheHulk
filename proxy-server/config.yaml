@@ -1,5 +1,5 @@
 instrumentation:
-  INST_SCRIPT: "/home/jackfromeast/Desktop/TheHulk/libs/jalangi2/src/js/commands/esnstrument_cli.js"
+  INST_SCRIPT: "/home/xxxxxxxxxxxx/Desktop/TheHulk/libs/jalangi2/src/js/commands/esnstrument_cli.js"
 
   # Options: "all", "true", "false"
   IGNORE_ENABLE: 'true'
@@ -10,13 +10,13 @@ instrumentation:
   JALANGI_ARGS: []
 
   SAVE_FAILED_INSTRUMENTATION: true
-  FAIL_INSTRUMENTATION_PATH: "/home/jackfromeast/Desktop/TheHulk/tests/jalangi2-instrumentation-test/jalangi2-failed-js"
+  FAIL_INSTRUMENTATION_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/tests/jalangi2-instrumentation-test/jalangi2-failed-js"
 
 
 cache: 
   CACHE_ENABLE: true
   USE_CACHE: false
-  CACHE_PATH: "/home/jackfromeast/Desktop/TheHulk/proxy-server/cache"
+  CACHE_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/proxy-server/cache"
 
 # To change the port of the server, modify the code at setup.sh
 # server:
