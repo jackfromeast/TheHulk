@@ -1,18 +1,15 @@
 [submodule "docs"]
 	path = docs
-	url = https://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@github.com/jackfromeast/TheHulk.wiki.git
+	url = https://anonymous.4open.science/r/TheHulk/wiki
 [submodule "jaw-v3-thething"]
 	path = third-party/jaw-v3-thething
-	url = https://github.com/jackfromeast/jaw-v3-thething.git
+	url = https://anonymous.4open.science/r/jaw-v3-thething-8BDB
 [submodule "jalangi2"]
 	path = libs/jalangi2
-	url = https://github.com/jackfromeast/jalangi2.git
-[submodule "crawler-llm/skyvern"]
-	path = crawler-llm/skyvern
-	url = https://github.com/ishmeals/skyvern.git
+	url = https://anonymous.4open.science/r/jalangi2-187B.git
 [submodule "dataset/dom-clobbering-collection"]
 	path = dataset/dom-clobbering-collection
-	url = https://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@github.com/jackfromeast/dom-clobbering-collection
+	url = https://anonymous.4open.science/r/dom-clobbering-collection.git
 [submodule "proxy-server/mitmproxy"]
 	path = libs/mitmproxy
 	url = https://github.com/mitmproxy/mitmproxy.git
