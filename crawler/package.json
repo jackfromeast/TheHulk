@@ -30,5 +30,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Zhengyu Liu"
+  "author": "Zhengyu Liu",
+  "devDependencies": {
+    "why-is-node-running": "^2.3.0"
+  }
 }

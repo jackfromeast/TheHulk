@@ -13,6 +13,7 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const Logger = require('./logger');
 const pathModule = require('path');
+const Processer = require('./processer');
 const { spawn } = require('child_process');
 const { program } = require('commander');
 const { getTimeStamp, readCSVFile } = require('./utils');
@@ -137,6 +138,10 @@ async function spawnCrawler(url) {
   }
 
   await Promise.all(initialCrawlers);
+
+  let postProcesser = new Processer(crawlerConfigFilePath, `${config.scheduler.WORKSPACE}/${dirName}`);
+  await postProcesser.process();
+
   logger.info('Done. All crawlers have finished.');
   process.exit(0);
 })();

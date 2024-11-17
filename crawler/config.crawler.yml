@@ -1,5 +1,5 @@
 chrome:
-  CHROME_EXECUTABLE_PATH: "/home/xxxxxxxxxxxx/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
+  CHROME_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/SafeLookup/tools/Chromes/chrome-clobber/src/out/x64.debug.clobber/chrome"
   CHROME_FLAGS: [
     "--enable-blink-features=RecordDOMClobberingSitesAny,RecordDOMAccessAPIAny",
     "-js-flags=--trace-document-lookup",
@@ -12,7 +12,7 @@ chrome:
   DEVTOOLS: false
 
 foxhound:
-  FOXHOUND_EXECUTABLE_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/third-party/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
   FOXHOUND_FLAGS: [
     "--no-sandbox",
     '--disable-setuid-sandbox',
@@ -60,12 +60,12 @@ proxy:
 callbacks:
   # Callbacks that will be invoked before going to every pages
   BEFORE_LOAD_CBS:
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/bind-taint-handler-foxhound-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/bind-taint-handler-foxhound-callbacks.js"
       function_name: "setupFoxhoundTaintHandlerCb"
   
   # Callbacks that will be invoked after the loading of the pages
   PAGE_ACTIONS_CBS:
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/manually-actions-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/manually-actions-callbacks.js"
       function_name: "manuallyInteractCb"
 
   # Callbacks that will be invoked before the leaving the current visiting page
@@ -73,19 +73,28 @@ callbacks:
 
   # Callbacks that will be invoked after done visiting all pages in the current domain
   POST_VISIT_CBS:
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/extract-dom-related-taint-flows.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-dom-related-taint-flows.js"
       function_name: "extractDOMRelatedTaintFlowsCb"
-    # - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/extract-clobberable-callbacks.js"
     #   function_name: "extractDOMCLookupsCb"
       
-    # - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/compile-ql-query-callbacks.js"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/compile-ql-query-callbacks.js"
     #   function_name: "compileQLQueryCb"
     
-    # - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/callbacks/create-ql-db-callbacks.js"
+    # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/create-ql-db-callbacks.js"
     #   function_name: "createCodeQLDatabaseCb"
 
+  # Callbacks that will be invoked after done visiting all domains in the current task
+  POST_PROCESS_CBS:
+    # Will be invoked when processing each domain's crawler folder
+    PER_PAGE: []
+
+    # Will be invoked after processing all domains, should directly process postProcesser.data
+    AFTER_ALL_DOMAINS: []
+  
+
 others:
-  FOXHOUND_TAINT_HANDLER_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/crawler/src/scripts/flow-handler-foxhound.js"
-  CODEQL_QUERY_SAVE_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/codeql-query/WebsiteSpecific"
+  FOXHOUND_TAINT_HANDLER_PATH: "/home/jackfromeast/Desktop/TheHulk/crawler/src/scripts/flow-handler-foxhound.js"
+  CODEQL_QUERY_SAVE_PATH: "/home/jackfromeast/Desktop/TheHulk/codeql-query/WebsiteSpecific"
   COLLECT_DOM_LOOKUP_HINTS: "" # or 'SafeLookup'
   COOKIE_RAW: 'CC_ANA=cfab97b1-fe12-41c3-941b-9ecead972e8f; CC_ANA=b2f54f1f-88cd-4dcf-8374-9ea0dba4c982; cocalc_version=1715083343; SMCSERVERID3=s4|ZmjlT|Zmjgs; connect.sid=s%3AQPZv2slCDO_dB-kfyABaJd4KCzWZObQ_.Ck79KaAOieDLj7UjMX4szx5F2OblXw25XgV0sW0Hxis; remember_me=sha512$98349e743f6fc9ae181db96fd487c70c$1000$f006e7ed-1c59-4381-bcca-204d80841dde'
