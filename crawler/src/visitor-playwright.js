@@ -176,7 +176,14 @@ Visitor.prototype.visitPage = async function(){
 		*  [PreLoading] Install the Event Handlers 
 		*  ----------------------------------------------
 		*/
-		await this.setupInterception(page);
+
+		// Setup the Interception only when we need to download the resources
+		// However, we can consider using .HAR file for the resources
+		if (this.config.collector.COLLECT_HTML || this.config.collector.COLLECT_CSS || this.config.collector.COLLECT_SCRIPTS ||
+			  this.config.collector.COLLECT_XHR_REQUESTS || this.config.collector.COLLECT_REQUESTS){
+			await this.setupInterception(page);
+		}
+
 		if (this.config.collector.COLLECT_CONSOLE_LOGS){ this.collectConsoleLogs(page); }
 		// if (this.config.collector.COLLECT_BROWSER_STDOUT){ this.collectBrowserStdout(); }
 		// if (this.config.collector.COLLECT_BROWSER_STDERR){ this.collectBrowserStderr(); }

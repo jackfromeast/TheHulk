@@ -2,7 +2,7 @@
 /**
  * @description
  * --------------------------------
- * This script holds the concolic execution behaviors which will be invoked by the jalangi2 runtime.
+ * This script holds the taint engine behaviors which will be invoked by the jalangi2 runtime.
  * This script will load and execute in the browser environment.
  * 
  * @notes
