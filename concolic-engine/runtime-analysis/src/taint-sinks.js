@@ -218,7 +218,7 @@ export class TaintSinkRules {
 
     if (base === JSON && f.name === 'parse') {
       this.reportClobberableSink("SINK-TO-JSON-PARSE");
-      if (args.length && TaintHelper.isTainted(args[0])) {
+      if (J$$.analysis.taintConfig.TAINT_SINK["SINK-TO-JSON-PARSE"] && args.length && TaintHelper.isTainted(args[0])) {
         return ["SINK-TO-JSON-PARSE", args[0]];
       }
     }

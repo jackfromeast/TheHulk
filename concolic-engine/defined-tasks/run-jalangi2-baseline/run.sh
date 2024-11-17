@@ -40,7 +40,7 @@ fi
 
 ## Step 2: Start the Proxy Server for instrumenting the JS & HTML on-the-fly
 if [ "$RUN_PROXY" = true ]; then
-  check_and_kill_port 8899
+  check_and_kill_port 8877
   echo "[+] Starting the Proxy Server for instrumenting the JS & HTML on-the-fly..."
 
   ### Setup the python env first

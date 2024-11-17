@@ -73,8 +73,8 @@ function save(workspaceFolder, rawBuiltins, groupedBuiltins) {
 }
 
 (function main(){
-  const outputFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output/MOST-FREQUENTLY-USED-APIS-BUILTINS-07-24-21-14';
-  const workspaceFolder = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/summarized-output'; // Replace with actual path
+  const outputFolder = '/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output/MOST-FREQUENTLY-USED-APIS-BUILTINS-07-24-21-14';
+  const workspaceFolder = '/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/summarized-output'; // Replace with actual path
 
   const { rawBuiltins, groupedBuiltins } = summary(outputFolder);
   save(workspaceFolder, rawBuiltins, groupedBuiltins);

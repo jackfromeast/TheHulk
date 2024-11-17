@@ -334,6 +334,20 @@ export class TaintHelper {
   }
 
   /**
+   * Check if value is an instance of TaintValue
+   */
+  static isWrappedValue(value) {
+    try {
+      if (value instanceof TaintValue) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Create a new taintInfo object
    * Given the newly added taintPropOperation and existing taintInfo
    * 

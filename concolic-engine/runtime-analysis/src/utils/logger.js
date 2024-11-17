@@ -14,6 +14,8 @@ export class Logger {
     this.logClobberableSource = config.logClobberableSource;
     this.logClobberableSink = config.logClobberableSink;
 
+    this.exposeToPlaywright = config.exposeToPlaywright;
+
     this.levels = ['debug', 'info', 'warn', 'error'];
     this.levelIndex = this.levels.indexOf(this.level);
   }

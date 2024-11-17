@@ -52,16 +52,17 @@ export class TaintSourceRules {
     if (this.isDocumentObject(base) &&
         !this.isFunction(val) && 
         J$$.analysis.taintConfig.TAINT_SOURCE["SOURCE-FROM-DOCUMENT"]) {
-      this.reportClobberableSource(val, "SOURCE-FROM-DOCUMENT");
+      this.reportClobberableSource(val, offset, "SOURCE-FROM-DOCUMENT");
       return "SOURCE-FROM-DOCUMENT";
     }
 
     // SOURCE-TYPE-3:
     // Check if the base is the window object
     if (this.isWindowObject(base) &&
+        !this.blacklistForWindowObject.includes(offset) &&
         !this.isFunction(val) &&
         J$$.analysis.taintConfig.TAINT_SOURCE["SOURCE-FROM-WINDOW"]) {
-      this.reportClobberableSource(val, "SOURCE-FROM-WINDOW");
+      this.reportClobberableSource(val, offset, "SOURCE-FROM-WINDOW");
       return "SOURCE-FROM-WINDOW";
     }
 
@@ -134,22 +135,33 @@ export class TaintSourceRules {
     'insertAdjacentElement',
   ];
 
+  blacklistForWindowObject = [
+    'location',
+  ];
 
-  reportClobberableSource(val, sourceType) {
+  reportClobberableSource(val, offset, sourceType) {
     if (!J$$.analysis.logger.logClobberableSource) {
       return;
     }
     if (sourceType === "SOURCE-FROM-WINDOW" && val === undefined) {
       if (J$$.analysis.clobberableSources[sourceType]) {
         J$$.analysis.clobberableSources[sourceType] += 1;
+        if (!J$$.analysis.clobberableSourcePool[sourceType].includes(offset)) {
+          J$$.analysis.clobberableSourcePool[sourceType].push(offset);
+        }
       }else {
         J$$.analysis.clobberableSources[sourceType] = 1;
+        J$$.analysis.clobberableSourcePool[sourceType] = [offset];
       }
     } else {
       if (J$$.analysis.clobberableSources[sourceType]) {
         J$$.analysis.clobberableSources[sourceType] += 1;
+        if (!J$$.analysis.clobberableSourcePool[sourceType].includes(offset)) {
+          J$$.analysis.clobberableSourcePool[sourceType].push(offset);
+        }
       }else {
         J$$.analysis.clobberableSources[sourceType] = 1;
+        J$$.analysis.clobberableSourcePool[sourceType] = [offset];
       }
     }
   }
