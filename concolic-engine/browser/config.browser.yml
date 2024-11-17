@@ -3,7 +3,7 @@
 ### This file holds the configuration to start the browser 
 ### and perform concolic execution analysis.
 
-WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/tmp/concolic"
+WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/tmp/concolic"
 
 chrome:
   CHROME_EXECUTABLE_PATH: "/usr/bin/google-chrome"
@@ -57,7 +57,7 @@ proxy:
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
       function_name: "installJalangi2AndAnalysisCb"
   
   PAGE_ACTIONS_CBS:
@@ -71,5 +71,5 @@ callbacks:
 others:
   ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
   ANALYSIS_NAME: "TaintTracking"
-  ANALYSIS_SCRIPT_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
-  JALANGI2_RUNTIME_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
+  ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
+  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"

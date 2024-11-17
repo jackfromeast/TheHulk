@@ -14,7 +14,7 @@ chrome:
   DEVTOOLS: false
 
 foxhound:
-  FOXHOUND_EXECUTABLE_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
   FOXHOUND_FLAGS: [
     "--no-sandbox",
     '--disable-setuid-sandbox',
@@ -59,21 +59,21 @@ proxy:
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
       function_name: "installJalangi2AndAnalysisCb"
 
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/callbacks/collect-taint-flow-callbacks.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/callbacks/collect-taint-flow-callbacks.js"
       function_name: "collectTaintflowsAtRuntimeCb"
 
   PAGE_ACTIONS_CBS:
-    - file: /home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
+    - file: /home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
       function_name: "waitForFiveSecCb"
 
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/callbacks/collect-clobberable-sources-sinks-callback.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/callbacks/collect-clobberable-sources-sinks-callback.js"
       function_name: "collectSourcesSinksPerPageCallbacks"
 
   AFTER_LOAD_CBS:
-    - file: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/retest-if-jalangi2-not-found.js"
+    - file: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/callbacks/retest-if-jalangi2-not-found.js"
       function_name: "retestIfJalangi2NotFound"
 
   POST_VISIT_CBS: []
@@ -81,5 +81,5 @@ callbacks:
 others:
   ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
   ANALYSIS_NAME: "TaintTracking"
-  ANALYSIS_SCRIPT_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
-  JALANGI2_RUNTIME_PATH: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
+  ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
+  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"

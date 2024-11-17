@@ -182,5 +182,5 @@ function main(crawlFolderRootPath) {
 }
 
 
-const filepath = '/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/output/TAINT-TRACKING-Trenco-09-02-01-21-Last3K';
+const filepath = '/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/output/TAINT-TRACKING-Trenco-09-02-01-21-Last3K';
 main(filepath);

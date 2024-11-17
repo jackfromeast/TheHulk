@@ -152,7 +152,7 @@ function saveSummaryToJson(summary, outputFile) {
   fs.writeFileSync(outputFile, JSON.stringify(summary, null, 4), 'utf8');
 }
 
-const outputDirectory = "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/output/TAINT-TRACKING-Trenco-09-02-12-54-Top500";
+const outputDirectory = "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-trenco/output/TAINT-TRACKING-Trenco-09-02-12-54-Top500";
 const summaryOutputFile = "./report-top500.json";
 
 const summary = summarizeCrawlerResults(outputDirectory);

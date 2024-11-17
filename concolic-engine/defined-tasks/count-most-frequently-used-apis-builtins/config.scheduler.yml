@@ -1,18 +1,18 @@
 scheduler:
   TEST_NAME: "MOST-FREQUENTLY-USED-APIS-BUILTINS"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output"
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/count-most-frequently-used-apis-builtins/output"
 
   # Option: "seed" or "list"
   MODE: "list"
   SEED_URL: "https://google.com"
-  URL_LIST: "/home/xxxxxxxxxxxx/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: 500
 
   # MODE: "seed"
   # SEED_URL: "https://twitter.com/"
-  # URL_LIST: "/home/xxxxxxxxxxxx/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  # URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   # URL_LIST_FROM: 0
   # URL_LIST_TO: 500
 

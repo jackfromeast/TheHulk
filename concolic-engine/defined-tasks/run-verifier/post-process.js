@@ -53,7 +53,7 @@ function saveSummaryToJson(summary, outputFile) {
   fs.writeFileSync(outputFile, JSON.stringify(summary, null, 4), 'utf8');
 }
 
-const outputDirectory = "/home/xxxxxxxxxxxx/Desktop/TheHulk/concolic-engine/defined-tasks/run-verifier/output/VERIFIER-TEST-09-02-00-32";
+const outputDirectory = "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-verifier/output/VERIFIER-TEST-09-02-00-32";
 const summaryOutputFile = "./report.json";
 
 const summary = summarizeCrawlerResults(outputDirectory);
