@@ -12,6 +12,7 @@ module.exports = {
  * @param {*} page 
  */
 async function extractUndefCLookupsCb(visitor){
+    let startLine = visitor.config.others.COLLECT_DOM_LOOKUP_HINTS;
     let lookups = await extractUndefCLookups(visitor.collected.curURLHash.consoleLogs, startLine);
     visitor.collected.curURLHash.undefinedLookups = lookups;
 }
@@ -20,7 +21,7 @@ async function extractUndefCLookupsCb(visitor){
  * Extracts undefined lookups from browser console logs.
  *
  * Parses log entries formatted like:
- * [+] SafeLookup: <Undef-TYPE-1> : pointerType, https://www.gstatic.com/og/_/js/k=og.asy.en_US.87eUZV1aBpo.2019.O/rt=j/m=_ac,_awd,ada,lldp/exm=/d=1/ed=1/rs=AA2YrTun3wmuSP_eW-729q5NbbI8Y5dI1w:48:187
+ * [+] SafeLookup: <Undef-TYPE-1> Catched: pointerType, https://www.gstatic.com/og/_/js/k=og.asy.en_US.87eUZV1aBpo.2019.O/rt=j/m=_ac,_awd,ada,lldp/exm=/d=1/ed=1/rs=AA2YrTun3wmuSP_eW-729q5NbbI8Y5dI1w:48:187
  *
  * and converts them into objects:
  * {
@@ -43,10 +44,10 @@ async function extractUndefCLookups(logs, startLine = '') {
 
   const lookups = [];
   let idCounter = 1;
-  let processLogs = startLine === '';
+  let processLogs = startLine === undefined;
 
   // Regex to parse relevant log entries
-  const regex = /\[.*?\] SafeLookup: (<Undef-TYPE-\d+>) ?: (.*?), (https?:\/\/[^\s:]+)(?::(\d+):(\d+))?/;
+  const regex = /\[.*?\] SafeLookup: (<Undef-TYPE-\d+>) Catched ?: (.*?)\s?, (https?:\/\/[^\s:]+)(?::(\d+):(\d+))?/;
 
   logs.forEach(line => {
     if (!processLogs && line.includes(startLine)) {

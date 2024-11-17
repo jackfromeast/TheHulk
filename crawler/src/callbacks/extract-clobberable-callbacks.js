@@ -12,7 +12,7 @@ module.exports = {
  * @param {*} page 
  */
 async function extractDOMCLookupsCb(visitor){
-    let startLine = visitor.config.others.COLLECT_DOM_LOOKUP_HINTS
+    let startLine = visitor.config.others.COLLECT_DOM_LOOKUP_HINTS;
     let lookups = await extractDOMCLookups(visitor.collected.curURLHash.consoleLogs, startLine);
     visitor.collected.curURLHash.DOMCLookups = lookups;
 }
@@ -63,7 +63,7 @@ async function extractDOMCLookups(logs, startLine='') {
   let startProcessLogs = startLine == '' ? true : false;
 
   // General regex to match the log entry format
-  const regex = /\[.*?\] SafeLookup: (<(WIN|API|DOC)-TYPE-\d+>)(?: <(.*?)>)? Catched.*?: (.*?), (?:Location:)?\s?(.*?):(\d+):(\d+)/;
+  const regex = /\[.*?\] SafeLookup: (<(WIN|API|DOC)-TYPE-\d+[-.*]?>)(?: <(.*?)>)? Catched.*?: (.*?), (?:Location:)?\s?(.*?):(\d+):(\d+)/;
   const regex_api_type_3 = /\[.*?\] SafeLookup: (<(WIN|API|DOC)-TYPE-\d+>)(?: <(.*?)>)? Catched (.*?), (?:Location:)?\s?(.*?):(\d+):(\d+)/;
 
   logs.forEach(line => {

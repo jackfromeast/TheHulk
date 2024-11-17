@@ -12,7 +12,7 @@ chrome:
   DEVTOOLS: false
 
 foxhound:
-  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
   FOXHOUND_FLAGS: [
     "--no-sandbox",
     '--disable-setuid-sandbox',
@@ -83,6 +83,15 @@ callbacks:
     
     # - file: "/home/jackfromeast/Desktop/TheHulk/crawler/src/callbacks/create-ql-db-callbacks.js"
     #   function_name: "createCodeQLDatabaseCb"
+
+  # Callbacks that will be invoked after done visiting all domains in the current task
+  POST_PROCESS_CBS:
+    # Will be invoked when processing each domain's crawler folder
+    PER_PAGE: []
+
+    # Will be invoked after processing all domains, should directly process postProcesser.data
+    AFTER_ALL_DOMAINS: []
+  
 
 others:
   FOXHOUND_TAINT_HANDLER_PATH: "/home/jackfromeast/Desktop/TheHulk/crawler/src/scripts/flow-handler-foxhound.js"
