@@ -278,6 +278,11 @@ if (typeof J$$ === 'undefined') {
           return (lastComputedValue = invokeFun(iid, base, f, arguments, bFlags[0], true));
       };
   }
+  
+  // Import function call (e.g., import('module'))
+  function Imp(url) {
+    return url;
+  }
 
   // Ignore argument (identity).
   function I(val) {
@@ -849,6 +854,7 @@ if (typeof J$$ === 'undefined') {
   sandbox.X1 = X1; // top level expression
   sandbox.Wi = Wi; // with statement
   sandbox.endExecution = endExecution;
+  sandbox.Imp = Imp;
 
   sandbox.S = S;
 

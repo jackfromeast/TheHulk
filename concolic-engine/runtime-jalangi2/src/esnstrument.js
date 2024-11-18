@@ -127,6 +127,8 @@ const babel = require('@babel/standalone');
   var logLastFunName = JALANGI_VAR + "._";
   var logX1FunName = JALANGI_VAR + ".X1";
 
+  var logImportFunName = JALANGI_VAR + ".Imp"
+
   var instrumentCodeFunName = JALANGI_VAR + ".instrumentEvalCode";
 
 
@@ -170,7 +172,8 @@ const babel = require('@babel/standalone');
       VariableDeclaration: 'VariableDeclaration',
       VariableDeclarator: 'VariableDeclarator',
       WhileStatement: 'WhileStatement',
-      WithStatement: 'WithStatement'
+      WithStatement: 'WithStatement',
+      ImportExpression: 'ImportExpression',
   };
 
 
@@ -1168,6 +1171,17 @@ const babel = require('@babel/standalone');
       }
   }
 
+
+  function instrumentImportCall(node) {
+    printIidToLoc(node);
+    var ret = replaceInExpr(
+        logImportFunName + "(" + RP + "1)",
+        getIid()
+    );
+    transferLoc(ret, node);
+    return ret;
+ }
+
   function instrumentStore(node, isDeclaration) {
       var ret;
       if (node.left.type === 'Identifier') {
@@ -1594,11 +1608,26 @@ const babel = require('@babel/standalone');
           node.argument = wrapWithX1(node, ret);
           return node;
       },
-
       "ExpressionStatement": function (node) {
           node.expression = wrapWithX1(node, node.expression);
           return node;
-      }
+      },
+      "ImportExpression": function (node) {
+            /**
+             * Currently, we don't support import key word  in general, like import 'module' or import * as module from 'module'
+             * But, we can support import('module') as a function call
+             * Now, we treat import('module') as a function call
+             * 
+             * We change the ImportExpression node to CallExpression node
+             * node.callee = CallExpression node (JALANGI_VAR + ".imp")
+             * node.arguments = [node.source node]
+             */
+            var callee = instrumentImportCall(node, false);
+            node.type = "CallExpression";
+            node.callee = callee;
+            node.arguments = [node.source];
+            return node;
+        }
   };
 
   function funCond(node) {
