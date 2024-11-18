@@ -281,6 +281,9 @@ if (typeof J$$ === 'undefined') {
   
   // Import function call (e.g., import('module'))
   function Imp(url) {
+    if(sandbox.analysis && sandbox.analysis.importModulePre){
+        sandbox.analysis.importModulePre(url);
+    }
     return url;
   }
 
