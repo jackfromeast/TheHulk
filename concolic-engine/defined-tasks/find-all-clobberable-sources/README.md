@@ -1,1 +1,0 @@
-This task is used to find all the clobberable sources thourgh our instrumented browser.

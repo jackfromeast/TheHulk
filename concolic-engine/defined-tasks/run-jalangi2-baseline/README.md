@@ -1,1 +1,0 @@
-This task is used to test the robustness of jalangi2 runtime and instrumentation server on modern websites.

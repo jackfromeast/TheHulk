@@ -1,0 +1,77 @@
+### Description:
+### --------------------------------
+### This file holds the configuration to start the browser 
+### and perform concolic execution analysis.
+
+
+chrome:
+  CHROME_EXECUTABLE_PATH: "/usr/bin/google-chrome"
+  CHROME_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  HEADLESS: false
+  DEVTOOLS: false
+
+
+collector:
+  # Collectors configuration
+  COLLECT_ALT_URLS: true
+  COLLECT_AND_CREATE_PAGE: true
+  COLLECT_CONSOLE_LOGS: true
+  COLLECT_REQUESTS: false
+  COLLECT_WEB_STORAGE: false
+  COLLECT_COOKIES: false
+  COLLECT_HTML: false
+  COLLECT_CSS: false
+  COLLECT_SCRIPTS: false
+  COLLECT_BROWSER_STDERR: false
+  COLLECT_BROWSER_STDOUT: false
+  COLLECT_XHR_REQUESTS: false
+  COLLECT_FETCH_REQUESTS: false
+  EXTRACT_DOM_LOOKUPS: false
+  EXTRACT_UNDEF_LOOKUPS: false
+  COLLECT_TAINTING_FLOWS: false
+
+navigator:
+  BROWSER: "chrome"
+  WAIT_BEFORE_NEXT_URL: 1000
+  NAVIGATION_TIMEOUT: 0
+  # For puppeteer, options:
+  # ['load', 'domcontentloaded']
+  # ['networkidle0']
+  # For playwright:
+  # load|domcontentloaded|networkidle|commit
+  NAVIGATION_WAIT_UNTIL: 'domcontentloaded'
+
+proxy:
+  PROXY_SERVER: false
+  PROXY_PORT: false
+
+callbacks:
+  BEFORE_LOAD_CBS: []
+  
+  PAGE_ACTIONS_CBS:
+      - file: "/home/jackfromeast/Desktop/SafeLookup/crawler/src/callbacks/wait-five-sec-callbacks.js"
+        function_name: "WaitForFiveSecCb"
+
+  AFTER_LOAD_CBS: []
+
+  POST_VISIT_CBS: []
+
+  # Callbacks that will be invoked after done visiting all domains in the current task
+  POST_PROCESS_CBS:
+    # Will be invoked when processing each domain's crawler folder
+    PER_PAGE: 
+      - file: "/home/jackfromeast/Desktop/SafeLookup/tasks/run-crawler-test/callbacks/filter-failed-domains-per-page.js"
+        function_name: "summaryCrawlerErrors"
+
+    # Will be invoked after processing all domains, should directly process postProcesser.data
+    AFTER_ALL_DOMAINS:
+      - file: "/home/jackfromeast/Desktop/SafeLookup/tasks/run-crawler-test/callbacks/filter-failed-domains-afterall.js"
+        function_name: "saveCrawlerErrors"
+
+others:
+  COLLECT_DOM_LOOKUP_HINTS: '' # or 'SafeLookup'
+  COLLECT_UNDEFINED_LOOKUP_HINTS: ''

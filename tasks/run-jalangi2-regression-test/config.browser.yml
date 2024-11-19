@@ -1,0 +1,83 @@
+### Description:
+### --------------------------------
+### This file holds the configuration to start the browser 
+### and perform concolic execution analysis.
+
+chrome:
+  CHROME_EXECUTABLE_PATH: "/usr/bin/google-chrome"
+  CHROME_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu',
+    # '-js-flags=--jitless --no-opt'
+  ]
+  HEADLESS: false
+  DEVTOOLS: false
+
+foxhound:
+  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_FLAGS: [
+    "--no-sandbox",
+    '--disable-setuid-sandbox',
+    '--disable-gpu'
+  ]
+  HEADLESS: false
+  DEVTOOLS: false
+
+
+collector:
+  # Collectors configuration
+  COLLECT_ALT_URLS: true
+  COLLECT_AND_CREATE_PAGE: true
+  COLLECT_CONSOLE_LOGS: true
+  COLLECT_REQUESTS: false
+  COLLECT_WEB_STORAGE: false
+  COLLECT_COOKIES: false
+  COLLECT_HTML: false
+  COLLECT_CSS: false
+  COLLECT_SCRIPTS: false
+  COLLECT_BROWSER_STDERR: false
+  COLLECT_BROWSER_STDOUT: false
+  COLLECT_XHR_REQUESTS: false
+  COLLECT_FETCH_REQUESTS: false
+  EXTRACT_DOM_LOOKUPS: false
+  COLLECT_TAINTING_FLOWS: false
+
+navigator:
+  BROWSER: "chrome"
+  WAIT_BEFORE_NEXT_URL: 1000
+  NAVIGATION_TIMEOUT: 0
+  # For puppeteer, options:
+  # ['load', 'domcontentloaded']
+  # ['networkidle0']
+  # For playwright:
+  # load|domcontentloaded|networkidle|commit
+  NAVIGATION_WAIT_UNTIL: 'domcontentloaded'
+
+proxy:
+  PROXY_SERVER: "localhost"
+  PROXY_PORT: 8899
+  # PROXY_SERVER: false
+  # PROXY_PORT: false
+
+callbacks:
+  BEFORE_LOAD_CBS:
+    - file: "/home/jackfromeast/Desktop/TheHulk/tasks/run-jalangi2-regression-test/callbacks/install-runtime-analysis-callbacks-playwright.js"
+      function_name: "installJalangi2OnlyCb"
+  
+  PAGE_ACTIONS_CBS:
+      - file: "./callbacks/wait-forever-callbacks.js"
+        function_name: "manuallyInteractForeverCb"
+
+      - file: /home/jackfromeast/Desktop/TheHulk/tasks/run-taint-tracking-builtins/callbacks/wait-for-five-sec-callbacks.js
+        function_name: "waitForFiveSecCb"
+
+  AFTER_LOAD_CBS: []
+
+  POST_VISIT_CBS: []
+
+others:
+  ### To switch to another analysis, also need to change the entry.js file in the runtime analysis
+  ANALYSIS_NAME: "Jalangi2Only"
+  # ANALYSIS_SCRIPT_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-analysis/dist/thehulk-runtime-analysis.bundle.js"
+  JALANGI2_RUNTIME_PATH: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
