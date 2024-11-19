@@ -116,7 +116,9 @@ Visitor.prototype.visit = async function(){
 		while (this.retestCurURL && this.retestMaxTimes > 0){
 			this.retestMaxTimes -= 1;
 			this.logger.warn(`Retest the current URL: ${this.curURL} (${this.retestMaxTimes-1} times left)`);
+			let prevTaintFlows = this.collected.curURLHash.taintflows;
 			this.collected.curURLHash = this.emptyCollectData();
+			this.collected.curURLHash.taintflows = prevTaintFlows;
 			await this.visitPage();
 		}
 
@@ -307,7 +309,7 @@ Visitor.prototype.navigate = async function(page){
 	try {
 		// Waits till there are no more than 2 network connections for at least `500`* ms.
 		// We don't use 'networkidle0' because some pages never stop loading/interacting with the network
-		this.refreshCollectData();
+		// this.refreshCollectData();
 		if (this.config.navigator["NAVIGATION_WAIT_UNTIL"]){
 			await page.goto(this.curURL, 
 				{waitUntil: this.config.navigator["NAVIGATION_WAIT_UNTIL"], timeout: this.config.navigator["NAVIGATION_TIMEOUT"]});
