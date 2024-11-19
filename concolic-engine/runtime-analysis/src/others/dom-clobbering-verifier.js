@@ -112,6 +112,16 @@ export class DOMClobberingVerifier {
     }
   };
 
+  importModulePre(moduleURL) {
+    if (moduleURL.origin.includes('hulk')) {
+      this.logger.reportVerifedFlow("SINK-TO-IMPORT-MODULE", this.payload);
+      __reportDangerousFlowPlaywright && __reportDangerousFlowPlaywright({
+        sink: "SINK-TO-IMPORT-MODULE",
+        payload: this.payload
+      });
+    }
+  }
+
   /**
    * This callback is called before a property of an object is written.
    * 
