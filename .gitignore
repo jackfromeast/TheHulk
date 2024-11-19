@@ -30,3 +30,13 @@ proxy-server/cache/
 !proxy-server/cache/.gitkeep
 proxy-server/logs/
 !proxy-server/logs/.gitkeep
+
+outputs
+output
+report.json
+
+Trenco_*.csv
+
+dataset/scripts
+
+codeql-query/WebsiteSpecific-*/*.ql
