@@ -340,6 +340,7 @@ Visitor.prototype.emptyCollectData = function() {
 		'browserStderr': [],
 		'taintflows': [],
 		'crawlerErrors': [],
+		'sentJSRequests': [],
 	};
 }
 
@@ -362,6 +363,10 @@ Visitor.prototype.setupInterception = function(page) {
 
 		// this.logger.debug(`Intercepted: ${url} (${resourceType})`);
 		// this.logger.debug(request.isNavigationRequest());
+
+		if (this.config.collector.COLLECT_SENT_JS_REQUESTS && resourceType == "script"){
+			this.collected.curURLHash.sentJSRequests.push({ url: url, resourceType: resourceType, method: method, headers: headers });
+		}
 
     try {
       if (request.redirectedFrom()) {
@@ -574,6 +579,10 @@ Visitor.prototype.saveCrawlerData = async function(){
 
 		if (this.config.collector.COLLECT_REQUESTS){
 			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "requests.json"), JSON.stringify(this.collected.curURLHash.httpRequests, null, 4));
+		}
+
+		if (this.config.collector.COLLECT_SENT_JS_REQUESTS){
+			fs.writeFileSync(pathModule.join(this.webpageCrawlerFolder, "sent-js-requests.json"), JSON.stringify(this.collected.curURLHash.sentJSRequests, null, 4));
 		}
 
 		if (this.config.collector.COLLECT_XHR_REQUESTS){

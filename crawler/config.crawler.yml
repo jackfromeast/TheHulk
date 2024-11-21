@@ -26,6 +26,7 @@ collector:
   COLLECT_AND_CREATE_PAGE: true
   COLLECT_CONSOLE_LOGS: true
   COLLECT_REQUESTS: false
+  COLLECT_SENT_JS_REQUESTS: false  # Capture the JS requests, even without the response
   COLLECT_WEB_STORAGE: false
   COLLECT_COOKIES: false
   COLLECT_HTML: true
