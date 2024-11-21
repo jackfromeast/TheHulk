@@ -112,8 +112,13 @@ export class DOMClobberingVerifier {
     }
   };
 
+  /**
+   * This callback is called before a import module function invocation.
+   * @param {string|URL} moduleURL 
+   */
   importModulePre(moduleURL) {
-    if (moduleURL.origin.includes('hulk')) {
+    if ((typeof moduleURL === 'string' && moduleURL.toLowerCase().includes('hulk')) ||
+        (moduleURL instanceof URL && moduleURL.origin.includes('hulk'))) {
       this.logger.reportVerifedFlow("SINK-TO-IMPORT-MODULE", this.payload);
       __reportDangerousFlowPlaywright && __reportDangerousFlowPlaywright({
         sink: "SINK-TO-IMPORT-MODULE",
@@ -245,7 +250,10 @@ class TaintSinkRules {
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkPutField(base, offset, val) {
-    if (typeof val !== 'string' || !val.toLowerCase().includes('hulk')) {
+    if (
+      !(typeof val === 'string' || val instanceof URL) ||
+      !(val.toString().toLowerCase().includes('hulk'))
+    ) {
       return;
     }
 
@@ -298,58 +306,50 @@ class TaintSinkRules {
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkInvokeFun(f, base, args) {
+    const hasTaintedArgs = args.some(
+      (arg) => (typeof arg === 'string' || arg instanceof URL) && arg.toString().toLowerCase().includes('hulk')
+    );
 
-    if (f.name === 'eval') {
-      if (args.length && typeof args[0] === 'string' && args[0].toLowerCase().includes('hulk')) {
-        return "SINK-TO-EVAL";
-      }
+    if (f.name === 'eval' && args.length && hasTaintedArgs) {
+      return "SINK-TO-EVAL";
     }
 
-    if (f.name === 'Function') {
-      if (args.length && Array.from(args).some(arg => typeof arg === 'string' && arg.toLowerCase().includes('hulk'))) {
-        return "SINK-TO-FUNCTION"
-      }
+    if (f.name === 'Function' && args.length && hasTaintedArgs) {
+      return "SINK-TO-FUNCTION";
+    }
+  
+    if ((f.name === 'setTimeout' || f.name === 'setInterval') && args.length && hasTaintedArgs) {
+      return `SINK-TO-${f.name.toUpperCase()}`;
     }
 
-    if (f.name === 'setTimeout' || f.name === 'setInterval') {
-      if (args.length && typeof args[0] === 'string' && args[0].toLowerCase().includes('hulk')) {
-        return `SINK-TO-${f.name.toUpperCase()}`;
-      }
-    }
-
-    if (base === document) {
-      if (f.name === 'write' || f.name === 'writeln') {
-        if (args.length && typeof args[0] === 'string' && args[0].toLowerCase().includes('hulk')) {
-          return `SINK-TO-DOCUMENT-${f.name.toUpperCase()}`;
-        }
-      }
+    if (base === document && (f.name === 'write' || f.name === 'writeln') && args.length && hasTaintedArgs) {
+      return `SINK-TO-DOCUMENT-${f.name.toUpperCase()}`;
     }
 
 
-    if (f.name === 'setAttribute' && base && base.tagName && base.tagName.toUpperCase() === 'SCRIPT') {
-      if (args.length >= 2 && typeof args[1] === 'string' && args[1].toLowerCase().includes('hulk')) {
-        return "SINK-TO-SETATTRIBUTE-SCRIPT-SRC";
-      }
+    if (f.name === 'setAttribute' && base && base.tagName && base.tagName.toUpperCase() === 'SCRIPT' &&
+        args.length >= 2 && (typeof args[1] === 'string' || args[1] instanceof URL) &&
+        args[1].toString().toLowerCase().includes('hulk')
+    ) {
+      return "SINK-TO-SETATTRIBUTE-SCRIPT-SRC";
     }
 
-    if (f.name === 'fetch') {
-      if (args.length && typeof args[0] === 'string' && args[0].toLowerCase().includes('hulk')) {
-        return "SINK-TO-FETCH";
-      }
+    if (f.name === 'fetch' && args.length && hasTaintedArgs) {
+      return "SINK-TO-FETCH";
     }
 
     // Assume the base's toString shouldn't be overwritten
     // If it is overwritten, we will get recursive function call
-    if (this.safeToString(base) === '[object XMLHttpRequest]' && f.name === 'open') {
-      if (args.length && typeof args[1] === 'string' && args[1].toLowerCase().includes('hulk')) {
-        return "SINK-TO-XMLHTTPREQUEST-OPEN";
-      }
+    if (this.safeToString(base) === '[object XMLHttpRequest]' && f.name === 'open' &&
+        args.length && hasTaintedArgs
+    ) {
+      return "SINK-TO-XMLHTTPREQUEST-OPEN";
     }
 
-    if (this.isLocationObject(base) && (f.name === 'replace' || f.name === 'assign')) {
-      if (args.length && typeof args[0] === 'string' && args[0].toLowerCase().includes('hulk')) {
-        return `SINK-TO-LOCATION-${f.name.toUpperCase()}`;
-      }
+    if (this.isLocationObject(base) && (f.name === 'replace' || f.name === 'assign') &&
+        args.length && hasTaintedArgs
+    ) {
+      return `SINK-TO-LOCATION-${f.name.toUpperCase()}`;
     }
 
     // if (base === JSON && f.name === 'parse') {
@@ -358,10 +358,14 @@ class TaintSinkRules {
     //   }
     // }
 
-    if ((base === window.localStorage || base === window.sessionStorage) && f.name === 'setItem') {
-      if (args.length && typeof args[1] === 'string' && args[1].toLowerCase().includes('hulk')) {
-        return `SINK-TO-${base === window.localStorage ? 'LOCALSTORAGE' : 'SESSIONSTORAGE'}-SETITEM`;
-      }
+    if (
+      (base === window.localStorage || base === window.sessionStorage) &&
+      f.name === 'setItem' &&
+      args.length &&
+      (typeof args[1] === 'string' || args[1] instanceof URL) &&
+      args[1].toString().toLowerCase().includes('hulk')
+    ) {
+      return `SINK-TO-${base === window.localStorage ? 'LOCALSTORAGE' : 'SESSIONSTORAGE'}-SETITEM`;
     }
 
     return false;
