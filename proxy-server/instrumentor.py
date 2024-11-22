@@ -32,7 +32,7 @@ class Instrumentor:
     command = f"node --max-old-space-size=32768 {self.instrument_script_path} {jalangi_args} {original_file_output_path} --out {instrumented_file_output_path} --outDir {os.path.dirname(instrumented_file_output_path)}"
 
     try:
-      result = subprocess.run(command, shell=True, env=sub_env, check=True, timeout=80,
+      result = subprocess.run(command, shell=True, env=sub_env, check=True, timeout=300,
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
       
       if result.returncode == 0:

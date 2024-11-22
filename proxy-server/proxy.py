@@ -49,6 +49,13 @@ class JalangiResponseHandler:
   def filter(self, url):
     if url in self.ignore:
       return True
+    
+    if self.instrument_config["IGNORE_SERVICE_WORKER"]:
+      # Use a tuple of suffixes for faster checking
+      service_worker_suffixes = ('sw.js', 'service-worker.js', 'serviceworker.js')
+      if url.endswith(service_worker_suffixes):
+          return True
+    
     return False
   
   def get_header_field(self, headers, header_name):

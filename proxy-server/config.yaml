@@ -6,6 +6,7 @@ instrumentation:
   IGNORE_URLS: [
     "https://www.youtube.com/sw.js"
   ]
+  IGNORE_SERVICE_WORKER: true
 
   JALANGI_ARGS: []
 
