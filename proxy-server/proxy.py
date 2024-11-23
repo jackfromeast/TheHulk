@@ -51,8 +51,13 @@ class JalangiResponseHandler:
       return True
     
     if self.instrument_config["IGNORE_SERVICE_WORKER"]:
+      # Avoid using url.parse() for performance reasons
+      if '?' in url:
+        # Strip query parameters to focus on the path
+        url = url.split('?', 1)[0]
+
       # Use a tuple of suffixes for faster checking
-      service_worker_suffixes = ('sw.js', 'service-worker.js', 'serviceworker.js')
+      service_worker_suffixes = ('sw.js', 'service-worker.js', 'serviceworker.js', 'serviceworker-kevlar-appshell.js')
       if url.endswith(service_worker_suffixes):
           return True
     
