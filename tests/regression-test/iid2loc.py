@@ -40,8 +40,8 @@ def find_error_position(file_path, error_position):
             return
 
         # Display the surrounding context of the error
-        start_index = max(0, column_number - 20)
-        end_index = min(len(error_line), column_number + 20)
+        start_index = max(0, column_number - 50)
+        end_index = min(len(error_line), column_number + 50)
         error_context = error_line[start_index:end_index]
 
         print(f"Error found at line {line_number}, column {column_number}:")
@@ -83,8 +83,8 @@ def find_original_context(instrumented_file_path, iid):
       original_line_content = original_lines[original_line_start-1]
 
       # Calculate the context indices
-      original_start_index = max(0, original_col_start - 20)
-      original_end_index = min(len(original_line_content), original_col_end + 20)
+      original_start_index = max(0, original_col_start - 100)
+      original_end_index = min(len(original_line_content), original_col_start + 100)
       original_context = original_line_content[original_start_index:original_end_index]
 
       # Print the original context

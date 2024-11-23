@@ -18,12 +18,14 @@
       }
     }
 
+    MyType.prototype.c = 3;
+
     let obj = new MyType();
     let obj2 = { obj:  J$$.wrapTaint(obj) };  
 
     let stringified = JSON.stringify(obj2);
 
-    if (obj2.obj.toString() !== 'MyType') {
+    if (obj2.obj.c !== 3) {
       throw new Error('Error: obj.toString() !== MyType');
     }
 
