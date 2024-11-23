@@ -29,7 +29,7 @@ const path = require('path');
 async function installJalangi2OnlyCb(visitor, page) {
   const jalangi2RuntimePath = path.resolve(visitor.config.others.JALANGI2_RUNTIME_PATH);
 
-  visitor.context.addInitScript({ path: jalangi2RuntimePath });
+  await visitor.context.addInitScript({ path: jalangi2RuntimePath });
 }
 
 

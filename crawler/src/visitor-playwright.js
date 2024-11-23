@@ -378,7 +378,7 @@ Visitor.prototype.setupInterception = function(page) {
       }
 
       try {
-        const response = await page.waitForResponse(response => response.url() === url && response.request().resourceType() === resourceType);
+        const response = await page.waitForResponse(response => response.url() === url && response.request().resourceType() === resourceType, { timeout: 300000 });
         const responseStatus = response.status();
 
         if (responseStatus >= 300 && responseStatus < 400) {
@@ -660,6 +660,7 @@ Visitor.prototype.launch_browser = async function(){
 		devtools: this.browserDevtools,
 		args: this.browserFlags,
 		ignoreHTTPSErrors: true,
+		bypassCSP: true
 	};
 
 	if (this.config.proxy && this.config.proxy.PROXY_SERVER){

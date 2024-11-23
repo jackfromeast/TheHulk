@@ -1,5 +1,5 @@
 module.exports = {
-  WaitForFiveSecCb
+  waitForFiveSecCb
 };
 
 
@@ -9,6 +9,6 @@ module.exports = {
 * @param {*} visitor 
 * @param {*} page 
 */
-async function WaitForFiveSecCb(visitor, page){
+async function waitForFiveSecCb(visitor, page){
   await page.waitForTimeout(5000); // mauall wait for 1 hour
 }
