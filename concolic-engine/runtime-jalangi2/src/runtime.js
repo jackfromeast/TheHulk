@@ -250,7 +250,12 @@ if (typeof J$$ === 'undefined') {
           }
       }
       if (!skip) {
-          result = callFun(f, base, args, isConstructor, iid, reflected);
+        // Avoid integrity check for scripts
+        // if (document && f === document.appendChild && args[0] && args[0].nodeName && args[0].nodeName === 'SCRIPT' && args[0].integrity) {
+        //     args[0].integrity = '';
+        // }
+
+        result = callFun(f, base, args, isConstructor, iid, reflected);
       }
       if (sandbox.analysis && sandbox.analysis.invokeFun) {
           aret = sandbox.analysis.invokeFun(iid, f, base, args, result, isConstructor, isMethod, getPropSafe(f, SPECIAL_PROP_IID), getPropSafe(f, SPECIAL_PROP_SID));
