@@ -12,7 +12,7 @@ npm install
 popd
 
 ### 3/ Install concolic execution engin
-pushd $THEHULK_PATH/concolic-engine
+pushd $THEHULK_PATH/gadget-detection
 npm install
 popd
 

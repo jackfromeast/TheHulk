@@ -1,15 +1,32 @@
-![TheHulk](https://github.com/jackfromeast/TheHulk/wiki/assets/icon.jpg)
+# TheHulk
 
-For more info, please check out [wiki](https://github.com/jackfromeast/TheHulk/wiki)!
+[![Node](https://img.shields.io/badge/node%40latest-%3E%3D%2018.18.2-brightgreen.svg)](https://img.shields.io/badge/node%40latest-%3E%3D%2018.18.2-brightgreen.svg) [![Apache](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Find%20DOM%20Clobbering%20Gadgets%20with%20TheHulk&url=https://github.com/jackfromeast/TheHulk)
 
-### Install & Run
+TheHulk is a dynamic analysis tool designed to detect and exploit DOM Clobbering vulnerabilities.
+
+## Overview
+
+TheHulk operates in three key phases:
+
+1. **Gadget Detection with Dynamic Taint Analysis**:
+TheHulk performs dynamic taint analysis in the browser to track dangerous dataflows at runtime for a given input URL.
+
+2. **Exploit Generation with Symbolic DOM**:
+Using the recorded taint traces from the first phase, TheHulk collects and solves constraints along the trace to generate DOM Clobberable HTML markups as exploits.
+
+3. **Exploit Verification**:
+TheHulk injects the generated HTML payload into the target webpage and hooks the dangerous sinks to verify exploitability.
+
+<img src="./docs/assets/thehulk-arch.jpg">
+
+## Installation
 
 To install TheHulk, follow these steps:
 
-1. Clone the repository with submodules:
+1. Clone the repository with submodules (customized [Jalangi2](https://github.com/jackfromeast/jalangi2) and [mitmproxy](https://github.com/mitmproxy/mitmproxy)):
 
 ```
-git clone --recursive https://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@github.com/jackfromeast/TheHulk.git
+git clone --recursive https://github.com/jackfromeast/TheHulk.git
 ```
 
 2. Run the installation script:
@@ -18,19 +35,65 @@ git clone --recursive https://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@github.co
 cd TheHulk && ./install.sh
 ```
 
-#### Running the Taint-Aware Browser
+## Running
 
-To run the taint-aware browser, follow these instructions:
+TheHulk can be run in two modes: as a standalone module or as a pipeline task.
 
-1. Configure the Browser:
-  + 1-1. Open the configuration file located at `concolic-engine/browser/config.browser.yml`.
-  + 1-2. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 1-3. Update the callback scripts path, using either an absolute path or a relative path to the crawler/src directory.
+**Running TheHulk with Tasks**
 
-2. Start the Browser and Open the Console:
+[Tasks](./tasks/) helps you define the input, output, and configurations of an analysis task for better pipeline orchestration. A typical task directory includes the following components:
 
++ `input` folder: Holds the list of URLs for analysis.
++ `output` folder: Stores the analysis results for each site or page.
++ `callbacks` folder: Contains JavaScript-defined callback functions that the crawler invokes during execution.
++ `config.browser.yml` file: Configuration file for the taint analysis engine.
++ `config.scheduler.yml` file: Configuration file for the crawler.
++ `run.sh` file: Entrypoint script to start the task.
+
+For example, to detect and exploit the gadgets in the DOM Clobbering collection, you could simply:
+
+1. Update the two configuration files located at `tasks/run-taint-tracking-dom-clobbering-collection`.
+  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 1-2. Update the callback scripts path, using either an absolute path or a relative path to the crawler/src directory.
+
+2. Start the task:
 ```
-./concolic-engine/run.sh
+./tasks/run-taint-tracking-dom-clobbering-collection/run.sh
+```
+
+**Running Dynamic Taint Engine Only**
+
+1. Configure the browser with network proxy: `http://127.0.0.1:8899`
+
+2. Update the configuration file located at `gadget-detection/browser/config.browser.yml`.
+  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 1-2. Update the callback scripts path, using either an absolute path or a relative path to the crawler/src directory.
+
+3. Start the taint-aware browser:
+```
+./gadget-detection/run.sh
 ```
 
 Note: You can adjust the '--force-device-scale-factor=1.75' argument in the configuration file to change the browser's resolution. This setting provides optimal resolution for checking the source code, but it might be too large for viewing web pages. Adjust as necessary for your display.
+
+**Running Exploit Generation Module Only**
+
+To generate DOM Clobberable HTML markups from a taint trace using the following command:
+
+```
+node exploit-gen/src/exploit.js --trace taintflow.json
+```
+
+## Example
+
+Below is a screenshot of an analysis result for detecting a DOM Clobbering gadget in the Google Client API Library.
+
+<img src="./docs/assets/moti-example.jpg">
+
+
+## DOM Clobbering Collection
+
+DOM Clobbering Collection is list of wildly-used client-side libraries with DOM clobbering gadgets that found by Thehulk.
+
+The dataset is available at https://github.com/jackfromeast/dom-clobbering-collection.
+
