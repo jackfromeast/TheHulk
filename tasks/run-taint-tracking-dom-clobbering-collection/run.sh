@@ -11,15 +11,16 @@ check_and_kill_port() {
   fi
 }
 
-# Ensure the script is run under the concolic-engine path
+# Ensure the script is run under the gadget-detection path
 SCRIPT_PATH=$(realpath "$0")
 TASK_PATH=$(dirname "$SCRIPT_PATH")
-CONCOLIC_PATH=$(realpath $TASK_PATH/../../)
-THEHULK_PATH=$(realpath $CONCOLIC_PATH/../)
-if [ "$(basename $CONCOLIC_PATH)" != "concolic-engine" ]; then
-  echo "[!] Please run this script from the concolic-engine directory."
+CONCOLIC_PATH=$(realpath $TASK_PATH/../../gadget-detection)
+THEHULK_PATH=$(realpath $TASK_PATH/../../)
+if [ "$(basename $CONCOLIC_PATH)" != "gadget-detection" ]; then
+  echo "[!] Please run this script from the gadget-detection directory."
   exit 1
 fi
+
 
 RUN_TEST=true
 RUN_PROXY=true
@@ -28,13 +29,13 @@ RUN_ANALYSIS=true
 # Step 1: Start the Test Server for hosting the test pages
 # We currently don't use this 
 if [ "$RUN_TEST" = true ]; then
-  check_and_kill_port 8001
+  check_and_kill_port 8080
   pushd $THEHULK_PATH/dataset/dom-clobbering-collection/domc-gadgets-assets > /dev/null 2>&1
-  http-server . -p 8001 -d false -c-1 > /dev/null 2>&1 &
-  curl -s http://localhost:8001
+  ./run.sh > /dev/null 2>&1 &
+  curl -s http://localhost:8080
   TEST_SERVER_PID=$!
   sleep 1
-  echo "[+] Test Server started with PID $TEST_SERVER_PID, at http://localhost:8001"
+  echo "[+] Test Server started with PID $TEST_SERVER_PID, at http://localhost:8080"
   popd > /dev/null 2>&1
 fi
 

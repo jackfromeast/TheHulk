@@ -10,5 +10,5 @@ module.exports = {
 * @param {*} page 
 */
 async function waitForFiveSecCb(visitor, page){
-  await page.waitForTimeout(20000); // mauall wait for 20 seconds
+  await page.waitForTimeout(20000000); // mauall wait for 20 seconds
 }
