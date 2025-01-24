@@ -17,7 +17,7 @@ Using the recorded taint traces from the first phase, TheHulk collects and solve
 3. **Exploit Verification**:
 TheHulk injects the generated HTML payload into the target webpage and hooks the dangerous sinks to verify exploitability.
 
-<img src="./docs/assets/thehulk-arch.jpg">
+<img src="https://github.com/jackfromeast/TheHulk/wiki/assets/thehulk-arch.jpg">
 
 ## Installation
 
@@ -88,7 +88,7 @@ node exploit-gen/src/exploit.js --trace taintflow.json
 
 Below is a screenshot of an analysis result for detecting a DOM Clobbering gadget in the Google Client API Library.
 
-<img src="./docs/assets/moti-example.jpg">
+<img src="https://github.com/jackfromeast/TheHulk/wiki/assets/moti-example.jpg">
 
 
 ## DOM Clobbering Collection
