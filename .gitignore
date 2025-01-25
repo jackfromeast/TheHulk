@@ -36,7 +36,14 @@ output
 report.json
 
 Trenco_*.csv
+!Trenco_KJX3W_Top5K_filtered.csv
 
 dataset/scripts
 
 codeql-query/WebsiteSpecific-*/*.ql
+
+docs
+docs/*
+
+codeql-query/*
+codeql-query
