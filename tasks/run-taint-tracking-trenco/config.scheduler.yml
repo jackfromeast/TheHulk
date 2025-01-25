@@ -1,14 +1,14 @@
 scheduler:
-  TEST_NAME: "crawler-test"
+  TEST_NAME: "TAINT-TRACKING-Trenco"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/tasks/run-crawler-test/outputs"
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/gadget-detection/defined-tasks/run-taint-tracking-trenco/output"
 
   # Option: "seed" or "list"
   MODE: "list"
-  SEED_URL: "https://baidu.com/index.html"
-  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/dataset/Trenco_KJX3W.csv"
-  URL_LIST_FROM: 6000
-  URL_LIST_TO: 7000
+  # SEED_URL: "https://wordpress.com/"
+  URL_LIST: "/home/jackfromeast/Desktop/TheHulk/third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
+  URL_LIST_FROM: 0
+  URL_LIST_TO: 500
 
 
   # Format of the urls.csv file:
@@ -24,10 +24,10 @@ scheduler:
   #   10,twitter.com  
 
   # Maximum number of workers to run in parallel
-  MAX_WORKER: 16
+  MAX_WORKER: 8
   # Maximum number of urls to visit
   MAX_URL: 1
   # Time budget for each worker to visit a single domain
-  TIMEOUT_PER_DOMAIN: 1800000
+  TIMEOUT_PER_DOMAIN: 1200000 # 20 minutes
 
 

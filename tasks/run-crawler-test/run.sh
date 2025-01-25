@@ -7,7 +7,7 @@ check_and_kill_port() {
   fi
 }
 
-# Ensure the script is run under the concolic-engine path
+# Ensure the script is run under the gadget-detection path
 SCRIPT_PATH=$(realpath "$0")
 TASK_PATH=$(dirname "$SCRIPT_PATH")
 ROOT_PATH=$(realpath $TASK_PATH/../../)

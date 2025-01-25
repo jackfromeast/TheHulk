@@ -11,7 +11,7 @@ chrome:
     '--disable-setuid-sandbox',
     '--disable-gpu'
   ]
-  HEADLESS: false
+  HEADLESS: true
   DEVTOOLS: false
 
 

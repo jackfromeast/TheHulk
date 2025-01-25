@@ -1,7 +1,7 @@
 scheduler:
   TEST_NAME: "TAINT-TRACKING-BUILTINS-TEST"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/concolic-engine/defined-tasks/run-taint-tracking-builtins/output"
+  WORKSPACE: "/home/jackfromeast/Desktop/TheHulk/gadget-detection/defined-tasks/run-taint-tracking-builtins/output"
 
   # Option: "seed" or "list"
   MODE: "seed"
