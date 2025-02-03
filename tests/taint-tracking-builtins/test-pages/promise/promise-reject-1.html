@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Clobbering Micro Benchmarks</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+<h1>Taint Tracking Test Websites - Micro Benchmarks - promise-reject-1</h1>
+
+<section>
+    <p>
+        <span class="label">Description:</span>
+       Test the taint engine's ability on different builtins.
+    </p>
+</section>
+
+<section class="section">
+    <div class="column_double">
+        <p><span class="label">Source:</span><br><br>
+            <span class="indent">Type: ManuallyAdded</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">J$$.wrapTaint()</pre>
+        </p>
+    </div>
+    <div class="column_double">
+        <p><span class="label">Sink:</span><br><br>
+            <span class="indent">Type: XSS</span><br><br>
+            <span class="indent">Code:</span>
+            <pre class="indent">document.createElement('script').src</pre>
+        </p>
+    </div>
+</section>
+
+<section class="section">
+<div class="column">
+<p><span class="label">Testing Code:</span><br><br>
+<pre>
+* @Name: promise-reject-1
+ * @SourceType: ManuallyAdded
+ * @SourceCode: J$$.wrapTaint()
+ * @SinkType: XSS
+ * @SinkCode: document.createElement(&apos;script&apos;).src
+ */
+(function() {
+  if (typeof J$$ !== &apos;undefined&apos; &amp;&amp; J$$.wrapTaint) {
+    let taintedValue = J$$.wrapTaint(&apos;tainted&apos;);
+    let promise = Promise.reject(taintedValue);
+
+    promise.catch(taintedResult =&gt; {
+      let scriptEle = document.createElement(&apos;script&apos;);
+      scriptEle.src = `https://example.com/${taintedResult}`;
+    });
+  } else {
+    console.error(&quot;J$$ is not defined or does not have wrapTaint method.&quot;);
+  }
+})();
+</pre>
+</div>
+</section>
+
+<section>
+  <h2>Next Test</h2>
+  <ul>
+    <li><a href="../proxy/proxy-getter-1.html">Next Test: proxy-getter-1</a></li>
+  </ul>
+</section>
+
+<script src="scripts/promise-reject-1.js"></script>
+
+</body>
+</html>
