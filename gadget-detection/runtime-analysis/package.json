@@ -1,5 +1,5 @@
 {
-  "name": "thehulk-concolic-analysis",
+  "name": "thehulk-taint-analysis",
   "version": "0.0.1",
   "description": "",
   "main": "taint-tracking.js",

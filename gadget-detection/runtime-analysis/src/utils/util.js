@@ -35,7 +35,7 @@ export class Utils {
       if (!TaintHelper.isWrappedValue(taintedValue)) {
         taintedValue = {
           concrete: Utils.safeToString(taintedValue),
-          taintInfo: TaintHelper.getTaint(taintedValue)
+          taintInfo: TaintHelper.getTaintInfo(taintedValue)
         }
       }
       
@@ -214,7 +214,7 @@ export class Utils {
   static clonebaseAndArgsForTaintProp(base, args) {
     let clonedBase;
     try {
-      if (base instanceof WrappedValue) {
+      if (TaintHelper.isWrappedValue(base)) {
         clonedBase = base.toStringInternal();
       } else {
         clonedBase = Utils.safeToString(base);
@@ -228,7 +228,7 @@ export class Utils {
     if (Utils.isArguments(args)) { args = Array.from(args); }
     let clonedArgs = args.map(arg => {
       try {
-        if (arg instanceof WrappedValue) {
+        if (TaintHelper.isWrappedValue(arg)) {
           return arg.toStringInternal();
         }
         // return structuredClone(arg);
@@ -346,12 +346,16 @@ export class Utils {
    */
   static isDOMNode(value) {
     try{
-      if (value instanceof Node || value.prototype instanceof Node) {
+      if (value instanceof Node || value?.prototype instanceof Node) {
         return true;
       }
     } catch(e){
       return false;
     }
+  }
+
+  static isHTMLCollection(value) {
+    return value instanceof HTMLCollection;
   }
 
   /**

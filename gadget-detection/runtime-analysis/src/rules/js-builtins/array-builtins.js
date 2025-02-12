@@ -164,6 +164,11 @@ export class ArrayBuiltinsTaintPropRules {
    * Array.from([TAINTED("a"), "b", "c"])
    * -> [TAINTED("a"), "b", "c"]
    * 
+   * 
+   * TYPE-4:
+   * Array.from(TAINTED(HTMLCollection))
+   * -> TAINTED(Array)
+   * 
    * @param {Function} f - The array built-in function.
    * @param {Array} args - The arguments to the function.
    * @param {String} reflected - The reflected function name.
@@ -194,6 +199,12 @@ export class ArrayBuiltinsTaintPropRules {
         let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:from', base, argsArray, iid);
         result[i][0] = TaintHelper.createTaintValue(result[i][0], newTaintInfo);
       }
+    }
+
+    // TYPE-3
+    else if (Utils.isHTMLCollection(argsArray[0])) {
+      let newTaintInfo = TaintHelper.addTaintPropOperation(taintInfoPairs, 'Array:from', base, argsArray, iid);
+      result = TaintHelper.createTaintValue(result, newTaintInfo);
     }
 
     return result;

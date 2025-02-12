@@ -649,6 +649,35 @@ export class TaintTracking {
     }
   };
 
+  /**
+   * This callback is called before a import module function invocation.
+   * @param {string|URL} moduleURL 
+   */
+  importModulePre(moduleURL, iid=-1) {
+    try{
+      // import is a keyword, but not a function
+      let f_fake = {name: "import"};
+      let base = null;
+      let args = [moduleURL];
+      let [reason, taintedArg] = this.taintSinkRules.checkTaintAtSinkInvokeFun(f_fake, base, args);
+      if (reason) {
+        TaintHelper.getTaintInfo(taintedArg).addtaintSink(iid, reason, new TaintPropOperation(`invokeFun:${f_fake.name}`, base, Array.from(args), iid));
+        Utils.reportDangerousFlow(
+          TaintHelper.getTaintInfo(taintedArg).getTaintSourceReason(),
+          TaintHelper.getTaintInfo(taintedArg).getTaintSourceLocation(),
+          reason,
+          iid,
+          taintedArg,
+          iid
+        )
+      }
+    } catch (e) {
+      // Avoid the error swallow by user program
+      J$$.analysis.logger.warn("(Can be ignored)", e);
+      throw e;
+    }  
+  }
+
 
   /**
    * This callback is called after a variable is read.

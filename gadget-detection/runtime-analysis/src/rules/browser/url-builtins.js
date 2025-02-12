@@ -79,7 +79,7 @@ export class URLBuiltinsTaintPropRules {
    * 
    * @condition
    * --------------------------------
-   * Condition Barrier: FIRST_ARG_TAINTED
+   * Condition Barrier: FIRST_ARG_TAINTED || SECOND_ARG_TAINTED
    * 
    * @usage
    * --------------------------------

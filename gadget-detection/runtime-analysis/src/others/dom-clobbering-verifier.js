@@ -35,6 +35,7 @@ export class DOMClobberingVerifier {
     });
 
     this.report = [];
+    this.dangerousFlows = [];
     this.payload = "";
     this.injected = false;
   }
@@ -102,6 +103,10 @@ export class DOMClobberingVerifier {
       let reason = this.taintSinkRules.checkTaintAtSinkInvokeFun(f, base, args);
       if (reason) {
         this.logger.reportVerifedFlow(reason, this.payload);
+        J$$.analysis.dangerousFlows.push({
+          sink: reason,
+          payload: this.payload
+        })
         __reportDangerousFlowPlaywright && __reportDangerousFlowPlaywright({
           sink: reason,
           payload: this.payload
@@ -120,6 +125,10 @@ export class DOMClobberingVerifier {
     if ((typeof moduleURL === 'string' && moduleURL.toLowerCase().includes('hulk')) ||
         (moduleURL instanceof URL && moduleURL.origin.includes('hulk'))) {
       this.logger.reportVerifedFlow("SINK-TO-IMPORT-MODULE", this.payload);
+      J$$.analysis.dangerousFlows.push({
+        sink: "SINK-TO-IMPORT-MODULE",
+        payload: this.payload
+      })
       __reportDangerousFlowPlaywright && __reportDangerousFlowPlaywright({
         sink: "SINK-TO-IMPORT-MODULE",
         payload: this.payload
@@ -150,6 +159,10 @@ export class DOMClobberingVerifier {
       let reason = this.taintSinkRules.checkTaintAtSinkPutField(base, offset, val);
       if (reason) {
         this.logger.reportVerifedFlow(reason, this.payload);
+        J$$.analysis.dangerousFlows.push({
+          sink: reason,
+          payload: this.payload
+        })
         __reportDangerousFlowPlaywright && __reportDangerousFlowPlaywright({
           sink: reason,
           payload: this.payload
@@ -306,6 +319,7 @@ class TaintSinkRules {
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkInvokeFun(f, base, args) {
+    args = Array.from(args);
     const hasTaintedArgs = args.some(
       (arg) => (typeof arg === 'string' || arg instanceof URL) && arg.toString().toLowerCase().includes('hulk')
     );

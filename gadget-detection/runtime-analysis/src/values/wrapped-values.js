@@ -176,7 +176,7 @@ class TaintValue extends WrappedValue {
   toJSON() {
     return {
         concrete: this.concrete,
-        taintInfo: this.taintInfo.toJSON(),
+        taintInfo: this.taintInfo ? this.taintInfo.toJSON() : undefined,
     };
   }
 }

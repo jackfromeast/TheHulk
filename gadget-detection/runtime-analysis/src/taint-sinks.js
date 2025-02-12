@@ -145,6 +145,13 @@ export class TaintSinkRules {
    */
   checkTaintAtSinkInvokeFun(f, base, args) {
 
+    if (f.name === 'import') {
+      this.reportClobberableSink("SINK-TO-IMPORT");
+      if (args.length && TaintHelper.isTainted(args[0])) {
+        return ["SINK-TO-IMPORT", args[0]];
+      }
+    }
+
     if (f.name === 'eval') {
       this.reportClobberableSink("SINK-TO-EVAL");
       if (args.length && TaintHelper.isTainted(args[0])) {

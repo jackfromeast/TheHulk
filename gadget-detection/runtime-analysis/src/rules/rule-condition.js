@@ -45,7 +45,7 @@ export class ConditionBuilder {
   }
 
   static SECOND_ARG_TAINTED(base, args, reflected) {
-    return args.length > 1 && TaintHelper.isTainted(args[0]);
+    return args.length > 1 && TaintHelper.isTainted(args[1]);
   }
 
   static SECOND_ARG_TAINTED_RECURSIVE(base, args, reflected) {

@@ -42,6 +42,10 @@ export class TaintHelper {
       
       return new TaintValue(value, taintInfo);
     }
+    else if( value instanceof DOMStringMap) {
+      // Treat DOMStringMap as primitive type since it only accepts string values
+      return new TaintValue(value, taintInfo);
+    }
     else {
       try {
         if (!Object.isExtensible(value)) {
@@ -103,7 +107,8 @@ export class TaintHelper {
         value === window.localStorage ||
         value === window.sessionStorage ||
         value === window.indexedDB ||
-        value instanceof DOMStringMap) {
+        value instanceof DOMStringMap           // DOMStringMap only accepts string values, but our taintInfo is an object
+      ) {
       return true;
     }
   }
@@ -253,7 +258,10 @@ export class TaintHelper {
     try {
       if (Utils.isPrimitive(value)) {
         return new TaintValue(value, taintInfo);
-      }else{
+      } else if (value instanceof DOMStringMap) {
+        return new TaintValue(value, taintInfo);
+      }
+      else{
         if (!Object.isExtensible(value)) {
           J$$.analysis.logger.debug("Cannot reinstall taint to non-extensible object", value);
           return value;
