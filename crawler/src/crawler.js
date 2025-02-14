@@ -62,28 +62,32 @@ function parseUserCallbacks(configs) {
     if (configs.callbacks.BEFORE_LOAD_CBS) {
       userCallbacks.before = [];
       for (let cb of configs.callbacks.BEFORE_LOAD_CBS) {
-          userCallbacks.before.push(require(cb.file)[cb.function_name]);
+        const resolvedPath = pathModule.isAbsolute(cb.file) ? cb.file : pathModule.resolve(__dirname, '../../', cb.file);
+        userCallbacks.before.push(require(resolvedPath)[cb.function_name]);
       }
     }
 
     if (configs.callbacks.PAGE_ACTIONS_CBS) {
       userCallbacks.action = [];
       for (let cb of configs.callbacks.PAGE_ACTIONS_CBS) {
-          userCallbacks.action.push(require(cb.file)[cb.function_name]);
+        const resolvedPath = pathModule.isAbsolute(cb.file) ? cb.file : pathModule.resolve(__dirname, '../../', cb.file);
+        userCallbacks.action.push(require(resolvedPath)[cb.function_name]);
       }
     }
 
     if (configs.callbacks.AFTER_LOAD_CBS) {
         userCallbacks.after = [];
         for (let cb of configs.callbacks.AFTER_LOAD_CBS) {
-            userCallbacks.after.push(require(cb.file)[cb.function_name]);
+          const resolvedPath = pathModule.isAbsolute(cb.file) ? cb.file : pathModule.resolve(__dirname, '../../', cb.file);
+          userCallbacks.after.push(require(resolvedPath)[cb.function_name]);
         }
     }
 
     if (configs.callbacks.POST_VISIT_CBS) {
       userCallbacks.post = [];
       for (let cb of configs.callbacks.POST_VISIT_CBS) {
-          userCallbacks.post.push(require(cb.file)[cb.function_name]);
+        const resolvedPath = pathModule.isAbsolute(cb.file) ? cb.file : pathModule.resolve(__dirname, '../../', cb.file);
+        userCallbacks.post.push(require(resolvedPath)[cb.function_name]);
       }
     }
   } catch (error) {

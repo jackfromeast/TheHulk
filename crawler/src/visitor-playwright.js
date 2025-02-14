@@ -58,6 +58,7 @@ function Visitor(config, url, domain, basedir, maxurls, beforeLoadCbs, userActio
 	this.startURL = url;
 	this.domain = domain;
 	this.basedir = basedir;
+	this.hulkdir = pathModule.resolve(__dirname, '../../');
 	this.maxURLNum = maxurls;
 
 	// Remember to update the following data structures when visiting a new page
@@ -234,7 +235,7 @@ Visitor.prototype.visitPage = async function(){
 		// Run the after callbacks to collect more data
 		// E.g. collect the domc lookups
 		for (let cb of this.afterLoadCbs){
-			await cb(this);
+			await cb(this, page);
 		}
 
 		/*

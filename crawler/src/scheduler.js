@@ -36,6 +36,10 @@ try {
   console.log('Error reading or parsing config file:', error.message);
 }
 
+if (!pathModule.isAbsolute(config.scheduler.WORKSPACE)) {
+  config.scheduler.WORKSPACE = pathModule.resolve(__dirname, '../../', config.scheduler.WORKSPACE);
+}
+
 let completeURL = 0;
 let totalURL = 0;
 let queue = [];
@@ -101,6 +105,10 @@ async function spawnCrawler(url) {
 (async function main() {
   let urls = [];
   if (config.scheduler.MODE !== 'seed') {
+    if (!pathModule.isAbsolute(config.scheduler.URL_LIST)) {
+      config.scheduler.URL_LIST = pathModule.resolve(__dirname, '../../', config.scheduler.URL_LIST);
+    }
+
     const domains = await readCSVFile(config.scheduler.URL_LIST);
     
     let urlStartPos = config.scheduler.URL_LIST_FROM != 0 ? config.scheduler.URL_LIST_FROM : 0;

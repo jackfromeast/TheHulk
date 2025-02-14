@@ -152,16 +152,18 @@ function getNameFromURL(url) {
     }
 }
 
-
-
 /** 
  * @function hashURL 
  * @param url: string
  * @return returns the SHA256 hash of the given input in hexa-decimal format
 **/
-function hashURL(url){
-	const hash = crypto.createHash('sha256').update(url, 'utf8').digest('hex');
-	return hash.slice(0, 10);
+function hashURL(url) {
+  const lastSlashIndex = url.lastIndexOf('/');
+  if (lastSlashIndex !== -1) {
+    url = url.substring(0, lastSlashIndex);
+  }
+  const hash = crypto.createHash('sha256').update(url, 'utf8').digest('hex');
+  return hash.slice(0, 10);
 }
 
 
