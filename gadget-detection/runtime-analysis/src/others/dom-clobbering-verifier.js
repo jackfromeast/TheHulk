@@ -123,7 +123,9 @@ export class DOMClobberingVerifier {
    */
   importModulePre(moduleURL) {
     if ((typeof moduleURL === 'string' && moduleURL.toLowerCase().includes('hulk')) ||
-        (moduleURL instanceof URL && moduleURL.origin.includes('hulk'))) {
+        (moduleURL instanceof URL && moduleURL.origin.includes('hulk')) ||
+        ((moduleURL instanceof TrustedHTML ) || (moduleURL instanceof TrustedScript ) ||
+         (moduleURL instanceof TrustedScriptURL ) && moduleURL.toString().toLowerCase().includes('hulk'))){
       this.logger.reportVerifedFlow("SINK-TO-IMPORT-MODULE", this.payload);
       J$$.analysis.dangerousFlows.push({
         sink: "SINK-TO-IMPORT-MODULE",
@@ -265,7 +267,9 @@ class TaintSinkRules {
   checkTaintAtSinkPutField(base, offset, val) {
     if (
       !(typeof val === 'string' || val instanceof URL) ||
-      !(val.toString().toLowerCase().includes('hulk'))
+      !(val.toString().toLowerCase().includes('hulk') ||
+      !(((val instanceof TrustedHTML ) || (val instanceof TrustedScript ) ||
+      (val instanceof TrustedScriptURL ) && val.toString().toLowerCase().includes('hulk'))))
     ) {
       return;
     }
@@ -321,7 +325,8 @@ class TaintSinkRules {
   checkTaintAtSinkInvokeFun(f, base, args) {
     args = Array.from(args);
     const hasTaintedArgs = args.some(
-      (arg) => (typeof arg === 'string' || arg instanceof URL) && arg.toString().toLowerCase().includes('hulk')
+      (arg) => (typeof arg === 'string' || arg instanceof URL ||
+                arg instanceof TrustedHTML || arg instanceof TrustedScript) && arg.toString().toLowerCase().includes('hulk')
     );
 
     if (f.name === 'eval' && args.length && hasTaintedArgs) {
@@ -376,7 +381,9 @@ class TaintSinkRules {
       (base === window.localStorage || base === window.sessionStorage) &&
       f.name === 'setItem' &&
       args.length &&
-      (typeof args[1] === 'string' || args[1] instanceof URL) &&
+      (typeof args[1] === 'string' || args[1] instanceof URL || 
+        args[1] instanceof TrustedHTML || args[1] instanceof TrustedURL || args[1] instanceof TrustedScript || args[1] instanceof TrustedResourceURL
+      ) &&
       args[1].toString().toLowerCase().includes('hulk')
     ) {
       return `SINK-TO-${base === window.localStorage ? 'LOCALSTORAGE' : 'SESSIONSTORAGE'}-SETITEM`;

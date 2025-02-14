@@ -10,14 +10,14 @@
  * --------------------------------
  */
 
-// import { TaintTracking } from './taint-tracking.js'
+import { TaintTracking } from './taint-tracking.js'
 // import { CountMostFrequentlyUsedBuiltinsAnalysis } from './others/most-frequently-used-api.js'
-import { DOMClobberingVerifier } from './others/dom-clobbering-verifier.js'
+// import { DOMClobberingVerifier } from './others/dom-clobbering-verifier.js'
 
 if (J$$) {
-  // J$$.analysis = new TaintTracking(J$$);
+  J$$.analysis = new TaintTracking(J$$);
   // J$$.analysis = new CountMostFrequentlyUsedBuiltinsAnalysis(J$$);
-  J$$.analysis = new DOMClobberingVerifier(J$$);
+  // J$$.analysis = new DOMClobberingVerifier(J$$);
 } else{
   throw "[TheHulk] Analysis module cannot be installed. J$$ not found."
 }

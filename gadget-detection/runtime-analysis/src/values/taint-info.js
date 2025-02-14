@@ -235,8 +235,8 @@ export class TaintPropOperation {
    * @returns 
    */
   resolveIndicator(indicator) {
-    if (this.indicator) {
-      return this.indicator;
+    if (indicator) {
+      return indicator;
     } else {
       if (TaintHelper.isTainted(this.base)) {
         return "base";

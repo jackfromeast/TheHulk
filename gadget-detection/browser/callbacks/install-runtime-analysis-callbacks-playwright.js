@@ -27,9 +27,16 @@ const path = require('path');
  * @param {*} page 
  */
 async function installJalangi2AndAnalysisCb(visitor, page) {
-  const analysisScriptPath = path.resolve(visitor.config.others.ANALYSIS_SCRIPT_PATH);
-  const jalangi2RuntimePath = path.resolve(visitor.config.others.JALANGI2_RUNTIME_PATH);
+  let analysisScriptPath = visitor.config.others.ANALYSIS_SCRIPT_PATH;
+  let jalangi2RuntimePath = visitor.config.others.JALANGI2_RUNTIME_PATH;
   
+  if (!path.isAbsolute(analysisScriptPath)) {
+    analysisScriptPath = path.join(visitor.hulkdir, analysisScriptPath);
+  }
+  if (!path.isAbsolute(jalangi2RuntimePath)) {
+    jalangi2RuntimePath = path.join(visitor.hulkdir, jalangi2RuntimePath);
+  }
+
   // The following way cannot make sure that jalangi2RuntimePath will be fully loaded before analysisScriptPath
   // visitor.context.addInitScript({ path: jalangi2RuntimePath });
   // visitor.context.addInitScript({ path: analysisScriptPath });
@@ -54,8 +61,18 @@ async function installJalangi2AndAnalysisCb(visitor, page) {
  * @param {*} page
  */
 async function ensureServiceWorkerScripts(visitor, page) {
-  const scriptContent = await fs.readFile(visitor.config.others.ANALYSIS_SCRIPT_PATH, 'utf8');
-  const runtimeContent = await fs.readFile(visitor.config.others.JALANGI2_RUNTIME_PATH, 'utf8');
+  let scriptPath = visitor.config.others.ANALYSIS_SCRIPT_PATH;
+  let runtimePath = visitor.config.others.JALANGI2_RUNTIME_PATH;
+
+  if (!path.isAbsolute(scriptPath)) {
+    scriptPath = path.join(visitor.hulkdir, scriptPath);
+  }
+  if (!path.isAbsolute(runtimePath)) {
+    runtimePath = path.join(visitor.hulkdir, runtimePath);
+  }
+
+  const scriptContent = await fs.readFile(scriptPath, 'utf8');
+  const runtimeContent = await fs.readFile(runtimePath, 'utf8');
 
   page.on('worker', async worker => {
     try {

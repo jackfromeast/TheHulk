@@ -231,7 +231,6 @@ export class TaintTracking {
       return {result: newCode};
   };
 
-
   /**
    * This callback is called before a function, method, or constructor invocation.
    * 
