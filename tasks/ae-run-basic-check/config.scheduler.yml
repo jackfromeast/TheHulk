@@ -1,0 +1,34 @@
+scheduler:
+  TEST_NAME: "AE-BASIC-CHECK"
+  # Path to workspace (base directory for storing results)
+  # Relative to the root directory of the project
+  WORKSPACE: "tasks/ae-run-basic-check/output"
+
+  # Option: "seed" or "list"
+  MODE: "seed"
+  SEED_URL: "http://127.0.0.1:8080/google-client-api/poc.html"
+  URL_LIST: "dataset/Trenco_KJX3W_Top5K_filtered.csv"
+  URL_LIST_FROM: 0
+  URL_LIST_TO: 1
+
+
+  # Format of the urls.csv file:
+  #   1,google.com
+  #   2,facebook.com
+  #   3,amazonaws.com
+  #   4,microsoft.com
+  #   5,apple.com
+  #   6,googleapis.com
+  #   7,akamaiedge.net
+  #   8,youtube.com
+  #   9,a-msedge.net
+  #   10,twitter.com  
+
+  # Maximum number of workers to run in parallel
+  MAX_WORKER: 1
+  # Maximum number of urls to visit
+  MAX_URL: 1
+  # Time budget for each worker to visit a single domain
+  TIMEOUT_PER_DOMAIN: 5400000
+
+
