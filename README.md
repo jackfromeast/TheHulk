@@ -56,8 +56,8 @@ For example, to detect and exploit the gadgets in the DOM Clobbering collection,
   + https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en
 
 2. Update the two configuration files located at `tasks/run-taint-tracking-dom-clobbering-collection`.
-  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 1-2. Config the inputs, browser configs and callbacks if necessary (Can be skiped).
+  + 2-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 2-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
 3. Start the task:
 ```
@@ -68,10 +68,10 @@ For example, to detect and exploit the gadgets in the DOM Clobbering collection,
 
 1. Configure the browser with network proxy: `http://127.0.0.1:8899`
   + https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en
-  
+
 2. Update the configuration file located at `gadget-detection/browser/config.browser.yml`.
-  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 1-2. Config the inputs, browser configs and callbacks if necessary (Can be skiped).
+  + 2-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 2-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
 3. Start the taint-aware browser:
 
