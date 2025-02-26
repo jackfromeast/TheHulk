@@ -2,7 +2,7 @@
 
 [![Node](https://img.shields.io/badge/node%40latest-%3E%3D%2018.18.2-brightgreen.svg)](https://img.shields.io/badge/node%40latest-%3E%3D%2018.18.2-brightgreen.svg) [![Apache](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Find%20DOM%20Clobbering%20Gadgets%20with%20TheHulk&url=https://github.com/jackfromeast/TheHulk)
 
-TheHulk is a dynamic analysis tool designed to detect and exploit DOM Clobbering vulnerabilities.
+TheHulk is a dynamic analysis tool designed to detect and exploit DOM Clobbering vulnerabilities. 
 
 ## Overview
 
@@ -52,11 +52,14 @@ TheHulk can be run in two modes: as a standalone module or as a pipeline task.
 
 For example, to detect and exploit the gadgets in the DOM Clobbering collection, you could simply:
 
-1. Update the two configuration files located at `tasks/run-taint-tracking-dom-clobbering-collection`.
-  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 1-2. Update the callback scripts path, using either an absolute path or a relative path to the crawler/src directory.
+1. Configure the browser with network proxy: `http://127.0.0.1:8899`
+  + https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en
 
-2. Start the task:
+2. Update the two configuration files located at `tasks/run-taint-tracking-dom-clobbering-collection`.
+  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 1-2. Config the inputs, browser configs and callbacks if necessary (Can be skiped).
+
+3. Start the task:
 ```
 ./tasks/run-taint-tracking-dom-clobbering-collection/run.sh
 ```
@@ -64,12 +67,14 @@ For example, to detect and exploit the gadgets in the DOM Clobbering collection,
 **Running Dynamic Taint Engine Only**
 
 1. Configure the browser with network proxy: `http://127.0.0.1:8899`
-
+  + https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en
+  
 2. Update the configuration file located at `gadget-detection/browser/config.browser.yml`.
   + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 1-2. Update the callback scripts path, using either an absolute path or a relative path to the crawler/src directory.
+  + 1-2. Config the inputs, browser configs and callbacks if necessary (Can be skiped).
 
 3. Start the taint-aware browser:
+
 ```
 ./gadget-detection/run.sh
 ```
@@ -81,7 +86,7 @@ Note: You can adjust the '--force-device-scale-factor=1.75' argument in the conf
 To generate DOM Clobberable HTML markups from a taint trace using the following command:
 
 ```
-node exploit-gen/src/exploit.js --trace taintflow.json
+node exploit-gen/src/exploit.js --trace exploit-gen/src/tests/motivating-example.json
 ```
 
 ## Example
@@ -90,6 +95,18 @@ Below is a screenshot of an analysis result for detecting a DOM Clobbering gadge
 
 <img src="https://github.com/jackfromeast/TheHulk/wiki/assets/moti-example.jpg">
 
+The exploit generation output:
+
+```
+$ node exploit-gen/src/exploit.js --trace exploit-gen/src/tests/motivating-example.json
+====================
+<embed name="scripts">
+<form name="scripts" id="0">alert("Hulk!")</form>
+====================
+<form name="scripts"></form>
+<form name="scripts" id="0">alert("Hulk!")</form>
+...
+```
 
 ## DOM Clobbering Collection
 
