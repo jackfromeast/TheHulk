@@ -66,6 +66,8 @@ For example, to detect and exploit the gadgets in the DOM Clobbering collection,
 
 **Running Dynamic Taint Engine Only**
 
+Even Hulk is designed to detect DOM Clobbering gadgets, its dynamic taint engine can be generilzed to detect other client-side vulnerabilities. The source code of the taint engine is located at: `gadget-detection/runtime-analysis/src`.
+
 1. Configure the browser with network proxy: `http://127.0.0.1:8899`
   + https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en
 
