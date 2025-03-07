@@ -6,6 +6,7 @@
 
 const fs = require('fs');
 const yaml = require('js-yaml');
+const pathModule = require('path');
 
 function Processer(cralerConfigPath, basedir) {
   this.config = this.readConfigs(cralerConfigPath);
@@ -27,10 +28,12 @@ Processer.prototype.readCallbacks = function() {
   };
 
   this.config.callbacks.POST_PROCESS_CBS.PER_PAGE.forEach(cb => {
-    userCallbacks.perPage.push(require(cb.file)[cb.function_name]);
+    const resolvedPath = pathModule.isAbsolute(cb.file) ? cb.file : pathModule.resolve(__dirname, '../../', cb.file);
+    userCallbacks.perPage.push(require(resolvedPath)[cb.function_name]);
   });
   this.config.callbacks.POST_PROCESS_CBS.AFTER_ALL_DOMAINS.forEach(cb => {
-    userCallbacks.afterAllDomains.push(require(cb.file)[cb.function_name]);
+    const resolvedPath = pathModule.isAbsolute(cb.file) ? cb.file : pathModule.resolve(__dirname, '../../', cb.file);
+    userCallbacks.afterAllDomains.push(require(resolvedPath)[cb.function_name]);
   });
 
   return userCallbacks;

@@ -10,6 +10,7 @@
     "crypto": "^1.0.1",
     "elapsed-time-logger": "^1.1.7",
     "fast-csv": "^4.3.6",
+    "flatted": "^3.3.2",
     "fs": "0.0.1-security",
     "js-beautify": "^1.14.0",
     "js-yaml": "^4.1.0",

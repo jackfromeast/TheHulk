@@ -110,17 +110,34 @@ async function spawnCrawler(url) {
     }
 
     const domains = await readCSVFile(config.scheduler.URL_LIST);
+    let filteredDomains = new Set();
+
+    if (config.scheduler.FILTERED_URL_LIST) {
+      if (!pathModule.isAbsolute(config.scheduler.FILTERED_URL_LIST)) {
+        config.scheduler.FILTERED_URL_LIST = pathModule.resolve(__dirname, '../../', config.scheduler.FILTERED_URL_LIST);
+      }
+
+      filteredDomains = new Set(await readCSVFile(config.scheduler.FILTERED_URL_LIST));
+    }
     
     let urlStartPos = config.scheduler.URL_LIST_FROM != 0 ? config.scheduler.URL_LIST_FROM : 0;
     let urlEndPos = config.scheduler.URL_LIST_TO != -1 ? config.scheduler.URL_LIST_TO : domains.length;
 
-    for (let i = urlStartPos; i < urlEndPos; i++) {
-      if (domains[i].startsWith('http://') || domains[i].startsWith('https://')) {
-        urls.push(domains[i]);
-      } else {
-        urls.push('https://' + domains[i]);
+    try{
+      for (let i = urlStartPos; i < urlEndPos; i++) {
+        if (!filteredDomains.has(domains[i])) {
+          if (domains[i].startsWith('http://') || domains[i].startsWith('https://')) {
+            urls.push(domains[i]);
+          } else {
+            urls.push('https://' + domains[i]);
+          }
+        }
       }
     }
+    catch (error) {
+      console.log('Error reading or parsing URL list:', error.message);
+    }
+
   } else {
     urls = [config.scheduler.SEED_URL];
   }
