@@ -21,12 +21,13 @@ import shutil
 import hashlib
 from logger import get_logger
 from cache import Cache
+from pathlib import Path
 from instrumentor import Instrumentor
 from utils import load_config, resolve_url_to_path
 from mitmproxy import http, ctx
 from mitmproxy.script import concurrent
 
-
+hulk_base_dir = Path(__file__).resolve().parent.parent
 logger = get_logger('Proxy')
 
 
@@ -41,6 +42,10 @@ class JalangiResponseHandler:
     self.instrument_config = config['instrumentation']
     self.cache_config = config['cache']
     self.ignore = self.instrument_config['IGNORE_URLS']
+
+    if not Path(self.cache_config['CACHE_PATH']).is_absolute():
+      self.cache_config['CACHE_PATH'] = hulk_base_dir / self.cache_config['CACHE_PATH']
+
 
     self.cache = Cache(self.cache_config['CACHE_PATH'])
     self.instrumentor = Instrumentor(self.instrument_config,

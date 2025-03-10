@@ -2,9 +2,12 @@ import os
 import json
 import shutil
 import hashlib
-from logger import get_logger
 import subprocess
+from pathlib import Path
+from logger import get_logger
 from utils import load_config, resolve_url_to_path, hash_path, valid_file_path
+
+hulk_base_dir = Path(__file__).resolve().parent.parent
 
 logger = get_logger('Instrumentor')
 
@@ -15,11 +18,16 @@ class Instrumentor:
   This class is used to instrument the javascript code using Jalangi2.
   """
   def __init__(self, instrument_config, cache):
+    self.instrument_script_path = Path(instrument_config['INST_SCRIPT'])
+    if not self.instrument_script_path.is_absolute():
+      self.instrument_script_path = hulk_base_dir / self.instrument_script_path
 
-    self.instrument_script_path = instrument_config['INST_SCRIPT']
     self.jalangi_args = instrument_config['JALANGI_ARGS']
     self.save_failed_instrumentation = instrument_config['SAVE_FAILED_INSTRUMENTATION']
-    self.fail_instrumentation_path = instrument_config['FAIL_INSTRUMENTATION_PATH']
+    self.fail_instrumentation_path = Path(instrument_config['FAIL_INSTRUMENTATION_PATH'])
+
+    if not self.fail_instrumentation_path.is_absolute():
+      self.fail_instrumentation_path = hulk_base_dir / self.fail_instrumentation_path
 
     if (self.save_failed_instrumentation):
       os.makedirs(self.fail_instrumentation_path, exist_ok=True)
