@@ -68,9 +68,15 @@ callbacks:
 
       - file: crawler/src/callbacks/collect-results-callback.js
         function_name: "collectResultPerPageCallbacks"
+      
+      - file: "crawler/src/callbacks/collect-control-flow-callbacks.js"
+        function_name: "collectControlFlowPerPageCallbacks"
 
       - file: crawler/src/callbacks/exploit-generator-after-callbacks.js
         function_name: "generateExploitAfterCallbacks"
+
+      - file: crawler/src/callbacks/retest-if-flow-not-found.js
+        function_name: "retestIfFlowNotFound"
 
   AFTER_LOAD_CBS:
     - file: crawler/src/callbacks/retest-if-jalangi2-not-found.js
