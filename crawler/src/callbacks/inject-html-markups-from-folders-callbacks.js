@@ -80,21 +80,25 @@ function parseExploitFile(filePath, maxTries) {
     const metadata = {
       traces: traces.length || 0,
       payloads: traces.reduce((acc, trace) => acc + (trace.exploits || []).length, 0)
-    }
+    };
     
-    const payloads = traces.flatMap(trace => {
+    let uniquePayloads = new Set();
+
+    traces.forEach(trace => {
       const traceExploits = trace.exploits || [];
       const numToSelect = Math.min(traceExploits.length, maxTries);
-      const selected = shuffleArray(traceExploits).slice(0, numToSelect);
-      metadata.selectedPayloads += selected.length;
-      return selected;
+      const selected = traceExploits.slice(0, numToSelect);
+      
+      selected.forEach(payload => uniquePayloads.add(payload));
     });
 
-    return [payloads, metadata];
+    const payloads = Array.from(uniquePayloads);
+    metadata.selectedPayloads = payloads.length;
 
+    return [payloads, metadata];
   } catch (error) {
     console.error(`Error parsing exploit JSON: ${error.message}`);
-    return [];
+    return [[], { traces: 0, payloads: 0, selectedPayloads: 0 }];
   }
 }
 

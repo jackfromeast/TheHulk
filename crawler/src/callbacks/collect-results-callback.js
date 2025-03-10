@@ -38,7 +38,25 @@ async function collectResultPerPageCallbacks(visitor, page) {
   // }
 
   const taintflowsPath = path.join(visitor.webpageCrawlerFolder, 'taintflows.json');
-  await fs.writeFile(taintflowsPath, JSON.stringify(allDangerousFlows, null, 4));
+
+  try {
+    // Check if the file exists and read its content
+    let existingFlows = [];
+    try {
+      const fileContent = await fs.readFile(taintflowsPath, 'utf-8');
+      existingFlows = JSON.parse(fileContent);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+
+    const mergedFlows = [...existingFlows, ...allDangerousFlows];
+    await fs.writeFile(taintflowsPath, JSON.stringify(mergedFlows, null, 4));
+  } catch (error) {
+    visitor.logger.error(`Failed to write taint flows to file: ${error.message}`);
+    throw error;
+  }
 
   if (!visitor.recordTaintFlowsAcrossTask) {
     visitor.recordTaintFlowsAcrossTask = {
@@ -53,7 +71,7 @@ async function collectResultPerPageCallbacks(visitor, page) {
     visitor.recordTaintFlowsAcrossTask.failed = visitor.recordTaintFlowsAcrossTask.failed.filter(url => url !== visitor.curURL);
     visitor.recordTaintFlowsAcrossTask.success.push(visitor.curURL);
 
-    visitor.retestCurURL = false;
+    // visitor.retestCurURL = false;
     
   } else {
     visitor.logger.warn(`No taint flows detected in the URL: ${visitor.curURL}`);
