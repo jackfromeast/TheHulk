@@ -80,7 +80,7 @@ async function ensureServiceWorkerScripts(visitor, page) {
       await worker.evaluate(scriptContent);
       console.log('Scripts injected into worker: ' + worker.url());
     } catch (e) {
-      console.error('Failed to inject script into worker:', e);
+      console.error('Failed to inject script into worker.');
     }
 
     worker.on('close', () => console.log('Worker destroyed: ' + worker.url()));
