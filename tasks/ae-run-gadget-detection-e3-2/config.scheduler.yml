@@ -1,16 +1,14 @@
 scheduler:
-  TEST_NAME: "AE-E2"
+  TEST_NAME: "AE-E3-2"
   # Path to workspace (base directory for storing results)
-  WORKSPACE: "tasks/ae-run-exploit-generation-e2/output"
+  WORKSPACE: "tasks/ae-run-gadget-detection-e3-2/output"
 
   # Option: "seed" or "list"
-  MODE: "seed"
-  SEED_URL: "http://127.0.0.1:8080/index-benign.html"
-  # SEED_URL: "http://127.0.0.1:8080/google-client-api/poc-benign.html"
-  URL_LIST: ""
+  MODE: "list"
+  SEED_URL: "https://upi.com"
+  URL_LIST: "tasks/ae-run-gadget-detection-e3-1/input/vulnerable-domains-Tranco-Top-5K.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: -1
-
 
   # Format of the urls.csv file:
   #   1,google.com
@@ -25,10 +23,10 @@ scheduler:
   #   10,twitter.com  
 
   # Maximum number of workers to run in parallel
-  MAX_WORKER: 1
+  MAX_WORKER: 4
   # Maximum number of urls to visit
-  MAX_URL: 100
+  MAX_URL: 1
   # Time budget for each worker to visit a single domain
-  TIMEOUT_PER_DOMAIN: 4320000 # 12 hours
+  TIMEOUT_PER_DOMAIN: 600000 # 20 minutes
 
 

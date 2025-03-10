@@ -61,7 +61,7 @@ proxy:
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "crawler/src/callbacks/exploit-generator-before-page-callbacks.js"
+    - file: "crawler/src/callbacks/exploit-generator-before-callbacks.js"
       function_name: "generateExploitBeforeCallbacks"
 
     - file: "gadget-detection/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
@@ -79,14 +79,14 @@ callbacks:
     
     - file: "crawler/src/callbacks/collect-results-callback.js"
       function_name: "collectResultPerPageCallbacks"
-
-    - file: "crawler/src/callbacks/early-stop-callback.js"
-      function_name: "earlyStopIfDetected"
       
   AFTER_LOAD_CBS:
     - file: "crawler/src/callbacks/retest-if-jalangi2-not-found.js"
       function_name: "retestIfJalangi2NotFound"
 
+  POST_VISIT_CBS: []
+    # - file: "tasks/run-taint-tracking-dom-clobbering-collection/callbacks/collect-results-all-callbacks.js"
+    #   function_name: "collectResultsPerTaskCallbacks"
 
   # Callbacks that will be invoked after done visiting all domains in the current task
   POST_PROCESS_CBS:
@@ -102,5 +102,5 @@ others:
   ANALYSIS_SCRIPT_PATH: "gadget-detection/runtime-analysis/dist/thehulk-runtime-analysis-verifier.bundle.js"
   JALANGI2_RUNTIME_PATH: "gadget-detection/runtime-jalangi2/dist/thehulk-jalangi2-runtime.bundle.js"
   EXPLOIT_INPUTS: "tasks/run-verifier-collection/inputs/exploit-dom-clobbering-collection.txt"
-  EXPLOIT_INPUTS_FOLDER: "tasks/ae-run-gadget-detection-e1/output/AE-E1-03-10-14-53"
-  EXPLOIT_MAX_TRIES: 20
+  EXPLOIT_INPUTS_FOLDER: "tasks/ae-run-gadget-detection-e3-1/output/AE-E3-1-03-10-01-17"
+  EXPLOIT_MAX_TRIES: 10

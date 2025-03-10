@@ -14,7 +14,7 @@ chrome:
   DEVTOOLS: false
 
 foxhound:
-  FOXHOUND_EXECUTABLE_PATH: "/home/jackfromeast/Desktop/TheHulk/jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
+  FOXHOUND_EXECUTABLE_PATH: "jaw-v3-thething/crawler/foxhound/project-foxhound/obj-tf-release/dist/foxhound/foxhound"
   FOXHOUND_FLAGS: [
     "--no-sandbox",
     '--disable-setuid-sandbox',
@@ -59,27 +59,31 @@ proxy:
 
 callbacks:
   BEFORE_LOAD_CBS:
-    - file: "gadget-detection/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
+    - file: gadget-detection/browser/callbacks/install-runtime-analysis-callbacks-playwright.js
       function_name: "installJalangi2AndAnalysisCb"
   
   PAGE_ACTIONS_CBS:
-      - file: crawler/src/callbacks/wait/wait-five-sec-callbacks.js
-        function_name: waitForFiveSecCb
+      - file: crawler/src/callbacks/wait/wait-ten-sec-callbacks.js
+        function_name: "waitForTenSecCb"
+
+      # - file: crawler/src/callbacks/wait/wait-forever-callbacks.js
+      #   function_name: "manuallyInteractForeverCb"
 
       - file: crawler/src/callbacks/collect-results-callback.js
         function_name: "collectResultPerPageCallbacks"
+      
+      - file: "crawler/src/callbacks/collect-control-flow-callbacks.js"
+        function_name: "collectControlFlowPerPageCallbacks"
 
-      - file: crawler/src/callbacks/exploit-generator-after-callbacks.js
-        function_name: "generateExploitAfterCallbacks"
+      - file: crawler/src/callbacks/retest-if-flow-not-found.js
+        function_name: "retestIfFlowNotFound"
 
   AFTER_LOAD_CBS:
     - file: crawler/src/callbacks/retest-if-jalangi2-not-found.js
       function_name: "retestIfJalangi2NotFound"
   
-  POST_VISIT_CBS: 
-    - file: "crawler/src/callbacks/collect-results-all-callbacks.js"
-      function_name: "collectResultsPerTaskCallbacks"
-  
+  POST_VISIT_CBS: []
+
   POST_PROCESS_CBS:
     PER_PAGE: []
     AFTER_ALL_DOMAINS: []
