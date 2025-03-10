@@ -1,6 +1,6 @@
-[submodule "jaw-v3-thething"]
-	path = third-party/jaw-v3-thething
-	url = https://github.com/jackfromeast/jaw-v3-thething.git
+# [submodule "jaw-v3-thething"]
+# 	path = third-party/jaw-v3-thething
+# 	url = https://github.com/jackfromeast/jaw-v3-thething.git
 [submodule "jalangi2"]
 	path = libs/jalangi2
 	url = https://github.com/jackfromeast/jalangi2.git
