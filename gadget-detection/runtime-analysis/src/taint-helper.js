@@ -26,11 +26,11 @@ export class TaintHelper {
     }
 
     // Check if value is tainted already
-    if (TaintHelper.isTainted(value)) {
+    // if (TaintHelper.isTainted(value)) {
       // TODO: If it is already tainted, we need to merge the taint info
       // Currently, we just return the value itself
-      return value;
-    }
+      // return value;
+    // }
 
     if (Utils.isPrimitive(value)) {
       J$$.analysis.logger.reportTaintInstall(value);

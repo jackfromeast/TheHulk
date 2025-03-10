@@ -70,10 +70,14 @@ export class TaintTracking {
     this.clobberableSourcePool = {};
     this.clobberableSinks = {};
 
-    this.DCHECK = true;
+    this.DCHECK = false;
     this.taintStackHelper = new TaintStackHelper();
     this.builtinConcretizeHelper = new DefinedConcretizeBuiltinHelper();
     this.MAX_DEPTH_FOR_TAINT_CHECK = 3;
+
+    this.recordControlFlow = true;
+    this.tracedConditionSet = new Set();
+    this.controlFlowConditions = [];
   }
 
   /**
@@ -200,6 +204,13 @@ export class TaintTracking {
    * replaced with the value stored in the <tt>result</tt> property of the object.
    */
   conditional (iid, result) {
+    try{
+      if (this.recordControlFlow && TaintHelper.isTainted(result)) {
+        Utils.reportControlFlowConditions(result, iid);
+      }
+    } catch (e) {
+      ;
+    }
     return {result: TaintHelper.concreteWrappedOnly(result)};
   };
 
@@ -414,7 +425,8 @@ export class TaintTracking {
   invokeFun (iid, f, base, args, result, isConstructor, isMethod, functionIid, functionSid) {
     try {
       let reason = this.taintSourceRules.shouldTaintSourceAtInvokeFun(f, base, args, result);
-      if (reason && !TaintHelper.isTainted(result)) {
+      // if (reason && !TaintHelper.isTainted(result)) {
+      if (reason) {
         // TODO: We need to clone the variable or only save the taint information and not the value
         let taintInfo = new TaintInfo(iid, reason, new TaintPropOperation(`invokeFun:${f.name}`, base, Array.from(args), iid));
         result = TaintHelper.createTaintValue(result, taintInfo);
@@ -560,7 +572,8 @@ export class TaintTracking {
       val = this.taintPropRules.getFieldRules.getRule(base, offset)(base, offset, iid)
       
       let reason = this.taintSourceRules.shouldTaintSourceAtGetField(base, offset, val);
-      if (reason && !TaintHelper.isTainted(val)) {
+      // if (reason && !TaintHelper.isTainted(val)) {
+      if (reason) {
         if (val instanceof WrappedValue) {
           val = val.getConcrete();
         }

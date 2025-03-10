@@ -189,11 +189,11 @@ export class TaintInfo {
 
   toJSON() {
     return {
-      taintID: this.taintID,
+      taintID: this.taintIDs,
       taintPropOperations: this.taintPropOperations.map(op => {
         if(op.toJSON){return op.toJSON()}else{ return op}}),
       taintSink: this.taintSink,
-      taintSource: this.taintSource,
+      taintSource: this.taintSources,
     };
   }
 }

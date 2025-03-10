@@ -265,12 +265,8 @@ class TaintSinkRules {
    * @param {number} iid - The instruction id.
    */
   checkTaintAtSinkPutField(base, offset, val) {
-    if (
-      !(typeof val === 'string' || val instanceof URL) ||
-      !(val.toString().toLowerCase().includes('hulk') ||
-      !(((val instanceof TrustedHTML ) || (val instanceof TrustedScript ) ||
-      (val instanceof TrustedScriptURL ) && val.toString().toLowerCase().includes('hulk'))))
-    ) {
+    if (!(( typeof val === 'string' || val instanceof URL || val instanceof TrustedHTML || val instanceof TrustedScript || val instanceof TrustedScriptURL ) && 
+      val.toString().toLowerCase().includes('hulk'))) {
       return;
     }
 

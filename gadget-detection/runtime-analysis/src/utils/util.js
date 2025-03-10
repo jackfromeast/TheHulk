@@ -25,6 +25,21 @@ export class Utils {
                                               .replace(/[.*+?^${}()|[\]\/\\]/g, "\\$&")
                                               .replace(/toString/g, "createHTML") + "$");                             
 
+  static reportControlFlowConditions(taintedValue, iid){
+    const taintInfo = TaintHelper.getTaintInfo(taintedValue);
+    const combinationKey = `${iid}`;
+
+    if (!J$$.analysis.tracedConditionSet.has(combinationKey)) {
+      J$$.analysis.tracedConditionSet.add(combinationKey);
+    
+      J$$.analysis.controlFlowConditions.push({
+        taintInfo: taintInfo,
+        result: !!TaintHelper.concreteWrappedOnly(taintedValue),
+        iid: iid
+      })
+    }
+  }
+
   static reportDangerousFlow(sourceReason, sourceLoc, sinkReason, sinkLoc, taintedValue, iid) {
     J$$.analysis.logger.reportVulnFlow(sourceReason, sinkReason, taintedValue);
     
