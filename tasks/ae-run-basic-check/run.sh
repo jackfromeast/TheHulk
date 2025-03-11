@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 ## 1/ Start the test pages
 ## 2/ Start the proxy server
 ## 3/ Start the task.js
