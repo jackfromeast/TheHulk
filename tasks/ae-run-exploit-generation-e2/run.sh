@@ -31,7 +31,6 @@ if [ "$RUN_TEST" = true ]; then
   check_and_kill_port 8080
   pushd $THEHULK_PATH/dataset/dom-clobbering-collection/domc-gadgets-assets > /dev/null 2>&1
   ./run.sh > /dev/null 2>&1 &
-  curl -s http://localhost:8080
   TEST_SERVER_PID=$!
   sleep 1
   echo "[+] DOM Clobbering Server started with PID $TEST_SERVER_PID, at http://localhost:8080"
