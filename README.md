@@ -35,6 +35,11 @@ git clone --recursive https://github.com/jackfromeast/TheHulk.git
 cd TheHulk && ./install.sh
 ```
 
+3. Install the mitm-proxy certificate:
+
+To instrument the HTTPS traffic with mitmproxy, you would need to install the mitm-proxy's certificate in our system and browsers (for Chrome) to avoid any complain about untrusted certificates.
+To do so, please follow: https://docs.mitmproxy.org/stable/concepts-certificates/#:~:text=chrome
+
 ## Running
 
 TheHulk can be run in two modes: as a standalone module or as a pipeline task.
