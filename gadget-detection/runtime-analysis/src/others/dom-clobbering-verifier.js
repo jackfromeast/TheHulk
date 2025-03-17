@@ -349,6 +349,13 @@ class TaintSinkRules {
       return "SINK-TO-SETATTRIBUTE-SCRIPT-SRC";
     }
 
+    if (f.name === 'setAttribute' && base && base.tagName && base.tagName.toUpperCase() === 'FORM' &&
+        args.length >= 2 && (typeof args[1] === 'string' || args[1] instanceof URL) &&
+        args[1].toString().toLowerCase().includes('hulk') && args[0] === 'action'
+    ) {
+      return "SINK-TO-SETATTRIBUTE-SCRIPT-SRC";
+    }
+
     if (f.name === 'fetch' && args.length && hasTaintedArgs) {
       return "SINK-TO-FETCH";
     }

@@ -5,7 +5,7 @@ scheduler:
 
   # Option: "seed" or "list"
   MODE: "seed"
-  SEED_URL: "http://127.0.0.1:8080/index.html"
+  SEED_URL: "http://10.161.159.131:8080/index.html"
   URL_LIST: "third-party/jaw-v3-thething/input/tranco_Z2QWG_unique.csv"
   URL_LIST_FROM: 0
   URL_LIST_TO: 1

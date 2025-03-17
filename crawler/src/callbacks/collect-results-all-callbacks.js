@@ -18,7 +18,7 @@ async function collectResultsPerTaskCallbacks(visitor, page) {
   if (visitor.recordTaintFlowsAcrossTask) {
 
     // Filter function to match URLs following the pattern
-    const urlPattern = /^http:\/\/127.0.0.1:8080\/.*\/poc/;
+    const urlPattern = /^http:\/\/(\d+\.\d+\.\d+\.\d+):8080\/.*\/poc/;
     
     let filteredSuccess = visitor.recordTaintFlowsAcrossTask.success.filter(url => urlPattern.test(url));
     let filteredFailed = visitor.recordTaintFlowsAcrossTask.failed.filter(url => urlPattern.test(url));

@@ -200,6 +200,13 @@ export class TaintSinkRules {
       }
     }
 
+    if (f.name === 'setAttribute' && base && base.tagName && base.tagName.toUpperCase() === 'FORM') {
+      this.reportClobberableSink("SINK-TO-SETATTRIBUTE-FORM-ACTION");
+      if (args.length >= 2 && TaintHelper.isTainted(args[1])) {
+        return ["SINK-TO-SETATTRIBUTE-FORM-ACTION", args[1]];
+      }
+    }
+
     if (f.name === 'fetch') {
       this.reportClobberableSink("SINK-TO-FETCH");
       if (args.length && TaintHelper.isTainted(args[0])) {

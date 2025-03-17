@@ -61,6 +61,9 @@ callbacks:
   BEFORE_LOAD_CBS:
     - file: "gadget-detection/browser/callbacks/install-runtime-analysis-callbacks-playwright.js"
       function_name: "installJalangi2AndAnalysisCb"
+    
+    - file: "crawler/src/callbacks/set-webdriver-false-callbacks.js"
+      function_name: "disableWebdriverCheckCb"
   
   PAGE_ACTIONS_CBS:
       - file: crawler/src/callbacks/wait/wait-ten-sec-callbacks.js
