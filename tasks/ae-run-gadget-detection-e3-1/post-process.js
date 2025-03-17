@@ -39,13 +39,12 @@ function summarizeCrawlerResults(outputPaths) {
                     flagged = true;
 
                     const hash = crypto.createHash('sha256')
-                                  .update(taintflow.sourceReason + taintflow.sinkReason + taintflow.taintedValue.concrete)
+                                  .update(taintflow.sourceReason + taintflow.sinkReason)
                                   .digest('hex');
 
                     const flowEntry = {
                       source: taintflow.sourceReason,
                       sink: taintflow.sinkReason,
-                      taintedValue: taintflow.taintedValue.concrete,
                       hash: hash
                     };
 
