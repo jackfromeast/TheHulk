@@ -35,10 +35,13 @@ git clone --recursive https://github.com/jackfromeast/TheHulk.git
 cd TheHulk && ./install.sh
 ```
 
-3. Install the mitm-proxy certificate:
+3. Install the mitm-proxy certificate: To instrument the HTTPS traffic with mitmproxy, you would need to install the mitm-proxy's certificate in our system and browsers (for Chrome) to avoid any complain about untrusted certificates. To do so, please follow: https://docs.mitmproxy.org/stable/concepts-certificates/#:~:text=chrome
 
-To instrument the HTTPS traffic with mitmproxy, you would need to install the mitm-proxy's certificate in our system and browsers (for Chrome) to avoid any complain about untrusted certificates.
-To do so, please follow: https://docs.mitmproxy.org/stable/concepts-certificates/#:~:text=chrome
+4. Basic Test for installation:
+
+```
+./tasks/ae-run-basic-check/run.sh
+```
 
 ## Running
 
@@ -57,27 +60,22 @@ TheHulk can be run in two modes: as a standalone module or as a pipeline task.
 
 For example, to detect and exploit the gadgets in the DOM Clobbering collection, you could simply:
 
-1. Configure the browser with network proxy: `http://127.0.0.1:8899` (Refer to the [Ubuntu Guide](https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en))
-
-2. Update the two configuration files located at `tasks/run-taint-tracking-dom-clobbering-collection`.
+1. Update the two configuration files located at `tasks/ae-run-gadget-detection-e1`.
   + 2-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
   + 2-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
 3. Start the task:
 ```
-./tasks/run-taint-tracking-dom-clobbering-collection/run.sh
+./tasks/ae-run-gadget-detection-e1/run.sh
 ```
 
 **Running Dynamic Taint Engine Only**
 
 Even Hulk is designed to detect DOM Clobbering gadgets, its dynamic taint engine can be generilzed to detect other client-side vulnerabilities. The source code of the taint engine is located at: `gadget-detection/runtime-analysis/src`.
 
-1. Configure the browser with network proxy: `http://127.0.0.1:8899`
-  + https://help.ubuntu.com/stable/ubuntu-help/net-proxy.html.en
-
-2. Update the configuration file located at `gadget-detection/browser/config.browser.yml`.
-  + 2-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 2-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
+1. Update the configuration file located at `gadget-detection/browser/config.browser.yml`.
+  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 1-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
 3. Start the taint-aware browser:
 
@@ -104,14 +102,14 @@ Below is a screenshot of an analysis result for detecting a DOM Clobbering gadge
 The exploit generation output:
 
 ```
-$ node exploit-gen/src/exploit.js --trace exploit-gen/src/tests/motivating-example.json
+$ node exploit-gen/src/exploit.js --trace exploit-gen/src/tests/motivating-example.json -c exploit-gen/src/tests/motivating-example-conditions.json
 ====================
 <embed name="scripts">
-<form name="scripts" id="0">alert("Hulk!")</form>
+<iframe name="scripts" src="" id="0">alert("Hulk!")</iframe>
 ====================
 <form name="scripts"></form>
-<form name="scripts" id="0">alert("Hulk!")</form>
-...
+<iframe name="scripts" src="" id="0">alert("Hulk!")</iframe>
+====================
 ```
 
 ## DOM Clobbering Collection
