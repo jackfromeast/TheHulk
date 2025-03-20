@@ -61,8 +61,8 @@ TheHulk can be run in two modes: as a standalone module or as a pipeline task.
 For example, to detect and exploit the gadgets in the DOM Clobbering collection, you could simply:
 
 1. Update the two configuration files located at `tasks/ae-run-gadget-detection-e1`.
-  + 2-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
-  + 2-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
+  + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
+  + 1-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
 3. Start the task:
 ```
