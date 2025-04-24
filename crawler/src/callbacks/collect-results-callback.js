@@ -20,14 +20,16 @@ async function collectResultPerPageCallbacks(visitor, page) {
   const collectFlowsFromFrame = async (frame) => {
     return await frame.evaluate(() => {
       try {
-        return window.J$$.analysis.dangerousFlows || [];
+        const results =  JSON.stringify(window.J$$.analysis.dangerousFlows || []);
+        return results;
       } catch (e) {
         return [];
       }
     });
   };
-
-  const mainFrameFlows = await collectFlowsFromFrame(page.mainFrame());
+  
+  const intermediate = await collectFlowsFromFrame(page.mainFrame());
+  const mainFrameFlows = JSON.parse(intermediate);
   allDangerousFlows.push(...mainFrameFlows);
 
   // We don't have nested frames in test cases
