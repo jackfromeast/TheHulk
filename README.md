@@ -64,7 +64,7 @@ For example, to detect and exploit the gadgets in the DOM Clobbering collection,
   + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
   + 1-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
-3. Start the task:
+2. Start the task:
 ```
 ./tasks/ae-run-gadget-detection-e1/run.sh
 ```
@@ -77,7 +77,7 @@ Even Hulk is designed to detect DOM Clobbering gadgets, its dynamic taint engine
   + 1-1. Update the `WORKSPACE` path to specify where the output folders will be placed.
   + 1-2. Config the inputs, browser configs and callbacks if necessary (can be skiped).
 
-3. Start the taint-aware browser:
+2. Start the taint-aware browser:
 
 ```
 ./gadget-detection/run.sh
