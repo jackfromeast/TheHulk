@@ -21,6 +21,9 @@ async function exposeHandlerToPageCb(visitor, page) {
 }
 
 async function bindTaintHandlerForFoxHoundCb(visitor, page) {
-  const taintHandlerPath = path.resolve(visitor.config.others.FOXHOUND_TAINT_HANDLER_PATH);
+  const configPath = visitor.config.others.FOXHOUND_TAINT_HANDLER_PATH;
+  const taintHandlerPath = path.isAbsolute(configPath) 
+    ? configPath 
+    : path.resolve(visitor.hulkdir, configPath);
   visitor.context.addInitScript({ path: taintHandlerPath});
 }
