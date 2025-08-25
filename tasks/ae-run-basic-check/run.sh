@@ -6,10 +6,10 @@
 
 check_and_kill_port() {
   local PORT=$1
-  local PID=$(lsof -ti:$PORT)
+  local PID=$(timeout 2 lsof -ti:$PORT 2>/dev/null)
   if [ -n "$PID" ]; then
-    echo "[!] Port $PORT is in use by process $PID. Killing the process..."
-    kill -9 $PID > /dev/null 2>&1
+    echo "[!] Killing process $PID on port $PORT"
+    kill -9 $PID 2>/dev/null
   fi
 }
 
@@ -49,8 +49,20 @@ if [ "$RUN_PROXY" = true ]; then
   pushd $THEHULK_PATH/proxy-server > /dev/null 2>&1
   ./setup.sh > /dev/null 2>&1 &
   PROXY_SERVER_PID=$!
-  sleep 1
-  echo "[+] Proxy Server started with PID $PROXY_SERVER_PID"
+  
+  # Wait for proxy server to be ready (max 30 seconds)
+  echo "[+] Waiting for proxy server to be ready on port 8899..."
+  for i in {1..30}; do
+    if timeout 1 bash -c "</dev/tcp/127.0.0.1/8899" 2>/dev/null; then
+      echo "[+] Proxy Server is ready with PID $PROXY_SERVER_PID"
+      break
+    fi
+    if [ $i -eq 30 ]; then
+      echo "[!] Proxy server failed to start within 30 seconds"
+      exit 1
+    fi
+    sleep 1
+  done
   popd > /dev/null 2>&1
 fi
 
@@ -75,16 +87,20 @@ echo "========================== Start task running =========================="
 cleanup() {
   echo "[+] Cleaning up..."
   if [ -n "$TEST_SERVER_PID" ]; then
-    kill $TEST_SERVER_PID
-    echo "[+] Killed TEST_SERVER_PID $TEST_SERVER_PID"
+    if kill -0 "$TEST_SERVER_PID" 2>/dev/null; then
+      kill $TEST_SERVER_PID 2>/dev/null
+      echo "[+] Killed TEST_SERVER_PID $TEST_SERVER_PID"
+    fi
   fi
   if [ -n "$PROXY_SERVER_PID" ]; then
-    kill $PROXY_SERVER_PID
+    check_and_kill_port 8899
     echo "[+] Killed PROXY_SERVER_PID $PROXY_SERVER_PID"
   fi
   if [ -n "$BROWSER_PID" ]; then
-    kill $BROWSER_PID
-    echo "[+] Killed BROWSER_PID $BROWSER_PID"
+    if kill -0 "$BROWSER_PID" 2>/dev/null; then
+      kill $BROWSER_PID 2>/dev/null
+      echo "[+] Killed BROWSER_PID $BROWSER_PID"
+    fi
   fi
 }
 
