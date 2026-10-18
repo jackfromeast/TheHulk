@@ -118,3 +118,19 @@ DOM Clobbering Collection is list of wildly-used client-side libraries with DOM 
 
 The dataset is available at https://github.com/jackfromeast/dom-clobbering-collection.
 
+## Citation
+
+```
+@inproceedings{liu2025domino,
+  author = {Zhengyu Liu and Theo Lee and Jianjia Yu and Zifeng Kang and Yinzhi Cao},
+  title = {The {DOMino} Effect: Detecting and Exploiting {DOM} Clobbering Gadgets via Concolic Execution with Symbolic {DOM}},
+  booktitle = {34th USENIX Security Symposium (USENIX Security 25)},
+  year = {2025},
+  isbn = {978-1-939133-52-6},
+  address = {Seattle, WA},
+  pages = {8293--8312},
+  url = {https://www.usenix.org/conference/usenixsecurity25/presentation/liu-zhengyu},
+  publisher = {USENIX Association},
+  month = aug
+}
+```
